@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background: #0A0E27;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Scrollbars */
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #232A4F; border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: #2C3463; }
+
+/* Focus rings */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(20,114,245,0.6);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Selection */
+::selection { background: rgba(20,114,245,0.4); color: #fff; }
+
+@layer components {
+  /* Card */
+  .card {
+    @apply bg-card border border-line rounded-2xl transition-all duration-200;
+  }
+  .card:hover {
+    border-color: #2C3463;
+    background: #1A2148;
+  }
+  .card-tight {
+    @apply rounded-xl;
+  }
+
+  /* Nav active state */
+  .nav-active {
+    background: linear-gradient(180deg, rgba(20,114,245,0.18), rgba(20,114,245,0.06));
+    border: 1px solid rgba(20,114,245,0.35);
+    box-shadow: 0 0 24px -4px rgba(20,114,245,0.45), inset 0 0 0 1px rgba(255,255,255,0.02);
+  }
+
+  /* Glass */
+  .glass {
+    background: rgba(21,27,61,0.78);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Backdrop */
+  .backdrop-overlay {
+    background: rgba(5,8,24,0.65);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Form field */
+  .field {
+    @apply w-full bg-[#0E1330] border border-line text-white px-4 py-3.5 rounded-xl text-sm
+           placeholder:text-mute2 focus:border-accent focus:bg-[#0B1130] outline-none transition-all duration-200;
+  }
+  .field-icon {
+    @apply pl-11;
+  }
+
+  /* Grid background */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Blob for login */
+  .blob {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  /* Kanban card */
+  .task-card {
+    cursor: grab;
+  }
+  .task-card:active {
+    cursor: grabbing;
+  }
+
+  /* Progress fill */
+  .progress-fill {
+    transform-origin: left center;
+    @apply animate-fill-in;
+  }
+
+  /* Lift card */
+  .lift {
+    @apply transition-all duration-200;
+  }
+  .lift:hover {
+    transform: translateY(-3px);
+    border-color: #2C3463;
+    box-shadow: 0 12px 32px -16px rgba(0,0,0,0.5), 0 0 0 1px rgba(20,114,245,0.15);
+  }
+
+  /* Achievement locked */
+  .ach-locked {
+    filter: grayscale(1);
+    opacity: 0.45;
+  }
+}
