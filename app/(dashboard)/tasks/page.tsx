@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Plus } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const COLUMNS = [
   { key: 'todo',        label: 'Сделать',   color: '#8B92B4', count: 3 },
@@ -11,7 +12,7 @@ const COLUMNS = [
 
 export default function TasksPage() {
   return (
-    <>
+    <PageContainer>
       <Header
         title="Задачи"
         subtitle="Канбан-доска команды · 8 задач в работе"
@@ -53,6 +54,6 @@ export default function TasksPage() {
           </div>
         ))}
       </div>
-    </>
+    </PageContainer>
   )
 }

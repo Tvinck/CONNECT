@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Home, CheckSquare, Folder, BookOpen, Users, User, AppWindow,
+  Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
   MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check,
 } from 'lucide-react'
 import { Logomark } from '@/components/ui/Logomark'
@@ -21,7 +21,7 @@ const NAV_ITEMS = [
   { key: 'knowledge',  label: 'База знаний', href: '/knowledge',  icon: BookOpen },
   { key: 'crm',        label: 'CRM',         href: '/crm',        icon: Users },
   { key: 'employees',  label: 'Сотрудники',  href: '/employees',  icon: User },
-  { key: 'services',   label: 'Сервисы',     href: '/services',   icon: AppWindow },
+  { key: 'services',   label: 'Сервисы',     href: '/services',   icon: LayoutGrid },
   { key: 'chats',      label: 'Чаты',        href: '/chats',      icon: MessageSquare },
   { key: 'management', label: 'Управление',  href: '/management', icon: Shield, ceoOnly: true },
   { key: 'profile',    label: 'Профиль',     href: '/profile',    icon: Settings },
@@ -63,11 +63,8 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
       )}
 
       <aside
-        style={{
-          transform: sidebarOpen ? 'translateX(0)' : undefined,
-        }}
         className={`w-[240px] shrink-0 h-screen border-r border-line bg-sidebar flex flex-col z-40
-          fixed top-0 left-0 lg:sticky transition-transform duration-200
+          fixed top-0 left-0 lg:sticky lg:top-0 transition-transform duration-200
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Logo */}

@@ -3,6 +3,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Tag } from '@/components/ui/Tag'
 import { Shield, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const EMPLOYEES = [
   { name: 'Маша Лебедева', initials: 'МЛ', color: '#FF4D9D', role: 'Дизайнер',  status: 'online',  email: 'masha@bazzar.group' },
@@ -26,7 +27,7 @@ const PERM_TONE: Record<number, 'mute' | 'accent' | 'ok'> = { 0: 'mute', 1: 'acc
 
 export default function ManagementPage() {
   return (
-    <>
+    <PageContainer>
       <Header
         title="Управление"
         subtitle="Сотрудники, роли и права доступа"
@@ -94,6 +95,6 @@ export default function ManagementPage() {
           </div>
         </div>
       </div>
-    </>
+    </PageContainer>
   )
 }

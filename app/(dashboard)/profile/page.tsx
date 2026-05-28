@@ -3,6 +3,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Progress } from '@/components/ui/Progress'
 import { Button } from '@/components/ui/Button'
 import { Pencil, Zap } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const USER = {
   name: 'Артём Кошелев',
@@ -37,7 +38,7 @@ const POINT_HISTORY = [
 
 export default function ProfilePage() {
   return (
-    <>
+    <PageContainer>
       <Header title="Профиль" subtitle="Твои достижения и баллы" />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
@@ -131,6 +132,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </>
+    </PageContainer>
   )
 }

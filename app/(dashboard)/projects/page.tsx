@@ -3,6 +3,7 @@ import { Progress } from '@/components/ui/Progress'
 import { Tag } from '@/components/ui/Tag'
 import { Button } from '@/components/ui/Button'
 import { Plus } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const PROJECTS = [
   { id: 'podari', name: 'ПодариМомент',  emoji: '🎁', color: '#1472F5', progress: 80, status: 'active',   statusLabel: 'Активный',      tasks: 12, team: 4 },
@@ -18,7 +19,7 @@ const STATUS_TONE: Record<string, 'ok' | 'warn' | 'mute'> = {
 
 export default function ProjectsPage() {
   return (
-    <>
+    <PageContainer>
       <Header title="Проекты" subtitle="3 активных проекта · BAZZAR Group" />
 
       <div className="flex items-center justify-between mb-6">
@@ -50,6 +51,6 @@ export default function ProjectsPage() {
           </div>
         ))}
       </div>
-    </>
+    </PageContainer>
   )
 }

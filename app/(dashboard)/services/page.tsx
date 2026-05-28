@@ -4,6 +4,7 @@ import {
   Code2, Layers, Power, Wallet, TrendingUp, Zap, Video,
   MessageSquare, BarChart3, Flame
 } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const ICON_MAP: Record<string, React.ElementType> = {
   Globe, Pencil: PenLine, Search, CheckCircle, Palette,
@@ -39,7 +40,7 @@ const SERVICES = [
 
 export default function ServicesPage() {
   return (
-    <>
+    <PageContainer>
       <Header title="Сервисы" subtitle="Инструменты и интеграции команды" />
 
       <div className="flex items-center gap-2 flex-wrap mb-6">
@@ -77,6 +78,6 @@ export default function ServicesPage() {
           )
         })}
       </div>
-    </>
+    </PageContainer>
   )
 }

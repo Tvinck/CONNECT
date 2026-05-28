@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/Header'
 import { Button } from '@/components/ui/Button'
 import { Search, Plus, Clock, Eye } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const CATEGORIES = [
   { id: 'onboarding', label: 'Онбординг',    emoji: '🚀', color: '#1472F5', count: 8  },
@@ -20,7 +21,7 @@ const ARTICLES = [
 
 export default function KnowledgePage() {
   return (
-    <>
+    <PageContainer>
       <Header title="База знаний" subtitle="Процессы, инструменты и FAQ команды" />
 
       <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -68,6 +69,6 @@ export default function KnowledgePage() {
           </div>
         ))}
       </div>
-    </>
+    </PageContainer>
   )
 }

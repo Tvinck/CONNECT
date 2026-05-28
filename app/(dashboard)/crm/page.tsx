@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
 import { Avatar } from '@/components/ui/Avatar'
 import { Plus } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const CLIENTS = [
   { name: 'Анна Сергеева',    initials: 'АС', color: '#FF4D9D', source: 'ПодариМомент', status: 'vip',     spent: 18900, manager: 'СК', last: '2 дня'   },
@@ -31,7 +32,7 @@ const FUNNEL = [
 
 export default function CrmPage() {
   return (
-    <>
+    <PageContainer>
       <Header title="CRM" subtitle="Клиентская база и воронка продаж" />
 
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -83,6 +84,6 @@ export default function CrmPage() {
           </tbody>
         </table>
       </div>
-    </>
+    </PageContainer>
   )
 }

@@ -1,4 +1,5 @@
 import { Header } from '@/components/layout/Header'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
 import {
@@ -43,7 +44,7 @@ export default function DashboardPage() {
   const nextLevel = 500
 
   return (
-    <>
+    <PageContainer>
       <Header
         title="С возвращением, Артём! 👋"
         subtitle="Вторник, хороший день для дел. У тебя 5 задач, 2 горят 🔥"
@@ -261,7 +262,7 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
-    </>
+    </PageContainer>
   )
 }
 

@@ -2,6 +2,7 @@ import { Header } from '@/components/layout/Header'
 import { Avatar } from '@/components/ui/Avatar'
 import { Tag } from '@/components/ui/Tag'
 import { MessageSquare } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 const EMPLOYEES = [
   { id: 'e1', name: 'Артём Кошелев', initials: 'АК', color: '#1472F5', title: 'CEO',         status: 'online',  level: 'Специалист', points: 340,  closed: 47  },
@@ -25,7 +26,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function EmployeesPage() {
   return (
-    <>
+    <PageContainer>
       <Header title="Сотрудники" subtitle={`${EMPLOYEES.length} человек в команде`} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -67,6 +68,6 @@ export default function EmployeesPage() {
           </div>
         ))}
       </div>
-    </>
+    </PageContainer>
   )
 }

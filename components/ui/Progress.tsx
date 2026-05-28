@@ -1,5 +1,3 @@
-'use client'
-
 import { shadeColor } from '@/lib/utils'
 
 interface ProgressProps {
