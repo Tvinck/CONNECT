@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
   MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check,
@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
 import { ROLES } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 import { useState, useRef, useEffect } from 'react'
 import type { UserRole } from '@/types'
 
@@ -34,8 +35,17 @@ interface SidebarProps {
 
 export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   const pathname = usePathname()
-  const { role, setRole, user } = useAuthStore()
+  const router = useRouter()
+  const { role, setRole, user, logout } = useAuthStore()
   const { sidebarOpen, setSidebarOpen, addToast } = useUIStore()
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    logout()
+    router.push('/login')
+    router.refresh()
+  }
 
   const initials = user?.full_name
     ? user.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
@@ -158,12 +168,12 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
               <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse-dot" />
               <span>Онлайн</span>
             </div>
-            <Link
-              href="/login"
+            <button
+              onClick={handleLogout}
               className="inline-flex items-center gap-1.5 text-[12px] text-mute hover:text-white"
             >
               <LogOut size={14} /> Выход
-            </Link>
+            </button>
           </div>
         </div>
       </aside>

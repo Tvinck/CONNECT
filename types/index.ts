@@ -11,6 +11,7 @@ export interface User {
   full_name: string
   avatar_url?: string
   role: UserRole
+  position?: string
   points: number
   level: number
   is_active: boolean

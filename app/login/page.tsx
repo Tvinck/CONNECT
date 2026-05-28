@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Logomark } from '@/components/ui/Logomark'
 import { Progress } from '@/components/ui/Progress'
+import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 
 const PROJECTS = [
@@ -14,6 +15,7 @@ const PROJECTS = [
 
 export default function LoginPage() {
   const router = useRouter()
+  const [supabase] = useState(() => createClient())
   const [email, setEmail] = useState('artem@bazzar.group')
   const [pwd, setPwd]     = useState('')
   const [showPwd, setShowPwd] = useState(false)
@@ -24,9 +26,24 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    // Placeholder — will be wired to Supabase in Stage 1
-    await new Promise((r) => setTimeout(r, 500))
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: pwd,
+    })
+
+    if (error) {
+      setError(
+        error.message === 'Invalid login credentials'
+          ? 'Неверная почта или пароль'
+          : error.message
+      )
+      setLoading(false)
+      return
+    }
+
     router.push('/dashboard')
+    router.refresh()
   }
 
   return (

@@ -3,15 +3,24 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Logomark } from '@/components/ui/Logomark'
+import { createClient } from '@/lib/supabase/client'
 import { Mail, ArrowLeft } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
+  const [supabase] = useState(() => createClient())
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
+    // Always show success — don't leak which emails exist.
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset`,
+    })
     setSent(true)
+    setLoading(false)
   }
 
   return (
@@ -53,9 +62,10 @@ export default function ForgotPasswordPage() {
 
                 <button
                   type="submit"
-                  className="w-full h-12 rounded-xl bg-accent hover:bg-[#2A82FF] text-white font-semibold text-[14px] shadow-glow transition-all"
+                  disabled={loading}
+                  className="w-full h-12 rounded-xl bg-accent hover:bg-[#2A82FF] text-white font-semibold text-[14px] shadow-glow transition-all disabled:opacity-70"
                 >
-                  Отправить ссылку
+                  {loading ? 'Отправляем…' : 'Отправить ссылку'}
                 </button>
               </form>
             </>
