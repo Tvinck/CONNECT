@@ -20,8 +20,11 @@ export default async function ProfilePage() {
       .eq('assignee_id', profile.id).eq('status', 'done'),
   ])
 
-  const earnedIds = new Set((earnedAchs ?? []).map((r: any) => r.achievement_id))
-  const achievements = (allAchs ?? []).map((a: any) => ({ ...a, earned: earnedIds.has(a.id) }))
+  type EarnedRow = { achievement_id: string }
+  type AchRow = { id: string; key: string; title: string; icon: string; description: string; points: number }
+
+  const earnedIds = new Set((earnedAchs ?? []).map((r: EarnedRow) => r.achievement_id))
+  const achievements = (allAchs ?? []).map((a: AchRow) => ({ ...a, earned: earnedIds.has(a.id) }))
 
   const daysIn = Math.floor((Date.now() - new Date(profile.created_at).getTime()) / 86400000)
   const lvl    = levelInfo(profile.points)

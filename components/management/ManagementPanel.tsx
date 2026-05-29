@@ -4,9 +4,9 @@
  * Two panels:
  *  1. Employee list — live list of team members with avatar, email, and role badge.
  *     New employees can be added via InviteModal which calls POST /api/invite.
- *  2. Access matrix — per-role permission table (View / Full / None).
- *     Clicking a cell cycles the permission level; state is local/demo only
- *     (not persisted to the DB in this version).
+ *  2. Access matrix — per-role permission table (None / View / Full).
+ *     Clicking a cell cycles the level; changes are persisted to the
+ *     `role_permissions` table (migration 0006) with optimistic UI.
  *
  * Sub-components:
  *  - InviteModal — form to create a new employee account.
@@ -16,21 +16,27 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { UserPlus, Loader2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Tag } from '@/components/ui/Tag'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { createClient } from '@/lib/supabase/client'
+import { useUIStore } from '@/store/ui'
 import { colorFor, getInitials } from '@/lib/utils'
 import type { UserRole } from '@/types'
 
+/** Dashboard sections that appear in the permissions matrix. */
 const SECTIONS = ['Дашборд', 'Задачи', 'Проекты', 'База знаний', 'CRM', 'Заказы', 'Финансы', 'Чаты', 'Сервисы']
+
+/** Column headers — role display names used as DB keys. */
 const ROLES_SHORT = ['Дизайн', 'Разработка', 'Продажи', 'Чат/SEO']
 
 const PERM_LABEL = ['—', 'Просмотр', 'Полный']
 const PERM_TONE: Record<number, 'mute' | 'accent' | 'ok'> = { 0: 'mute', 1: 'accent', 2: 'ok' }
 
+/** Default permissions — shown while DB loads and used as seed values in migration 0006. */
 const DEFAULT_PERMS: Record<string, number[]> = {
   'Дизайн':     [2, 2, 2, 2, 0, 1, 0, 2, 1],
   'Разработка': [2, 2, 2, 2, 0, 1, 0, 2, 2],
@@ -171,16 +177,60 @@ function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: (
 }
 
 export function ManagementPanel({ employees }: Props) {
-  const [showInvite, setShowInvite] = useState(false)
-  const [list, setList] = useState<Employee[]>(employees)
-  const [perms, setPerms] = useState(DEFAULT_PERMS)
+  const supabase  = createClient()
+  const addToast  = useUIStore(s => s.addToast)
+  const [showInvite,    setShowInvite]    = useState(false)
+  const [list,          setList]          = useState<Employee[]>(employees)
+  const [perms,         setPerms]         = useState(DEFAULT_PERMS)
+  const [permsLoading,  setPermsLoading]  = useState(true)
 
-  const cyclePermission = (role: string, sectionIdx: number) => {
-    setPerms(prev => {
-      const arr  = [...(prev[role] ?? [])]
-      arr[sectionIdx] = ((arr[sectionIdx] ?? 0) + 1) % 3
-      return { ...prev, [role]: arr }
+  // Load persisted permissions on mount; fall back to DEFAULT_PERMS if DB is empty.
+  useEffect(() => {
+    supabase
+      .from('role_permissions')
+      .select('role, section, level')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const loaded: Record<string, number[]> = {}
+          for (const r of ROLES_SHORT) {
+            loaded[r] = [...(DEFAULT_PERMS[r] ?? Array(SECTIONS.length).fill(0))]
+          }
+          for (const row of data) {
+            const si = SECTIONS.indexOf(row.section)
+            if (si >= 0 && loaded[row.role]) {
+              loaded[row.role][si] = row.level
+            }
+          }
+          setPerms(loaded)
+        }
+        setPermsLoading(false)
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  /** Cycle a cell's permission level (0→1→2→0) and persist to DB with rollback on error. */
+  const cyclePermission = async (role: string, sectionIdx: number) => {
+    const prev = perms[role]?.[sectionIdx] ?? 0
+    const next = (prev + 1) % 3
+
+    setPerms(p => {
+      const arr = [...(p[role] ?? [])]
+      arr[sectionIdx] = next
+      return { ...p, [role]: arr }
     })
+
+    const { error } = await supabase
+      .from('role_permissions')
+      .upsert({ role, section: SECTIONS[sectionIdx], level: next, updated_at: new Date().toISOString() })
+
+    if (error) {
+      setPerms(p => {
+        const arr = [...(p[role] ?? [])]
+        arr[sectionIdx] = prev
+        return { ...p, [role]: arr }
+      })
+      addToast('Ошибка', 'Не удалось сохранить права доступа', 'err')
+    }
   }
 
   return (
@@ -217,7 +267,9 @@ export function ManagementPanel({ employees }: Props) {
         <div className="xl:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[17px] font-semibold tracking-tight">Матрица доступов</h3>
-            <span className="text-[11px] text-mute2">Нажмите ячейку для изменения</span>
+            <span className="text-[11px] text-mute2">
+              {permsLoading ? 'Загрузка…' : 'Нажмите ячейку для изменения'}
+            </span>
           </div>
           <div className="card overflow-x-auto">
             <table className="w-full min-w-[600px]">
@@ -239,7 +291,8 @@ export function ManagementPanel({ employees }: Props) {
                         <td key={r} className="px-3 py-3 text-center">
                           <button
                             onClick={() => cyclePermission(r, si)}
-                            className="inline-flex hover:scale-105 active:scale-95 transition-transform"
+                            disabled={permsLoading}
+                            className="inline-flex hover:scale-105 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Нажмите для изменения"
                           >
                             <Tag tone={PERM_TONE[val]}>{PERM_LABEL[val]}</Tag>

@@ -17,20 +17,21 @@ export default async function ProjectsPage() {
     supabase.from('tasks').select('project_id, assignee_id'),
   ])
 
+  type TaskMeta    = { project_id: string | null; assignee_id: string | null }
+  type ProjectMeta = { id: string; name: string; emoji?: string; color: string; status: string; progress: number; description?: string }
+
   // Count tasks and distinct team members per project.
   const taskCounts: Record<string, number> = {}
   const teams: Record<string, Set<string>> = {}
-  for (const t of tasks ?? []) {
-    const pid = (t as any).project_id
-    if (!pid) continue
-    taskCounts[pid] = (taskCounts[pid] ?? 0) + 1
-    const aid = (t as any).assignee_id
-    if (aid) {
-      ;(teams[pid] ??= new Set()).add(aid)
+  for (const t of (tasks ?? []) as TaskMeta[]) {
+    if (!t.project_id) continue
+    taskCounts[t.project_id] = (taskCounts[t.project_id] ?? 0) + 1
+    if (t.assignee_id) {
+      ;(teams[t.project_id] ??= new Set()).add(t.assignee_id)
     }
   }
 
-  const enriched = (projects ?? []).map((p: any) => ({
+  const enriched = ((projects ?? []) as ProjectMeta[]).map(p => ({
     ...p,
     tasks: taskCounts[p.id] ?? 0,
     team: teams[p.id]?.size ?? 0,
