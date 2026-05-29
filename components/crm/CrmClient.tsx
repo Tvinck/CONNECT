@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, X, Loader2 } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
 import { Avatar } from '@/components/ui/Avatar'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { fmtRub, getInitials, colorFor, timeAgo } from '@/lib/utils'
 import type { ClientStatus } from '@/types'
@@ -68,74 +69,68 @@ function AddClientModal({ managers, onClose, onCreated }: { managers: ManagerOpt
     onClose()
   }
 
+  const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+  const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
+  const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[460px] shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
-          <h2 className="text-[16px] font-bold tracking-tight">Новый клиент</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
-            <X size={16} />
-          </button>
-        </div>
-        <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
-          <div>
-            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Имя клиента *</label>
-            <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="Анна Сергеева"
-              className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Email</label>
-              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="anna@mail.ru"
-                className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
-            </div>
-            <div>
-              <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Телефон</label>
-              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+7 900 …"
-                className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Источник</label>
-              <input value={source} onChange={e => setSource(e.target.value)} placeholder="WB / Ozon / …"
-                className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
-            </div>
-            <div>
-              <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Оборот, ₽</label>
-              <input value={spent} onChange={e => setSpent(e.target.value.replace(/[^0-9]/g, ''))} placeholder="0" inputMode="numeric"
-                className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Статус</label>
-              <select value={status} onChange={e => setStatus(e.target.value as ClientStatus)}
-                className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
-                {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Менеджер</label>
-              <select value={managerId} onChange={e => setManagerId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
-                <option value="">Не назначен</option>
-                {managers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-              </select>
-            </div>
-          </div>
-          {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
-        </div>
-        <div className="flex gap-3 px-6 py-4 border-t border-line">
+    <Modal
+      title="Новый клиент"
+      onClose={onClose}
+      maxWidth="max-w-[460px]"
+      footer={
+        <>
           <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
           <Button className="flex-1" onClick={create} disabled={saving}>
-            {saving ? <Loader2 size={15} className="animate-spin" /> : null}
-            Добавить
+            {saving && <Loader2 size={15} className="animate-spin" />} Добавить
           </Button>
+        </>
+      }
+    >
+      <div className="space-y-4 max-h-[55vh] overflow-y-auto">
+        <div>
+          <label className={LABEL}>Имя клиента *</label>
+          <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="Анна Сергеева" className={FIELD} />
         </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={LABEL}>Email</label>
+            <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="anna@mail.ru" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Телефон</label>
+            <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" placeholder="+7 900 …" className={FIELD} />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={LABEL}>Источник</label>
+            <input value={source} onChange={e => setSource(e.target.value)} placeholder="WB / Ozon / …" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Оборот, ₽</label>
+            <input value={spent} onChange={e => setSpent(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder="0" inputMode="numeric" className={FIELD} />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={LABEL}>Статус</label>
+            <select value={status} onChange={e => setStatus(e.target.value as ClientStatus)} className={SELECT}>
+              {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Менеджер</label>
+            <select value={managerId} onChange={e => setManagerId(e.target.value)} className={SELECT}>
+              <option value="">Не назначен</option>
+              {managers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+            </select>
+          </div>
+        </div>
+        {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
       </div>
-    </div>
+    </Modal>
   )
 }
 

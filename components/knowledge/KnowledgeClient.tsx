@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search, Plus, Clock, Eye, X, Loader2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
+import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { getInitials, colorFor, timeAgo } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth'
@@ -34,15 +35,25 @@ function readTime(text: string) {
 }
 
 function ArticleView({ article, onClose }: { article: Article; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
+  }, [onClose])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[680px] max-h-[85vh] shadow-2xl overflow-hidden flex flex-col">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} aria-hidden="true" />
+      <div role="dialog" aria-modal="true" aria-label={article.title}
+        className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[680px] max-h-[85vh] shadow-2xl overflow-hidden flex flex-col animate-modal-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
           <button onClick={onClose} className="flex items-center gap-2 text-[13px] text-mute hover:text-white transition-all">
             <ArrowLeft size={15} /> Назад
           </button>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
+          <button onClick={onClose} aria-label="Закрыть"
+            className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
             <X size={16} />
           </button>
         </div>
@@ -104,42 +115,38 @@ function CreateArticleModal({ onClose, onCreated }: { onClose: () => void; onCre
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[680px] max-h-[85vh] shadow-2xl overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
-          <h2 className="text-[16px] font-bold tracking-tight">Новая статья</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
-            <X size={16} />
-          </button>
-        </div>
-        <div className="px-6 py-5 space-y-4 overflow-y-auto">
-          <input value={title} onChange={e => setTitle(e.target.value)} autoFocus placeholder="Заголовок статьи"
-            className="w-full text-[22px] font-bold tracking-tight bg-transparent outline-none placeholder:text-mute2" />
-          <div className="flex items-center gap-2 flex-wrap">
-            {CATEGORIES.map(c => (
-              <button key={c} onClick={() => setCategory(c)}
-                className={`inline-flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium border transition-all ${
-                  category === c ? 'border-accent/50 bg-accent/10 text-white' : 'border-line text-mute hover:text-white hover:border-line2'
-                }`}>
-                {meta(c).emoji} {c}
-              </button>
-            ))}
-          </div>
-          <textarea value={content} onChange={e => setContent(e.target.value)} rows={12}
-            placeholder="Текст статьи… Опишите процесс, инструкцию или ответ на частый вопрос."
-            className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[14px] leading-relaxed placeholder:text-mute2 transition-all resize-none" />
-          {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
-        </div>
-        <div className="flex gap-3 px-6 py-4 border-t border-line shrink-0">
+    <Modal
+      title="Новая статья"
+      onClose={onClose}
+      maxWidth="max-w-[680px]"
+      footer={
+        <>
           <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
           <Button className="flex-1" onClick={create} disabled={saving}>
-            {saving ? <Loader2 size={15} className="animate-spin" /> : null}
-            Опубликовать
+            {saving && <Loader2 size={15} className="animate-spin" />} Опубликовать
           </Button>
+        </>
+      }
+    >
+      <div className="space-y-4 max-h-[65vh] overflow-y-auto">
+        <input value={title} onChange={e => setTitle(e.target.value)} autoFocus placeholder="Заголовок статьи"
+          className="w-full text-[22px] font-bold tracking-tight bg-transparent outline-none placeholder:text-mute2" />
+        <div className="flex items-center gap-2 flex-wrap">
+          {CATEGORIES.map(c => (
+            <button key={c} onClick={() => setCategory(c)}
+              className={`inline-flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium border transition-all ${
+                category === c ? 'border-accent/50 bg-accent/10 text-white' : 'border-line text-mute hover:text-white hover:border-line2'
+              }`}>
+              {meta(c).emoji} {c}
+            </button>
+          ))}
         </div>
+        <textarea value={content} onChange={e => setContent(e.target.value)} rows={12}
+          placeholder="Текст статьи… Опишите процесс, инструкцию или ответ на частый вопрос."
+          className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[14px] leading-relaxed placeholder:text-mute2 transition-all resize-none" />
+        {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
       </div>
-    </div>
+    </Modal>
   )
 }
 
