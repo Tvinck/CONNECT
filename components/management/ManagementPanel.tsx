@@ -1,3 +1,19 @@
+/**
+ * components/management/ManagementPanel.tsx — CEO-only team management view.
+ *
+ * Two panels:
+ *  1. Employee list — live list of team members with avatar, email, and role badge.
+ *     New employees can be added via InviteModal which calls POST /api/invite.
+ *  2. Access matrix — per-role permission table (View / Full / None).
+ *     Clicking a cell cycles the permission level; state is local/demo only
+ *     (not persisted to the DB in this version).
+ *
+ * Sub-components:
+ *  - InviteModal — form to create a new employee account.
+ *    On success shows the generated credentials in a monospace card
+ *    so the CEO can copy them for the new hire.
+ */
+
 'use client'
 
 import { useState } from 'react'

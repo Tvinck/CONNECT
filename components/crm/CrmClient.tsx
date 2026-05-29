@@ -1,3 +1,18 @@
+/**
+ * components/crm/CrmClient.tsx — Client-side CRM view.
+ *
+ * Shows a funnel summary (Лиды / Активные / VIP counts) and a full client table
+ * with status tags, manager assignment, spend, and timestamps.
+ *
+ * Sub-components:
+ *  - AddClientModal — form for creating a new client record with status,
+ *    manager, email, phone, source, and turnover fields.
+ *
+ * Data flow:
+ *  - `initialClients` and `managers` are fetched server-side and passed as props.
+ *  - A newly created client is prepended to the local state (no reload needed).
+ */
+
 'use client'
 
 import { useState } from 'react'

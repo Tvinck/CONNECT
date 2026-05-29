@@ -1,11 +1,30 @@
+/**
+ * components/ui/Button.tsx — Base button component.
+ *
+ * Three visual variants:
+ *  - primary  — filled blue with glow; used for the main action in a form/modal.
+ *  - ghost    — transparent with subtle border; used for secondary actions.
+ *  - outline  — transparent with brighter border; used in toolbars/filters.
+ *
+ * Three sizes: sm (h-8), md (h-9, default), lg (h-11).
+ *
+ * All standard <button> props (onClick, disabled, type, etc.) pass through.
+ * Extra Tailwind classes can be added via `className`.
+ */
+
 import { cn } from '@/lib/utils'
 import { ButtonHTMLAttributes } from 'react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Visual style. Default: 'primary'. */
   variant?: 'primary' | 'ghost' | 'outline'
+  /** Height/padding tier. Default: 'md'. */
   size?: 'sm' | 'md' | 'lg'
 }
 
+/**
+ * Styled button wrapper. Renders a <button> element with consistent design tokens.
+ */
 export function Button({
   variant = 'primary',
   size = 'md',

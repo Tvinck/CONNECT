@@ -1,13 +1,34 @@
+/**
+ * components/ui/Progress.tsx — Animated horizontal progress bar.
+ *
+ * Renders a track filled to `value` percent with a gradient that glows
+ * in the fill colour. The fill animates in via the `progress-fill` CSS class
+ * (defined in globals.css: `transform-origin: left; animation: fillin 900ms`).
+ *
+ * Used in:
+ *  - Project cards (completion %)
+ *  - Profile page (XP progress to next level)
+ *  - Achievement cards
+ */
+
 import { shadeColor } from '@/lib/utils'
 
 interface ProgressProps {
+  /** Fill percentage, 0–100. Values outside this range are clamped. */
   value: number
+  /** Base hex colour for the gradient. Default: accent blue (#1472F5). */
   color?: string
+  /** Track height in pixels. Default: 6. */
   height?: number
+  /** Show the numeric percentage label on the right. Default: false. */
   showValue?: boolean
+  /** Optional text label displayed on the left above the bar. */
   label?: string
 }
 
+/**
+ * Renders an animated progress bar with optional label and value display.
+ */
 export function Progress({
   value,
   color = '#1472F5',

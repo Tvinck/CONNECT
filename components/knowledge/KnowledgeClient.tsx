@@ -1,3 +1,21 @@
+/**
+ * components/knowledge/KnowledgeClient.tsx — Interactive knowledge base page.
+ *
+ * Renders article category chips, a search input, and an article grid.
+ * Handles opening/reading individual articles and creating new ones.
+ *
+ * Sub-components:
+ *  - ArticleView    — full-screen overlay for reading an article.
+ *                     Increments the view counter in the DB on open (fire-and-forget).
+ *  - CreateArticleModal — form for writing a new article (title, category, content).
+ *                         Calculates read_time automatically from word count.
+ *
+ * Data flow:
+ *  - `initialArticles` are fetched on the server and passed in as a prop.
+ *  - After a new article is created it is prepended to the local state list
+ *    (no full page reload required).
+ */
+
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'

@@ -1,3 +1,16 @@
+/**
+ * components/layout/Header.tsx — Top navigation bar rendered on every dashboard page.
+ *
+ * Responsibilities:
+ *  - Page title and optional subtitle (passed as props by each page).
+ *  - Hamburger button that opens the mobile sidebar drawer.
+ *  - Global search: debounced 250 ms, queries users / tasks / projects in parallel.
+ *    Grouped dropdown navigates to the relevant section on click.
+ *  - Bell button with unread notification badge, opens a dropdown list.
+ *    Supports per-notification mark-as-read and "mark all read".
+ *  - Avatar link to the profile page, shows real online/busy/offline status dot.
+ */
+
 'use client'
 
 import { useEffect, useRef, useState } from 'react'

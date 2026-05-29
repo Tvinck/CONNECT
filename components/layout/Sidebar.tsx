@@ -1,3 +1,18 @@
+/**
+ * components/layout/Sidebar.tsx — Left-side navigation sidebar.
+ *
+ * Responsibilities:
+ *  - Full-height nav with all section links (filters CEO-only items by role).
+ *  - Badge counts on Tasks and Chats passed in as props from the server layout.
+ *  - User profile chip at the top showing first name, role pill, and status dot.
+ *  - Demo role-switcher (RoleSwitcher) — lets any user preview the UI from
+ *    another role's perspective without touching the database.
+ *  - Mobile: rendered as a fixed drawer (z-40), opened by the Header hamburger.
+ *    Semi-transparent backdrop closes it on click.
+ *  - Logout button signs out via Supabase, clears the auth store, and redirects
+ *    to /login.
+ */
+
 'use client'
 
 import Link from 'next/link'

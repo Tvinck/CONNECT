@@ -1,6 +1,24 @@
+/**
+ * lib/supabase/server.ts — Server-side Supabase client factory.
+ *
+ * Uses `@supabase/ssr`'s `createServerClient` which reads and writes the session
+ * from Next.js cookies via the `cookies()` API.
+ *
+ * Use from:
+ *  - Server components (layouts, pages)
+ *  - API route handlers
+ *  - Server actions
+ *
+ * The `set` and `remove` cookie handlers are wrapped in try/catch because
+ * Server Components receive a read-only cookie store — mutation calls from
+ * those contexts are silently ignored. Route handlers and middleware can write
+ * cookies normally.
+ */
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+/** Returns a Supabase client that reads the auth session from server cookies. */
 export function createClient() {
   const cookieStore = cookies()
 
@@ -13,7 +31,7 @@ export function createClient() {
           return cookieStore.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          // Called from Server Components where cookies are read-only — ignore.
+          // Server Components have a read-only cookie store — ignore write failures.
           try {
             cookieStore.set({ name, value, ...options })
           } catch {}

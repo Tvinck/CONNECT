@@ -1,13 +1,29 @@
+/**
+ * components/ui/Tag.tsx — Inline status/label badge.
+ *
+ * Used throughout the app to display:
+ *  - Task priorities and statuses
+ *  - Client statuses (Лид, Активный, VIP, Ушёл)
+ *  - Permission levels in the access matrix
+ *  - User roles
+ *
+ * The `tone` prop maps to a colour set defined by Tailwind design tokens:
+ *  accent → blue, ok → green, warn → amber, err → red, gold → yellow, mute → grey, cyan → cyan
+ */
+
 import { cn } from '@/lib/utils'
 
 type Tone = 'accent' | 'cyan' | 'ok' | 'warn' | 'err' | 'gold' | 'mute'
 
 interface TagProps {
+  /** Colour tone. Default: 'mute'. */
   tone?: Tone
   children: React.ReactNode
+  /** Extra Tailwind classes. */
   className?: string
 }
 
+/** Tailwind class strings for each tone. */
 const tones: Record<Tone, string> = {
   accent: 'bg-accent/15 text-accent border-accent/30',
   cyan:   'bg-cyan/15 text-cyan border-cyan/30',
@@ -18,6 +34,9 @@ const tones: Record<Tone, string> = {
   mute:   'bg-white/[0.05] text-mute border-line',
 }
 
+/**
+ * Renders a small pill-shaped badge with a coloured background/border/text.
+ */
 export function Tag({ tone = 'mute', children, className }: TagProps) {
   return (
     <span

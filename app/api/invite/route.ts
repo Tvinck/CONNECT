@@ -1,9 +1,28 @@
+/**
+ * POST /api/invite
+ *
+ * Creates a new employee account. Only users with the 'ceo' role may call this.
+ *
+ * Flow:
+ *  1. Verify the caller is a logged-in CEO.
+ *  2. Validate and sanitise the request body.
+ *  3. Create an auth user via the Supabase Admin API (service_role — bypasses RLS).
+ *  4. Upsert the public `users` profile row with the supplied metadata.
+ *  5. On profile error, roll back the auth user to prevent orphaned accounts.
+ *
+ * Returns: { ok: true, id: string }
+ */
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 
+/** Whitelist of roles that can be assigned when inviting. */
 const VALID_ROLES: UserRole[] = ['ceo', 'design', 'dev', 'sales', 'support']
+
+/** Simple RFC-5322 subset — catches obvious typos without the 6 kB regex. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(req: Request) {
   // 1. Authorize: only a logged-in CEO may invite.
@@ -27,9 +46,9 @@ export async function POST(req: Request) {
   const position = String(body.position ?? '').trim()
   const role     = (VALID_ROLES.includes(body.role) ? body.role : 'dev') as UserRole
 
-  if (!fullName)            return NextResponse.json({ error: 'Укажите имя и фамилию' }, { status: 400 })
-  if (!email.includes('@')) return NextResponse.json({ error: 'Некорректный email' }, { status: 400 })
-  if (password.length < 6)  return NextResponse.json({ error: 'Пароль минимум 6 символов' }, { status: 400 })
+  if (!fullName)              return NextResponse.json({ error: 'Укажите имя и фамилию' }, { status: 400 })
+  if (!EMAIL_RE.test(email))  return NextResponse.json({ error: 'Некорректный email' }, { status: 400 })
+  if (password.length < 6)    return NextResponse.json({ error: 'Пароль минимум 6 символов' }, { status: 400 })
 
   // 3. Create the auth user via the admin API (service_role).
   const admin = createAdminClient()
