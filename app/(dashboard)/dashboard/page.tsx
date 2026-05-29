@@ -1,53 +1,94 @@
+import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
+import { createClient } from '@/lib/supabase/server'
+import { getCurrentProfile } from '@/lib/auth'
 import {
-  Wallet, CheckSquare, CheckCircle, Coins, TrendingUp, Flame,
+  fmtRub, fmtNum, getInitials, colorFor, levelInfo, timeAgo, dueLabel,
+  PRIORITY_COLOR,
+} from '@/lib/utils'
+import {
+  Wallet, CheckSquare, CheckCircle, Coins, Flame,
   ArrowRight, Clock, ChevronRight, Bolt, Gift,
 } from 'lucide-react'
-
-const PROJECTS = [
-  { id: 'podari', name: 'ПодариМомент', emoji: '🎁', color: '#1472F5', progress: 80,  status: 'Активный' },
-  { id: 'pixel',  name: 'PIXEL',        emoji: '✨', color: '#FF4D9D', progress: 35,  status: 'В разработке' },
-  { id: 'bazzar', name: 'BAZZAR MARKET',emoji: '🛒', color: '#22C55E', progress: 12,  status: 'Планирование' },
-]
-
-const TASKS_TODAY = [
-  { id: 't1', title: 'Доделать оплату Suno API',  project: 'podari', due: 'Срочно · сегодня', priority: '#EF4444',  emoji: '🎁', color: '#1472F5', projectName: 'ПодариМомент' },
-  { id: 't2', title: 'Дизайн карточки заказа',    project: 'podari', due: 'Завтра',           priority: '#F59E0B',  emoji: '🎁', color: '#1472F5', projectName: 'ПодариМомент' },
-  { id: 't3', title: 'Согласовать тариф PIXEL',   project: 'pixel',  due: 'К пятнице',        priority: '#1472F5',  emoji: '✨', color: '#FF4D9D', projectName: 'PIXEL' },
-  { id: 't4', title: 'Подготовить пост в TG',     project: 'bazzar', due: 'След. неделя',     priority: '#8B92B4',  emoji: '🛒', color: '#22C55E', projectName: 'BAZZAR MARKET' },
-]
-
-const ACTIVITY = [
-  { who: 'Иван',  initials: 'ИП', color: '#1472F5', text: 'закрыл задачу «Интеграция Stripe»', when: '5 мин назад' },
-  { who: 'Маша',  initials: 'МЛ', color: '#FF4D9D', text: 'оставила комментарий в PIXEL',       when: '21 мин назад' },
-  { who: 'Дима',  initials: 'ДО', color: '#22C55E', text: 'создал задачу «Аналитика воронки»',  when: '48 мин назад' },
-  { who: 'Соня',  initials: 'СК', color: '#F59E0B', text: 'получила ачивку «Десятка»',          when: '2 ч назад' },
-]
-
-const NOTIFICATIONS = [
-  { kind: 'task',  title: 'Новая задача от Маши',       sub: 'Дизайн карточки заказа · ПодариМомент', when: '3 мин' },
-  { kind: 'ach',   title: 'Получена ачивка «Десятка»',  sub: 'Закрыто 10 задач подряд · +25 баллов',  when: '1 ч' },
-  { kind: 'alert', title: 'Срочно: оплата Suno API',    sub: 'Дедлайн сегодня в 18:00',               when: '2 ч' },
-]
 
 const NOTIF_TONE: Record<string, { bg: string; text: string }> = {
   task:  { bg: 'bg-accent/15', text: 'text-accent' },
   ach:   { bg: 'bg-gold/15',   text: 'text-gold' },
   alert: { bg: 'bg-err/15',    text: 'text-err' },
+  info:  { bg: 'bg-accent/15', text: 'text-accent' },
 }
 
-export default function DashboardPage() {
-  const points = 340
-  const nextLevel = 500
+export default async function DashboardPage() {
+  const profile = await getCurrentProfile()
+  if (!profile) redirect('/login')
+
+  const supabase = createClient()
+
+  const [
+    activeCountRes,
+    urgentCountRes,
+    doneCountRes,
+    clientsRes,
+    myTasksRes,
+    activityRes,
+    projectsRes,
+    notifRes,
+  ] = await Promise.all([
+    // My open tasks
+    supabase.from('tasks').select('id', { count: 'exact', head: true })
+      .eq('assignee_id', profile.id).neq('status', 'done'),
+    // My urgent open tasks
+    supabase.from('tasks').select('id', { count: 'exact', head: true })
+      .eq('assignee_id', profile.id).neq('status', 'done').eq('priority', 'urgent'),
+    // My closed tasks
+    supabase.from('tasks').select('id', { count: 'exact', head: true })
+      .eq('assignee_id', profile.id).eq('status', 'done'),
+    // Client turnover
+    supabase.from('clients').select('total_spent, status'),
+    // My tasks for the "today" list
+    supabase.from('tasks')
+      .select('id, title, due_date, priority, status, project:projects(name, color, emoji)')
+      .eq('assignee_id', profile.id).neq('status', 'done')
+      .order('due_date', { ascending: true, nullsFirst: false }).limit(5),
+    // Recent team activity (latest created tasks)
+    supabase.from('tasks')
+      .select('id, title, status, created_at, creator:users!tasks_creator_id_fkey(full_name)')
+      .order('created_at', { ascending: false }).limit(5),
+    // Projects progress
+    supabase.from('projects').select('*').order('progress', { ascending: false }),
+    // My unread notifications
+    supabase.from('notifications').select('*')
+      .eq('user_id', profile.id).order('created_at', { ascending: false }).limit(5),
+  ])
+
+  const activeCount = activeCountRes.count ?? 0
+  const urgentCount = urgentCountRes.count ?? 0
+  const doneCount = doneCountRes.count ?? 0
+
+  const clients = (clientsRes.data ?? []) as { total_spent: number; status: string }[]
+  const turnover = clients.reduce((s, c) => s + Number(c.total_spent || 0), 0)
+  const payingClients = clients.filter((c) => c.status === 'active' || c.status === 'vip').length
+
+  const myTasks = (myTasksRes.data ?? []) as any[]
+  const activity = (activityRes.data ?? []) as any[]
+  const projects = (projectsRes.data ?? []) as any[]
+  const notifications = (notifRes.data ?? []) as any[]
+
+  const lvl = levelInfo(profile.points)
+  const firstName = profile.full_name?.split(' ')[0] ?? 'друг'
 
   return (
     <PageContainer>
       <Header
-        title="С возвращением, Артём! 👋"
-        subtitle="Вторник, хороший день для дел. У тебя 5 задач, 2 горят 🔥"
+        title={`С возвращением, ${firstName}! 👋`}
+        subtitle={
+          activeCount > 0
+            ? `У тебя ${activeCount} ${activeCount === 1 ? 'задача' : 'задач'}${urgentCount ? `, ${urgentCount} горят 🔥` : ''}`
+            : 'Все задачи закрыты — хорошего дня ✨'
+        }
       />
 
       {/* Stat cards */}
@@ -55,45 +96,49 @@ export default function DashboardPage() {
         <StatCard
           icon={<Wallet size={18} />}
           iconTone="bg-accent/15 text-accent"
-          label="Выручка сегодня"
-          value="12 450 ₽"
-          sub={<span className="text-ok inline-flex items-center gap-1 text-[11px]"><TrendingUp size={12} /> +18%</span>}
-          subBg="bg-ok/10 border-ok/20"
+          label="Оборот клиентов"
+          value={fmtRub(turnover)}
+          sub={<span className="text-mute text-[11px]">{payingClients} платящих</span>}
+          subBg="bg-white/[0.04] border-line"
         />
         <StatCard
           icon={<CheckSquare size={18} />}
           iconTone="bg-cyan/15 text-cyan"
           label="Активных задач"
-          value="5"
-          sub={<span className="text-err inline-flex items-center gap-1 text-[11px]"><Flame size={12} /> 2 срочных</span>}
-          subBg="bg-err/10 border-err/20"
-        >
-          <div className="flex items-center gap-1.5 mt-1">
-            {[1,2,3,4,5].map(i => (
-              <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= 2 ? 'bg-err' : i === 3 ? 'bg-warn' : 'bg-accent/60'}`} />
-            ))}
-          </div>
-        </StatCard>
+          value={fmtNum(activeCount)}
+          sub={
+            urgentCount > 0 ? (
+              <span className="text-err inline-flex items-center gap-1 text-[11px]"><Flame size={12} /> {urgentCount} срочных</span>
+            ) : (
+              <span className="text-ok text-[11px]">нет срочных</span>
+            )
+          }
+          subBg={urgentCount > 0 ? 'bg-err/10 border-err/20' : 'bg-ok/10 border-ok/20'}
+        />
         <StatCard
           icon={<CheckCircle size={18} />}
           iconTone="bg-ok/15 text-ok"
-          label="Закрыто за неделю"
-          value="23"
-          sub={<span className="text-ok inline-flex items-center gap-1 text-[11px]"><TrendingUp size={12} /> +4</span>}
-          subBg="bg-ok/10 border-ok/20"
+          label="Закрыто задач"
+          value={fmtNum(doneCount)}
         />
         <StatCard
           icon={<Coins size={18} />}
           iconTone="bg-gold/15 text-gold"
           label="Баллов накоплено"
-          value="340"
-          sub={<span className="text-mute text-[11px]">до Старший</span>}
+          value={fmtNum(profile.points)}
+          sub={<span className="text-mute text-[11px]">{lvl.current.name}</span>}
           subBg="bg-white/[0.04] border-line"
         >
-          <Progress value={(points / nextLevel) * 100} color="#FFC833" height={5} />
+          <Progress value={lvl.progress} color="#FFC833" height={5} />
           <div className="flex items-center justify-between mt-2 text-[11px] text-mute2 font-mono">
-            <span>{points} / {nextLevel}</span>
-            <span>{nextLevel - points} осталось</span>
+            {lvl.next ? (
+              <>
+                <span>{profile.points} / {lvl.next.min}</span>
+                <span>{lvl.remaining} до «{lvl.next.name}»</span>
+              </>
+            ) : (
+              <span>Максимальный уровень 👑</span>
+            )}
           </div>
         </StatCard>
       </div>
@@ -103,35 +148,45 @@ export default function DashboardPage() {
         <div className="xl:col-span-2 card p-6">
           <div className="flex items-end justify-between mb-4">
             <div>
-              <h3 className="text-[17px] font-semibold tracking-tight">Мои задачи на сегодня</h3>
-              <p className="text-[12.5px] text-mute mt-0.5">4 задачи, ближайший дедлайн через 6 часов</p>
+              <h3 className="text-[17px] font-semibold tracking-tight">Мои задачи</h3>
+              <p className="text-[12.5px] text-mute mt-0.5">
+                {myTasks.length > 0 ? `${activeCount} активных, ближайший срок сверху` : 'Открытых задач нет'}
+              </p>
             </div>
             <a href="/tasks" className="text-[12.5px] text-mute hover:text-white inline-flex items-center gap-1">
               Все задачи <ArrowRight size={13} />
             </a>
           </div>
           <div className="space-y-2">
-            {TASKS_TODAY.map(t => (
-              <div key={t.id} className="group flex items-center gap-4 px-4 py-3.5 rounded-xl border border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer transition-all">
-                <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-[15px]"
-                     style={{ background: `${t.color}22`, color: t.color }}>
-                  {t.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[14px] font-medium tracking-tight truncate group-hover:text-white">{t.title}</div>
-                  <div className="text-[11.5px] text-mute mt-0.5 flex items-center gap-2.5">
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: t.color }}/>
-                      {t.projectName}
-                    </span>
-                    <span className="text-mute2">·</span>
-                    <span className="inline-flex items-center gap-1"><Clock size={11}/> {t.due}</span>
+            {myTasks.length === 0 && (
+              <div className="text-center py-10 text-mute text-[13px]">Нет открытых задач 🎉</div>
+            )}
+            {myTasks.map((t) => {
+              const project = Array.isArray(t.project) ? t.project[0] : t.project
+              const color = project?.color ?? '#1472F5'
+              const prio = PRIORITY_COLOR[t.priority] ?? '#8B92B4'
+              return (
+                <div key={t.id} className="group flex items-center gap-4 px-4 py-3.5 rounded-xl border border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer transition-all">
+                  <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-[15px]"
+                       style={{ background: `${color}22`, color }}>
+                    {project?.emoji ?? '📌'}
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-medium tracking-tight truncate group-hover:text-white">{t.title}</div>
+                    <div className="text-[11.5px] text-mute mt-0.5 flex items-center gap-2.5">
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+                        {project?.name ?? 'Без проекта'}
+                      </span>
+                      <span className="text-mute2">·</span>
+                      <span className="inline-flex items-center gap-1"><Clock size={11} /> {dueLabel(t.due_date)}</span>
+                    </div>
+                  </div>
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: prio, boxShadow: `0 0 0 3px ${prio}30` }} />
+                  <ChevronRight size={15} className="text-mute2 group-hover:text-mute" />
                 </div>
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: t.priority, boxShadow: `0 0 0 3px ${t.priority}30` }} />
-                <ChevronRight size={15} className="text-mute2 group-hover:text-mute" />
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
@@ -139,27 +194,35 @@ export default function DashboardPage() {
           <div className="flex items-end justify-between mb-4">
             <div>
               <h3 className="text-[17px] font-semibold tracking-tight">Активность команды</h3>
-              <p className="text-[12.5px] text-mute mt-0.5">Последние 24 часа</p>
+              <p className="text-[12.5px] text-mute mt-0.5">Последние задачи</p>
             </div>
           </div>
           <div className="relative pl-5">
             <div className="absolute left-[7px] top-1 bottom-1 w-px bg-line" />
             <div className="space-y-5">
-              {ACTIVITY.map((a, i) => (
-                <div key={i} className="relative">
-                  <span className="absolute -left-[18px] top-1 w-3 h-3 rounded-full ring-4 ring-card" style={{ background: a.color }} />
-                  <div className="flex items-start gap-2.5">
-                    <Avatar initials={a.initials} color={a.color} size={26} className="shrink-0 -ml-0.5" />
-                    <div className="min-w-0">
-                      <div className="text-[12.5px] leading-snug">
-                        <span className="font-semibold">{a.who}</span>{' '}
-                        <span className="text-mute">{a.text}</span>
+              {activity.length === 0 && (
+                <div className="text-mute text-[13px] py-4">Пока пусто</div>
+              )}
+              {activity.map((a) => {
+                const creator = Array.isArray(a.creator) ? a.creator[0] : a.creator
+                const name = creator?.full_name ?? 'Кто-то'
+                const color = colorFor(name)
+                return (
+                  <div key={a.id} className="relative">
+                    <span className="absolute -left-[18px] top-1 w-3 h-3 rounded-full ring-4 ring-card" style={{ background: color }} />
+                    <div className="flex items-start gap-2.5">
+                      <Avatar initials={getInitials(name)} color={color} size={26} className="shrink-0 -ml-0.5" />
+                      <div className="min-w-0">
+                        <div className="text-[12.5px] leading-snug">
+                          <span className="font-semibold">{name.split(' ')[0]}</span>{' '}
+                          <span className="text-mute">создал задачу «{a.title}»</span>
+                        </div>
+                        <div className="text-[10.5px] text-mute2 mt-1 font-mono">{timeAgo(a.created_at)}</div>
                       </div>
-                      <div className="text-[10.5px] text-mute2 mt-1 font-mono">{a.when}</div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
@@ -178,15 +241,18 @@ export default function DashboardPage() {
             </a>
           </div>
           <div className="space-y-4">
-            {PROJECTS.map(p => (
+            {projects.length === 0 && (
+              <div className="text-mute text-[13px] py-4">Проектов пока нет</div>
+            )}
+            {projects.map((p) => (
               <div key={p.id}>
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-3">
                     <span className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-[14px]"
-                          style={{ background: `${p.color}22` }}>{p.emoji}</span>
+                          style={{ background: `${p.color}22` }}>{p.emoji ?? '📁'}</span>
                     <div>
                       <div className="text-[13.5px] font-semibold tracking-tight">{p.name}</div>
-                      <div className="text-[11px] text-mute">{p.status}</div>
+                      <div className="text-[11px] text-mute capitalize">{p.status}</div>
                     </div>
                   </div>
                   <div className="text-[18px] font-bold tabular-nums tracking-tight" style={{ color: p.color }}>{p.progress}%</div>
@@ -201,25 +267,31 @@ export default function DashboardPage() {
           <div className="flex items-end justify-between mb-4">
             <div>
               <h3 className="text-[17px] font-semibold tracking-tight">Уведомления</h3>
-              <p className="text-[12.5px] text-mute mt-0.5">3 непрочитанных</p>
+              <p className="text-[12.5px] text-mute mt-0.5">
+                {notifications.filter((n) => !n.is_read).length} непрочитанных
+              </p>
             </div>
             <button className="text-[12.5px] text-mute hover:text-white">Отметить всё</button>
           </div>
           <div className="space-y-3">
-            {NOTIFICATIONS.map((n, i) => {
-              const tone = NOTIF_TONE[n.kind]
+            {notifications.length === 0 && (
+              <div className="text-mute text-[13px] py-4">Новых уведомлений нет</div>
+            )}
+            {notifications.map((n) => {
+              const tone = NOTIF_TONE[n.type] ?? NOTIF_TONE.info
               return (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer transition-all">
+                <div key={n.id} className="flex items-start gap-3 p-3 rounded-xl border border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer transition-all">
                   <div className={`w-9 h-9 rounded-lg ${tone.bg} ${tone.text} inline-flex items-center justify-center shrink-0`}>
-                    {n.kind === 'task' && <CheckSquare size={16} />}
-                    {n.kind === 'ach' && <span className="text-base">🏆</span>}
-                    {n.kind === 'alert' && <Flame size={16} />}
+                    {n.type === 'task' && <CheckSquare size={16} />}
+                    {n.type === 'ach' && <span className="text-base">🏆</span>}
+                    {n.type === 'alert' && <Flame size={16} />}
+                    {(n.type === 'info' || !['task', 'ach', 'alert'].includes(n.type)) && <CheckSquare size={16} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-semibold tracking-tight">{n.title}</div>
-                    <div className="text-[11.5px] text-mute mt-0.5 line-clamp-2">{n.sub}</div>
+                    <div className="text-[11.5px] text-mute mt-0.5 line-clamp-2">{n.body}</div>
                   </div>
-                  <span className="text-[10.5px] text-mute2 font-mono shrink-0">{n.when}</span>
+                  <span className="text-[10.5px] text-mute2 font-mono shrink-0">{timeAgo(n.created_at)}</span>
                 </div>
               )
             })}
@@ -237,16 +309,18 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="text-[11px] uppercase tracking-[0.14em] text-mute2 font-semibold">Твой уровень</div>
-              <div className="text-[22px] font-bold tracking-tight">Специалист <span className="text-gold">⚡</span></div>
+              <div className="text-[22px] font-bold tracking-tight">{lvl.current.name} <span className="text-gold">⚡</span></div>
             </div>
           </div>
 
           <div className="min-w-0">
             <div className="flex items-baseline justify-between mb-2">
-              <div className="text-[12.5px] text-mute">До «Старший»</div>
-              <div className="text-[12.5px] font-mono text-mute"><span className="text-white font-semibold">{points}</span> / {nextLevel} баллов</div>
+              <div className="text-[12.5px] text-mute">{lvl.next ? `До «${lvl.next.name}»` : 'Максимальный уровень'}</div>
+              <div className="text-[12.5px] font-mono text-mute">
+                <span className="text-white font-semibold">{profile.points}</span>{lvl.next ? ` / ${lvl.next.min}` : ''} баллов
+              </div>
             </div>
-            <Progress value={(points / nextLevel) * 100} color="#FFC833" height={8} />
+            <Progress value={lvl.progress} color="#FFC833" height={8} />
             <div className="flex items-center justify-between mt-2 text-[10.5px] text-mute2 font-mono uppercase tracking-wider">
               <span>Специалист</span>
               <span>Старший</span>

@@ -5,7 +5,7 @@ import { Tag } from '@/components/ui/Tag'
 import { Shield, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentProfile } from '@/lib/auth'
 
 const EMPLOYEES = [
   { name: 'Маша Лебедева', initials: 'МЛ', color: '#FF4D9D', role: 'Дизайнер',  status: 'online',  email: 'masha@bazzar.group' },
@@ -30,16 +30,7 @@ const PERM_TONE: Record<number, 'mute' | 'accent' | 'ok'> = { 0: 'mute', 1: 'acc
 export default async function ManagementPage() {
   // Server-side authorization: this page is CEO-only. Hiding the nav link is
   // not enough — guard the route itself so a direct URL hit is rejected.
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user?.id ?? '')
-    .single()
-
+  const profile = await getCurrentProfile()
   if (profile?.role !== 'ceo') {
     redirect('/dashboard')
   }
