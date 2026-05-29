@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Plus, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Progress } from '@/components/ui/Progress'
@@ -13,6 +14,7 @@ import type { ProjectStatus } from '@/types'
 type ProjectRow = {
   id: string
   name: string
+  slug: string
   emoji: string | null
   color: string
   status: ProjectStatus
@@ -60,12 +62,12 @@ function CreateProjectModal({ onClose, onCreated }: { onClose: () => void; onCre
         progress,
         description: description.trim() || null,
       })
-      .select('id, name, emoji, color, status, progress, description')
+      .select('id, name, slug, emoji, color, status, progress, description')
       .single()
     setSaving(false)
     if (dbErr) { setError(dbErr.message); return }
     if (data) {
-      onCreated({ ...(data as any), tasks: 0, team: 0 })
+      onCreated({ ...(data as unknown as ProjectRow), tasks: 0, team: 0 })
       addToast('Проект создан', `«${data.name}» добавлен`, 'ok')
     }
     onClose()
@@ -163,7 +165,7 @@ export function ProjectsClient({ initialProjects }: { initialProjects: ProjectRo
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {projects.map(p => (
-            <div key={p.id} className="card p-6 cursor-pointer lift">
+            <Link key={p.id} href={`/projects/${p.slug}`} prefetch={false} className="card p-6 lift block">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-2xl inline-flex items-center justify-center text-2xl"
                   style={{ background: `${p.color}22` }}>
@@ -182,7 +184,7 @@ export function ProjectsClient({ initialProjects }: { initialProjects: ProjectRo
                 </div>
                 <Progress value={p.progress} color={p.color} height={6} />
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

@@ -12,13 +12,13 @@ export default async function ProjectsPage() {
   const supabase = createClient()
 
   const [{ data: projects }, { data: tasks }] = await Promise.all([
-    supabase.from('projects').select('id, name, emoji, color, status, progress, description')
+    supabase.from('projects').select('id, name, slug, emoji, color, status, progress, description')
       .order('progress', { ascending: false }),
     supabase.from('tasks').select('project_id, assignee_id'),
   ])
 
   type TaskMeta    = { project_id: string | null; assignee_id: string | null }
-  type ProjectMeta = { id: string; name: string; emoji?: string; color: string; status: string; progress: number; description?: string }
+  type ProjectMeta = { id: string; name: string; slug: string; emoji?: string; color: string; status: string; progress: number; description?: string }
 
   // Count tasks and distinct team members per project.
   const taskCounts: Record<string, number> = {}

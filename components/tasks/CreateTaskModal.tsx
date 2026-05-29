@@ -26,6 +26,8 @@ interface Props {
   onClose: () => void
   /** Called with the newly created task row after a successful insert. */
   onCreated: (task: TaskRow) => void
+  /** When set, pre-selects and locks the project field. */
+  initialProjectId?: string
 }
 
 const PRIORITIES: { value: TaskPriority; label: string }[] = [
@@ -39,14 +41,14 @@ const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line 
 const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
 const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
-export function CreateTaskModal({ projects, users, onClose, onCreated }: Props) {
+export function CreateTaskModal({ projects, users, onClose, onCreated, initialProjectId }: Props) {
   const { user } = useAuthStore()
   const supabase = createClient()
 
   const [title,       setTitle]       = useState('')
   const [description, setDescription] = useState('')
   const [priority,    setPriority]    = useState<TaskPriority>('medium')
-  const [projectId,   setProjectId]   = useState('')
+  const [projectId,   setProjectId]   = useState(initialProjectId ?? '')
   const [assigneeId,  setAssigneeId]  = useState(user?.id ?? '')
   const [dueDate,     setDueDate]     = useState('')
   const [saving,      setSaving]      = useState(false)
@@ -120,7 +122,12 @@ export function CreateTaskModal({ projects, users, onClose, onCreated }: Props) 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={LABEL}>Проект</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)} className={SELECT}>
+            <select
+              value={projectId}
+              onChange={e => setProjectId(e.target.value)}
+              disabled={!!initialProjectId}
+              className={SELECT}
+            >
               <option value="">Без проекта</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
