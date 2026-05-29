@@ -41,30 +41,48 @@ interface Props {
   employees: Employee[]
 }
 
-function InviteModal({ onClose }: { onClose: () => void }) {
-  const [name,    setName]    = useState('')
-  const [email,   setEmail]   = useState('')
-  const [role,    setRole]    = useState<UserRole>('dev')
-  const [sending, setSending] = useState(false)
-  const [done,    setDone]    = useState(false)
-  const [error,   setError]   = useState('')
+function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: (e: Employee) => void }) {
+  const [name,     setName]     = useState('')
+  const [email,    setEmail]    = useState('')
+  const [password, setPassword] = useState('')
+  const [position, setPosition] = useState('')
+  const [role,     setRole]     = useState<UserRole>('dev')
+  const [sending,  setSending]  = useState(false)
+  const [done,     setDone]     = useState(false)
+  const [error,    setError]    = useState('')
+
+  const genPassword = () => {
+    const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    setPassword(Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''))
+  }
 
   const send = async () => {
-    if (!name.trim() || !email.trim()) { setError('Заполните имя и email'); return }
-    if (!email.includes('@')) { setError('Некорректный email'); return }
+    if (!name.trim())          { setError('Укажите имя и фамилию'); return }
+    if (!email.includes('@'))  { setError('Некорректный email'); return }
+    if (password.length < 6)   { setError('Пароль минимум 6 символов'); return }
     setSending(true)
     setError('')
-    // In production: call server action / API route to create Supabase auth user
-    await new Promise(r => setTimeout(r, 800))
-    setSending(false)
-    setDone(true)
-    setTimeout(onClose, 1500)
+    try {
+      const res = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: name.trim(), email: email.trim(), password, position: position.trim(), role }),
+      })
+      const json = await res.json()
+      if (!res.ok) { setError(json.error ?? 'Ошибка'); setSending(false); return }
+      onInvited({ id: json.id, full_name: name.trim(), email: email.trim().toLowerCase(), role, status: 'offline' })
+      setDone(true)
+      setTimeout(onClose, 2000)
+    } catch {
+      setError('Сетевая ошибка. Попробуйте ещё раз.')
+      setSending(false)
+    }
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[420px] shadow-2xl overflow-hidden">
+      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[440px] shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-[16px] font-bold tracking-tight">Пригласить сотрудника</h2>
           <button onClick={onClose}
@@ -76,15 +94,16 @@ function InviteModal({ onClose }: { onClose: () => void }) {
         {done ? (
           <div className="px-6 py-8 text-center">
             <div className="text-4xl mb-3">🎉</div>
-            <div className="text-[16px] font-bold mb-1">Приглашение отправлено!</div>
-            <div className="text-[13px] text-mute">Сотрудник получит письмо на {email}</div>
+            <div className="text-[16px] font-bold mb-1">Сотрудник добавлен!</div>
+            <div className="text-[13px] text-mute">{name} может войти: {email} / {password}</div>
+            <div className="text-[12px] text-mute2 mt-2">Передайте логин и пароль сотруднику.</div>
           </div>
         ) : (
           <>
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
               <div>
                 <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Имя и фамилия *</label>
-                <input value={name} onChange={e => setName(e.target.value)}
+                <input value={name} onChange={e => setName(e.target.value)} autoFocus
                   placeholder="Иван Иванов"
                   className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
               </div>
@@ -95,7 +114,25 @@ function InviteModal({ onClose }: { onClose: () => void }) {
                   className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
               </div>
               <div>
-                <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Роль</label>
+                <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Пароль *</label>
+                <div className="flex gap-2">
+                  <input value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="минимум 6 символов" type="text"
+                    className="flex-1 h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+                  <button type="button" onClick={genPassword}
+                    className="px-3 h-10 rounded-xl border border-line bg-white/[0.02] hover:bg-white/[0.05] text-[12px] text-mute hover:text-white transition-all shrink-0">
+                    Сгенерировать
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Должность</label>
+                <input value={position} onChange={e => setPosition(e.target.value)}
+                  placeholder="Менеджер по продажам"
+                  className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+              </div>
+              <div>
+                <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Роль (доступы)</label>
                 <select value={role} onChange={e => setRole(e.target.value as UserRole)}
                   className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
                   {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
@@ -109,7 +146,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
               <Button variant="ghost" className="flex-1" onClick={onClose} disabled={sending}>Отмена</Button>
               <Button className="flex-1" onClick={send} disabled={sending}>
                 {sending ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
-                Пригласить
+                Добавить
               </Button>
             </div>
           </>
@@ -121,6 +158,7 @@ function InviteModal({ onClose }: { onClose: () => void }) {
 
 export function ManagementPanel({ employees }: Props) {
   const [showInvite, setShowInvite] = useState(false)
+  const [list, setList] = useState<Employee[]>(employees)
   const [perms, setPerms] = useState(DEFAULT_PERMS)
 
   const cyclePermission = (role: string, sectionIdx: number) => {
@@ -143,7 +181,7 @@ export function ManagementPanel({ employees }: Props) {
             </Button>
           </div>
           <div className="space-y-2">
-            {employees.map(e => (
+            {list.map(e => (
               <div key={e.id} className="card card-tight p-4 flex items-center gap-3">
                 <div className="relative shrink-0">
                   <Avatar initials={getInitials(e.full_name)} color={colorFor(e.full_name)} size={36} />
@@ -203,7 +241,12 @@ export function ManagementPanel({ employees }: Props) {
         </div>
       </div>
 
-      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
+      {showInvite && (
+        <InviteModal
+          onClose={() => setShowInvite(false)}
+          onInvited={emp => setList(prev => [...prev, emp].sort((a, b) => a.full_name.localeCompare(b.full_name)))}
+        />
+      )}
     </>
   )
 }

@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Hash, Send, Plus, Smile } from 'lucide-react'
+import { Hash, Send, Plus, Smile, Reply, X, Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { getInitials, colorFor } from '@/lib/utils'
+import { Button } from '@/components/ui/Button'
+import { UserProfileModal } from '@/components/profile/UserProfileModal'
 
 const EMOJI_QUICK = ['😀','😂','🔥','❤️','👍','👋','🎉','✅','💪','🤝','😊','🙏','💡','⚡','🚀','😅','🤔','👏','🫡','💯','😎','🌟','🔧','📦','💬','🗓️','✨','🎯','🤩','👀']
 
@@ -14,11 +16,74 @@ type DbMsg = {
   content: string
   channel_id: string
   created_at: string
+  reply_to: string | null
   sender: { id: string; full_name: string } | null
 }
 
 type ChannelRow = { id: string; name: string; description: string | null }
 type MemberRow  = { id: string; full_name: string; role: string; status: string }
+
+const MSG_SELECT = 'id, content, channel_id, created_at, reply_to, sender:users!sender_id(id, full_name)'
+
+function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCreated: (c: ChannelRow) => void }) {
+  const supabase = createClient()
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const slugify = (s: string) =>
+    s.toLowerCase().trim().replace(/[^a-zа-я0-9]+/gi, '-').replace(/^-+|-+$/g, '').slice(0, 40) || `channel-${Date.now()}`
+
+  const create = async () => {
+    if (!name.trim()) { setError('Укажите название канала'); return }
+    setSaving(true)
+    setError('')
+    const { data, error: dbErr } = await supabase
+      .from('channels')
+      .insert({ name: name.trim(), slug: slugify(name), description: description.trim() || null })
+      .select('id, name, description')
+      .single()
+    setSaving(false)
+    if (dbErr) { setError(dbErr.message); return }
+    if (data) onCreated(data)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[420px] shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <h2 className="text-[16px] font-bold tracking-tight">Новый канал</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Название *</label>
+            <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="маркетинг"
+              className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+          </div>
+          <div>
+            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Описание</label>
+            <input value={description} onChange={e => setDescription(e.target.value)} placeholder="О чём канал"
+              className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+          </div>
+          {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
+        </div>
+        <div className="flex gap-3 px-6 py-4 border-t border-line">
+          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
+          <Button className="flex-1" onClick={create} disabled={saving}>
+            {saving ? <Loader2 size={15} className="animate-spin" /> : null}
+            Создать
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function ChatsPage() {
   const { user } = useAuthStore()
@@ -32,6 +97,9 @@ export default function ChatsPage() {
   const [members, setMembers] = useState<MemberRow[]>([])
   const [loading, setLoading] = useState(true)
   const [reactions, setReactions] = useState<Record<string, Record<string, string[]>>>({})
+  const [replyTo, setReplyTo] = useState<DbMsg | null>(null)
+  const [showCreateChannel, setShowCreateChannel] = useState(false)
+  const [viewUserId, setViewUserId] = useState<string | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
@@ -62,7 +130,7 @@ export default function ChatsPage() {
     setLoading(true)
     const { data } = await supabase
       .from('messages')
-      .select('id, content, channel_id, created_at, sender:users!sender_id(id, full_name)')
+      .select(MSG_SELECT)
       .eq('channel_id', activeChannelId)
       .order('created_at', { ascending: true })
       .limit(100)
@@ -77,16 +145,12 @@ export default function ChatsPage() {
     const sub = supabase
       .channel(`chat-${activeChannelId}`)
       .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
+        event: 'INSERT', schema: 'public', table: 'messages',
         filter: `channel_id=eq.${activeChannelId}`,
       }, async ({ new: row }) => {
-        const { data } = await supabase
-          .from('messages')
-          .select('id, content, channel_id, created_at, sender:users!sender_id(id, full_name)')
-          .eq('id', row.id).single()
-        if (data) setMessages(prev => [...prev, data as unknown as DbMsg])
+        // Skip if we already have it (our own insert returned it directly).
+        const { data } = await supabase.from('messages').select(MSG_SELECT).eq('id', row.id).single()
+        if (data) setMessages(prev => prev.some(m => m.id === (data as any).id) ? prev : [...prev, data as unknown as DbMsg])
       })
       .subscribe()
     return () => { supabase.removeChannel(sub) }
@@ -99,13 +163,25 @@ export default function ChatsPage() {
   const send = async () => {
     const content = text.trim()
     if (!content || !user) return
+    const replyId = replyTo?.id ?? null
     setText('')
+    setReplyTo(null)
     inputRef.current?.focus()
-    await supabase.from('messages').insert({ channel_id: activeChannelId, sender_id: user.id, content })
+    const { data } = await supabase
+      .from('messages')
+      .insert({ channel_id: activeChannelId, sender_id: user.id, content, reply_to: replyId })
+      .select(MSG_SELECT)
+      .single()
+    if (data) setMessages(prev => prev.some(m => m.id === (data as any).id) ? prev : [...prev, data as unknown as DbMsg])
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
+  }
+
+  const startReply = (m: DbMsg) => {
+    setReplyTo(m)
+    inputRef.current?.focus()
   }
 
   const toggleReaction = (msgId: string, emoji: string) => {
@@ -123,6 +199,7 @@ export default function ChatsPage() {
     new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
   const activeCh = channels.find(c => c.id === activeChannelId)
+  const parentOf = (id: string | null) => id ? messages.find(m => m.id === id) ?? null : null
 
   return (
     <div className="flex" style={{ height: '100vh' }}>
@@ -147,7 +224,8 @@ export default function ChatsPage() {
               <span className="flex-1 text-left truncate">{c.name}</span>
             </button>
           ))}
-          <button className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-1 transition-all">
+          <button onClick={() => setShowCreateChannel(true)}
+            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-1 transition-all">
             <Plus size={14} /> Создать канал
           </button>
         </div>
@@ -170,35 +248,42 @@ export default function ChatsPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          {loading && (
-            <div className="text-center py-8 text-mute text-[13px]">Загрузка…</div>
-          )}
+          {loading && <div className="text-center py-8 text-mute text-[13px]">Загрузка…</div>}
           {!loading && messages.length === 0 && (
-            <div className="text-center py-12 text-mute text-[13px]">
-              Сообщений ещё нет. Напишите первым!
-            </div>
+            <div className="text-center py-12 text-mute text-[13px]">Сообщений ещё нет. Напишите первым!</div>
           )}
           <div className="space-y-4">
             {messages.map(m => {
-              const name     = m.sender?.full_name ?? 'Пользователь'
-              const isMe     = user?.id === m.sender?.id
-              const msgRx    = reactions[m.id] ?? {}
+              const name   = m.sender?.full_name ?? 'Пользователь'
+              const isMe   = user?.id === m.sender?.id
+              const msgRx  = reactions[m.id] ?? {}
+              const parent = parentOf(m.reply_to)
               return (
                 <div key={m.id} className={`flex items-start gap-3 group ${isMe ? 'flex-row-reverse' : ''}`}>
                   {!isMe && (
-                    <Avatar initials={getInitials(name)} color={colorFor(name)} size={34} className="shrink-0 mt-0.5" />
+                    <button onClick={() => m.sender && setViewUserId(m.sender.id)} className="shrink-0 mt-0.5 hover:opacity-80 transition-opacity">
+                      <Avatar initials={getInitials(name)} color={colorFor(name)} size={34} />
+                    </button>
                   )}
                   <div className={`min-w-0 flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                     {!isMe && (
                       <div className="flex items-baseline gap-2.5 mb-1">
-                        <span className="text-[13.5px] font-semibold">{name}</span>
+                        <button onClick={() => m.sender && setViewUserId(m.sender.id)}
+                          className="text-[13.5px] font-semibold hover:text-accent transition-colors">{name}</button>
                         <span className="text-[11px] text-mute2 font-mono">{fmtTime(m.created_at)}</span>
                       </div>
                     )}
+
+                    {/* Quoted parent */}
+                    {parent && (
+                      <div className={`mb-1 px-3 py-1.5 rounded-lg border-l-2 border-accent/50 bg-white/[0.03] text-[12px] max-w-full ${isMe ? 'text-right' : ''}`}>
+                        <div className="text-accent font-medium truncate">{parent.sender?.full_name ?? 'Пользователь'}</div>
+                        <div className="text-mute truncate">{parent.content}</div>
+                      </div>
+                    )}
+
                     <div className={`text-[13.5px] leading-relaxed px-3.5 py-2.5 rounded-2xl ${
-                      isMe
-                        ? 'bg-accent/25 text-white/90 rounded-tr-sm'
-                        : 'bg-white/[0.05] text-white/85 rounded-tl-sm'
+                      isMe ? 'bg-accent/25 text-white/90 rounded-tr-sm' : 'bg-white/[0.05] text-white/85 rounded-tl-sm'
                     }`}>
                       {m.content}
                     </div>
@@ -214,15 +299,19 @@ export default function ChatsPage() {
                                 : 'bg-white/[0.04] border-line hover:border-line2 text-white/70'
                             }`}
                           >
-                            {emoji}
-                            <span className="font-mono text-[11px]">{users.length}</span>
+                            {emoji}<span className="font-mono text-[11px]">{users.length}</span>
                           </button>
                         ))}
                       </div>
                     )}
 
-                    {/* Quick reaction bar (hover) */}
-                    <div className={`flex gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'flex-row-reverse' : ''}`}>
+                    {/* Hover actions: reply + quick reactions */}
+                    <div className={`flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'flex-row-reverse' : ''}`}>
+                      <button onClick={() => startReply(m)}
+                        className="flex items-center gap-1 px-2 h-6 text-[11px] text-mute hover:text-white rounded-lg hover:bg-white/[0.06] transition-all">
+                        <Reply size={12} /> Ответить
+                      </button>
+                      <span className="w-px h-3 bg-line" />
                       {['👍','🔥','❤️','😂','🎉'].map(e => (
                         <button key={e} onClick={() => toggleReaction(m.id, e)}
                           className="w-6 h-6 text-sm hover:scale-125 transition-transform rounded-lg hover:bg-white/[0.06] flex items-center justify-center">
@@ -231,9 +320,7 @@ export default function ChatsPage() {
                       ))}
                     </div>
 
-                    {isMe && (
-                      <span className="text-[11px] text-mute2 font-mono mt-0.5">{fmtTime(m.created_at)}</span>
-                    )}
+                    {isMe && <span className="text-[11px] text-mute2 font-mono mt-0.5">{fmtTime(m.created_at)}</span>}
                   </div>
                 </div>
               )
@@ -244,6 +331,20 @@ export default function ChatsPage() {
 
         {/* Input area */}
         <div className="px-5 py-4 border-t border-line shrink-0 relative">
+          {/* Reply preview */}
+          {replyTo && (
+            <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-white/[0.04] border-l-2 border-accent">
+              <Reply size={13} className="text-accent shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[11.5px] text-accent font-medium">Ответ · {replyTo.sender?.full_name ?? 'Пользователь'}</div>
+                <div className="text-[12px] text-mute truncate">{replyTo.content}</div>
+              </div>
+              <button onClick={() => setReplyTo(null)} className="text-mute hover:text-white shrink-0">
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           {showEmoji && (
             <div ref={emojiRef} className="absolute bottom-full left-5 mb-2 bg-[#1C2035] border border-line rounded-2xl p-3 shadow-2xl z-50 w-72">
               <div className="grid grid-cols-10 gap-0.5">
@@ -287,7 +388,8 @@ export default function ChatsPage() {
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {members.map(m => (
-            <div key={m.id} className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/[0.04] transition-all">
+            <button key={m.id} onClick={() => setViewUserId(m.id)}
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left">
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(m.full_name)} color={colorFor(m.full_name)} size={28} />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-sidebar"
@@ -298,10 +400,18 @@ export default function ChatsPage() {
                 <div className="text-[12px] font-medium truncate">{m.full_name.split(' ')[0]}</div>
                 <div className="text-[10.5px] text-mute2 truncate capitalize">{m.role}</div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
+
+      {showCreateChannel && (
+        <CreateChannelModal
+          onClose={() => setShowCreateChannel(false)}
+          onCreated={c => { setChannels(prev => [...prev, c].sort((a, b) => a.name.localeCompare(b.name))); setActiveChannelId(c.id) }}
+        />
+      )}
+      {viewUserId && <UserProfileModal userId={viewUserId} onClose={() => setViewUserId(null)} />}
     </div>
   )
 }

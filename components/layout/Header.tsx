@@ -200,7 +200,7 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         {/* Avatar link to profile */}
         <Link href="/profile" className="hover:scale-105 transition-transform">
-          <Avatar initials={initials} color="#1472F5" size={40} ring online />
+          <Avatar initials={initials} color="#1472F5" size={40} ring status={user?.status ?? 'offline'} />
         </Link>
       </div>
     </header>

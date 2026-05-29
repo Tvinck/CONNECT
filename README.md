@@ -54,11 +54,25 @@ git checkout claude/pensive-franklin-4EDRO
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://fhwrdhebhgywhvoeqpxj.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZod3JkaGViaGd5d2h2b2VxcHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5Mjk0MjcsImV4cCI6MjA5NTUwNTQyN30.1odxq5Ull4GDI_zoThLfwjbYE6IaDI0_yDGv-_lzDHM
+SUPABASE_SERVICE_ROLE_KEY=ВСТАВЬ_СЮДА_SERVICE_ROLE_KEY
 ```
 
 > ⚠️ Этот файл специально **не хранится в Git** (в нём секреты). Поэтому при
 > скачивании его нет — нужно создать вручную один раз. Образец полей —
 > в файле `.env.local.example`.
+>
+> 🔑 **`SUPABASE_SERVICE_ROLE_KEY`** нужен, чтобы CEO мог приглашать сотрудников
+> (создаёт им вход). Возьми его в Supabase: **Settings → API → service_role**
+> (секция «Project API keys», кнопка «Reveal»). Этот ключ — только для сервера,
+> никогда не вставляй его в `NEXT_PUBLIC_*` и не публикуй.
+
+---
+
+## 3.1 Применить миграцию для чатов (один раз)
+
+Открой Supabase → **SQL Editor** → New query, вставь и выполни содержимое
+файла **`supabase/migrations/0002_features.sql`** (добавляет ответы в чате).
+Без этого ответы на сообщения работать не будут.
 
 ---
 

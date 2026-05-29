@@ -35,7 +35,7 @@ export function ProfileClient({ profile, achievements, tasksDone, daysIn, levelD
           <div className="card p-6 text-center">
             <div className="flex justify-center mb-4">
               <div className="relative">
-                <Avatar initials={initials} color={color} size={80} online />
+                <Avatar initials={initials} color={color} size={80} status={user.status} />
                 <button
                   onClick={() => setShowEdit(true)}
                   className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-accent border-2 border-bg text-white inline-flex items-center justify-center hover:bg-accent/80 transition-all"
