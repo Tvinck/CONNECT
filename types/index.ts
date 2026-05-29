@@ -23,9 +23,11 @@ export interface Project {
   id: string
   name: string
   slug: string
+  emoji?: string
   status: ProjectStatus
   progress: number
   color: string
+  description?: string
   created_at: string
 }
 
@@ -57,9 +59,10 @@ export interface Client {
 
 export interface Message {
   id: string
-  channel: string
+  channel_id: string
   sender_id: string
   content: string
+  reply_to?: string | null
   is_pinned: boolean
   created_at: string
 }
@@ -88,7 +91,7 @@ export interface Notification {
   user_id: string
   type: string
   title: string
-  body: string
+  body?: string
   is_read: boolean
   link?: string
   created_at: string

@@ -329,11 +329,11 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <button className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-white/[0.04] border border-line2 hover:border-gold/40 hover:bg-gold/[0.05] text-[13px] font-semibold whitespace-nowrap transition-all">
+          <a href="/shop" className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-white/[0.04] border border-line2 hover:border-gold/40 hover:bg-gold/[0.05] text-[13px] font-semibold whitespace-nowrap transition-all">
             <Gift size={16} className="text-gold" />
             Магазин баллов
             <ArrowRight size={14} />
-          </button>
+          </a>
         </div>
       </div>
     </PageContainer>

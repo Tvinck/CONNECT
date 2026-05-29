@@ -10,7 +10,7 @@ import { Logomark } from '@/components/ui/Logomark'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
-import { ROLES } from '@/lib/utils'
+import { ROLES, getInitials } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useRef, useEffect } from 'react'
 import type { UserRole } from '@/types'
@@ -48,9 +48,8 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
     router.refresh()
   }
 
-  const initials = user?.full_name
-    ? user.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-    : 'АК'
+  const initials = getInitials(user?.full_name)
+  const status = user?.status ?? 'offline'
 
   const roleMeta = ROLES.find((r) => r.id === role) || ROLES[0]
 
@@ -91,10 +90,10 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
 
         {/* User profile chip */}
         <div className="mx-3 mb-4 p-3 rounded-xl bg-white/[0.025] border border-line flex items-center gap-3">
-          <Avatar initials={initials} color="#1472F5" size={38} online />
+          <Avatar initials={initials} color="#1472F5" size={38} status={status} />
           <div className="min-w-0 flex-1">
             <div className="text-[13.5px] font-semibold tracking-tight truncate">
-              {user?.full_name?.split(' ')[0] ?? 'Артём'}
+              {user?.full_name?.split(' ')[0] ?? 'Профиль'}
             </div>
             <div className="text-[11px] text-mute flex items-center gap-1.5 mt-0.5">
               <span
@@ -166,8 +165,9 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
         <div className="px-3 pb-5 pt-3 border-t border-line">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2 text-[11px] text-mute">
-              <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse-dot" />
-              <span>Онлайн</span>
+              <span className={`w-1.5 h-1.5 rounded-full ${status === 'online' ? 'animate-pulse-dot' : ''}`}
+                style={{ background: status === 'online' ? '#22C55E' : status === 'busy' ? '#F59E0B' : '#5A6188' }} />
+              <span>{status === 'online' ? 'Онлайн' : status === 'busy' ? 'Занят' : 'Не в сети'}</span>
             </div>
             <button
               onClick={handleLogout}

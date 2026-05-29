@@ -1,14 +1,20 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Bell, Search, Menu, X, CheckCheck } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Bell, Search, Menu, X, CheckCheck, CheckSquare, Folder, Loader2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
 import { createClient } from '@/lib/supabase/client'
-import { timeAgo } from '@/lib/utils'
+import { timeAgo, getInitials, colorFor } from '@/lib/utils'
 import Link from 'next/link'
 import type { Notification } from '@/types'
+
+type SearchResult =
+  | { kind: 'user';    id: string; label: string; sub: string }
+  | { kind: 'task';    id: string; label: string; sub: string }
+  | { kind: 'project'; id: string; label: string; sub: string }
 
 const NOTIF_ICON: Record<string, string> = {
   task: '✅', ach: '🏆', alert: '⚠️', info: 'ℹ️',
@@ -23,11 +29,57 @@ export function Header({ title, subtitle }: HeaderProps) {
   const { user } = useAuthStore()
   const { setSidebarOpen } = useUIStore()
   const supabase = createClient()
+  const router = useRouter()
 
   const [showNotifs, setShowNotifs] = useState(false)
   const [notifs, setNotifs] = useState<Notification[]>([])
   const [loadingNotifs, setLoadingNotifs] = useState(false)
   const bellRef = useRef<HTMLDivElement>(null)
+
+  // Global search
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [searching, setSearching] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length < 2) { setResults([]); setSearching(false); return }
+    setSearching(true)
+    const handle = setTimeout(async () => {
+      const like = `%${q}%`
+      const [users, tasks, projects] = await Promise.all([
+        supabase.from('users').select('id, full_name, position, role').ilike('full_name', like).limit(4),
+        supabase.from('tasks').select('id, title, status').ilike('title', like).limit(4),
+        supabase.from('projects').select('id, name, status').ilike('name', like).limit(4),
+      ])
+      const merged: SearchResult[] = [
+        ...(users.data ?? []).map((u: any) => ({ kind: 'user' as const, id: u.id, label: u.full_name, sub: u.position ?? u.role })),
+        ...(tasks.data ?? []).map((t: any) => ({ kind: 'task' as const, id: t.id, label: t.title, sub: 'Задача' })),
+        ...(projects.data ?? []).map((p: any) => ({ kind: 'project' as const, id: p.id, label: p.name, sub: 'Проект' })),
+      ]
+      setResults(merged)
+      setSearching(false)
+    }, 250)
+    return () => clearTimeout(handle)
+  }, [query])
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowResults(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const goToResult = (r: SearchResult) => {
+    setShowResults(false)
+    setQuery('')
+    if (r.kind === 'user') router.push('/employees')
+    else if (r.kind === 'task') router.push('/tasks')
+    else router.push('/projects')
+  }
 
   const initials = user?.full_name
     ? user.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -112,12 +164,53 @@ export function Header({ title, subtitle }: HeaderProps) {
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Search desktop */}
-        <div className="relative hidden md:block">
+        <div ref={searchRef} className="relative hidden md:block">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-mute" />
           <input
+            value={query}
+            onChange={e => { setQuery(e.target.value); setShowResults(true) }}
+            onFocus={() => setShowResults(true)}
             placeholder="Поиск задач, людей, проектов…"
-            className="w-[200px] xl:w-[280px] h-10 pl-10 pr-3 bg-white/[0.025] border border-line rounded-xl text-[13px] placeholder:text-mute2 focus:border-accent focus:bg-white/[0.04] outline-none transition-all duration-200"
+            className="w-[200px] xl:w-[280px] h-10 pl-10 pr-8 bg-white/[0.025] border border-line rounded-xl text-[13px] placeholder:text-mute2 focus:border-accent focus:bg-white/[0.04] outline-none transition-all duration-200"
           />
+          {query && (
+            <button onClick={() => { setQuery(''); setResults([]) }}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-white">
+              <X size={14} />
+            </button>
+          )}
+
+          {showResults && query.trim().length >= 2 && (
+            <div className="absolute right-0 top-full mt-2 w-[320px] bg-[#151829] border border-line rounded-2xl shadow-2xl z-50 overflow-hidden animate-pop-in">
+              {searching && (
+                <div className="flex items-center justify-center gap-2 py-6 text-mute text-[13px]">
+                  <Loader2 size={14} className="animate-spin" /> Поиск…
+                </div>
+              )}
+              {!searching && results.length === 0 && (
+                <div className="text-center py-6 text-mute text-[13px]">Ничего не найдено</div>
+              )}
+              {!searching && results.map(r => (
+                <button key={`${r.kind}-${r.id}`} onClick={() => goToResult(r)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-all text-left border-b border-line/40 last:border-0">
+                  {r.kind === 'user' ? (
+                    <Avatar initials={getInitials(r.label)} color={colorFor(r.label)} size={30} />
+                  ) : (
+                    <div className="w-[30px] h-[30px] rounded-lg bg-white/[0.05] border border-line inline-flex items-center justify-center text-mute shrink-0">
+                      {r.kind === 'task' ? <CheckSquare size={14} /> : <Folder size={14} />}
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-medium truncate">{r.label}</div>
+                    <div className="text-[11px] text-mute2 truncate capitalize">{r.sub}</div>
+                  </div>
+                  <span className="text-[10px] text-mute2 uppercase tracking-wider shrink-0">
+                    {r.kind === 'user' ? 'Человек' : r.kind === 'task' ? 'Задача' : 'Проект'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Search mobile */}

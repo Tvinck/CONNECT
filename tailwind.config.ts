@@ -51,6 +51,7 @@ const config: Config = {
         'modal-in':  'modalIn 220ms cubic-bezier(0.2,0.8,0.25,1) both',
         'toast-in':  'toastIn 260ms cubic-bezier(0.2,0.8,0.25,1) both',
         'fill-in':   'fillin 900ms cubic-bezier(0.25,0.85,0.3,1) both',
+        'fade-in':   'fadeIn 180ms ease-out both',
       },
       keyframes: {
         shimmer: {
@@ -80,6 +81,10 @@ const config: Config = {
         fillin: {
           from: { transform: 'scaleX(0)' },
           to:   { transform: 'scaleX(1)' },
+        },
+        fadeIn: {
+          from: { opacity: '0' },
+          to:   { opacity: '1' },
         },
       },
     },
