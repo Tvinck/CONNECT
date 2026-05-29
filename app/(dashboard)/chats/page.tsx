@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Hash, Send, Plus, Smile, Reply, X, Loader2 } from 'lucide-react'
+import { Hash, Send, Plus, Smile, Reply, X, Loader2, MessageSquare, Search } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { getInitials, colorFor } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -20,7 +20,7 @@ type DbMsg = {
   sender: { id: string; full_name: string } | null
 }
 
-type ChannelRow = { id: string; name: string; description: string | null }
+type ChannelRow = { id: string; name: string; description: string | null; slug?: string }
 type MemberRow  = { id: string; full_name: string; role: string; status: string }
 
 const MSG_SELECT = 'id, content, channel_id, created_at, reply_to, sender:users!sender_id(id, full_name)'
@@ -37,13 +37,10 @@ function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCre
 
   const create = async () => {
     if (!name.trim()) { setError('Укажите название канала'); return }
-    setSaving(true)
-    setError('')
+    setSaving(true); setError('')
     const { data, error: dbErr } = await supabase
-      .from('channels')
-      .insert({ name: name.trim(), slug: slugify(name), description: description.trim() || null })
-      .select('id, name, description')
-      .single()
+      .from('channels').insert({ name: name.trim(), slug: slugify(name), description: description.trim() || null })
+      .select('id, name, description, slug').single()
     setSaving(false)
     if (dbErr) { setError(dbErr.message); return }
     if (data) onCreated(data)
@@ -56,9 +53,7 @@ function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCre
       <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[420px] shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-[16px] font-bold tracking-tight">Новый канал</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
-            <X size={16} />
-          </button>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center"><X size={16} /></button>
         </div>
         <div className="px-6 py-5 space-y-4">
           <div>
@@ -76,9 +71,67 @@ function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCre
         <div className="flex gap-3 px-6 py-4 border-t border-line">
           <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
           <Button className="flex-1" onClick={create} disabled={saving}>
-            {saving ? <Loader2 size={15} className="animate-spin" /> : null}
-            Создать
+            {saving ? <Loader2 size={15} className="animate-spin" /> : null} Создать
           </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NewDmModal({
+  members,
+  currentUserId,
+  onClose,
+  onSelect,
+}: {
+  members: MemberRow[]
+  currentUserId: string
+  onClose: () => void
+  onSelect: (member: MemberRow) => void
+}) {
+  const [query, setQuery] = useState('')
+  const filtered = members.filter(m =>
+    m.id !== currentUserId &&
+    m.full_name.toLowerCase().includes(query.toLowerCase())
+  )
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[380px] shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <h2 className="text-[16px] font-bold tracking-tight">Новое сообщение</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center"><X size={16} /></button>
+        </div>
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center gap-2 px-3 h-9 rounded-xl bg-white/[0.04] border border-line">
+            <Search size={14} className="text-mute shrink-0" />
+            <input
+              value={query} onChange={e => setQuery(e.target.value)}
+              placeholder="Поиск сотрудника…" autoFocus
+              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-mute2"
+            />
+          </div>
+        </div>
+        <div className="max-h-[300px] overflow-y-auto p-2">
+          {filtered.length === 0 && (
+            <div className="text-center py-6 text-mute text-[13px]">Никого не найдено</div>
+          )}
+          {filtered.map(m => (
+            <button key={m.id} onClick={() => { onSelect(m); onClose() }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-all text-left">
+              <div className="relative shrink-0">
+                <Avatar initials={getInitials(m.full_name)} color={colorFor(m.full_name)} size={36} />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-[#151829]"
+                  style={{ background: m.status === 'online' ? '#22C55E' : m.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
+              </div>
+              <div>
+                <div className="text-[13.5px] font-semibold">{m.full_name}</div>
+                <div className="text-[11px] text-mute2 capitalize">{m.role}</div>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
     </div>
@@ -90,6 +143,7 @@ export default function ChatsPage() {
   const supabase = createClient()
 
   const [channels, setChannels] = useState<ChannelRow[]>([])
+  const [dmChannels, setDmChannels] = useState<(ChannelRow & { otherUser: MemberRow })[]>([])
   const [activeChannelId, setActiveChannelId] = useState('')
   const [messages, setMessages] = useState<DbMsg[]>([])
   const [text, setText] = useState('')
@@ -99,6 +153,7 @@ export default function ChatsPage() {
   const [reactions, setReactions] = useState<Record<string, Record<string, string[]>>>({})
   const [replyTo, setReplyTo] = useState<DbMsg | null>(null)
   const [showCreateChannel, setShowCreateChannel] = useState(false)
+  const [showNewDm, setShowNewDm] = useState(false)
   const [viewUserId, setViewUserId] = useState<string | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -114,26 +169,44 @@ export default function ChatsPage() {
   }, [showEmoji])
 
   useEffect(() => {
+    if (!user) return
     Promise.all([
-      supabase.from('channels').select('id, name, description').order('name'),
+      supabase.from('channels').select('id, name, description, slug').order('name'),
       supabase.from('users').select('id, full_name, role, status').eq('is_active', true),
     ]).then(([{ data: ch }, { data: mb }]) => {
-      const chList = ch ?? []
-      setChannels(chList)
-      if (chList.length > 0) setActiveChannelId(chList[0].id)
-      setMembers(mb ?? [])
+      const allChannels = (ch ?? []) as (ChannelRow & { slug?: string })[]
+      const memberList = (mb ?? []) as MemberRow[]
+      setMembers(memberList)
+
+      // Separate public channels from DM channels
+      const publicChs = allChannels.filter(c => !c.slug?.startsWith('dm:'))
+      const dmChs = allChannels
+        .filter(c => c.slug?.startsWith('dm:'))
+        .map(c => {
+          // slug format: dm:id1:id2 (sorted)
+          const parts = c.slug!.replace('dm:', '').split(':')
+          const otherId = parts.find(id => id !== user.id) ?? parts[0]
+          const otherUser = memberList.find(m => m.id === otherId) ?? {
+            id: otherId, full_name: 'Пользователь', role: '', status: 'offline'
+          }
+          return { ...c, otherUser }
+        })
+
+      setChannels(publicChs)
+      setDmChannels(dmChs)
+
+      const first = publicChs[0]
+      if (first) setActiveChannelId(first.id)
     })
-  }, [])
+  }, [user?.id])
 
   const loadMessages = useCallback(async () => {
     if (!activeChannelId) return
     setLoading(true)
     const { data } = await supabase
-      .from('messages')
-      .select(MSG_SELECT)
+      .from('messages').select(MSG_SELECT)
       .eq('channel_id', activeChannelId)
-      .order('created_at', { ascending: true })
-      .limit(100)
+      .order('created_at', { ascending: true }).limit(100)
     setMessages((data ?? []) as unknown as DbMsg[])
     setLoading(false)
   }, [activeChannelId])
@@ -148,7 +221,6 @@ export default function ChatsPage() {
         event: 'INSERT', schema: 'public', table: 'messages',
         filter: `channel_id=eq.${activeChannelId}`,
       }, async ({ new: row }) => {
-        // Skip if we already have it (our own insert returned it directly).
         const { data } = await supabase.from('messages').select(MSG_SELECT).eq('id', row.id).single()
         if (data) setMessages(prev => prev.some(m => m.id === (data as any).id) ? prev : [...prev, data as unknown as DbMsg])
       })
@@ -156,22 +228,18 @@ export default function ChatsPage() {
     return () => { supabase.removeChannel(sub) }
   }, [activeChannelId])
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   const send = async () => {
     const content = text.trim()
     if (!content || !user) return
     const replyId = replyTo?.id ?? null
-    setText('')
-    setReplyTo(null)
+    setText(''); setReplyTo(null)
     inputRef.current?.focus()
     const { data } = await supabase
       .from('messages')
       .insert({ channel_id: activeChannelId, sender_id: user.id, content, reply_to: replyId })
-      .select(MSG_SELECT)
-      .single()
+      .select(MSG_SELECT).single()
     if (data) setMessages(prev => prev.some(m => m.id === (data as any).id) ? prev : [...prev, data as unknown as DbMsg])
   }
 
@@ -179,15 +247,10 @@ export default function ChatsPage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  const startReply = (m: DbMsg) => {
-    setReplyTo(m)
-    inputRef.current?.focus()
-  }
-
   const toggleReaction = (msgId: string, emoji: string) => {
     if (!user) return
     setReactions(prev => {
-      const msg  = { ...(prev[msgId] ?? {}) }
+      const msg = { ...(prev[msgId] ?? {}) }
       const list = msg[emoji] ?? []
       msg[emoji] = list.includes(user.id) ? list.filter(id => id !== user.id) : [...list, user.id]
       if (msg[emoji].length === 0) delete msg[emoji]
@@ -195,10 +258,41 @@ export default function ChatsPage() {
     })
   }
 
+  const openDmWith = async (member: MemberRow) => {
+    if (!user) return
+    // Canonical slug: dm:{smaller_id}:{bigger_id}
+    const [a, b] = [user.id, member.id].sort()
+    const slug = `dm:${a}:${b}`
+
+    // Check existing
+    const { data: existing } = await supabase.from('channels').select('id, name, description, slug').eq('slug', slug).single()
+    if (existing) {
+      // Already exists
+      const dm = { ...existing, otherUser: member }
+      setDmChannels(prev => prev.some(d => d.id === existing.id) ? prev : [...prev, dm])
+      setActiveChannelId(existing.id)
+      return
+    }
+
+    // Create DM channel
+    const { data: created } = await supabase
+      .from('channels')
+      .insert({ name: `ЛС: ${member.full_name}`, slug, description: null })
+      .select('id, name, description, slug').single()
+
+    if (created) {
+      const dm = { ...created, otherUser: member }
+      setDmChannels(prev => [...prev, dm])
+      setActiveChannelId(created.id)
+    }
+  }
+
   const fmtTime = (iso: string) =>
     new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
-  const activeCh = channels.find(c => c.id === activeChannelId)
+  const allChannelsList = [...channels, ...dmChannels]
+  const activeCh = allChannelsList.find(c => c.id === activeChannelId)
+  const activeDm = dmChannels.find(c => c.id === activeChannelId)
   const parentOf = (id: string | null) => id ? messages.find(m => m.id === id) ?? null : null
 
   return (
@@ -209,6 +303,7 @@ export default function ChatsPage() {
           <h3 className="text-[13px] font-bold tracking-tight">Чаты</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
+          {/* Public channels */}
           <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-2">
             Каналы
           </div>
@@ -225,8 +320,33 @@ export default function ChatsPage() {
             </button>
           ))}
           <button onClick={() => setShowCreateChannel(true)}
-            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-1 transition-all">
+            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-0.5 transition-all">
             <Plus size={14} /> Создать канал
+          </button>
+
+          {/* DMs */}
+          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-4">
+            Личные
+          </div>
+          {dmChannels.map(d => (
+            <button key={d.id} onClick={() => setActiveChannelId(d.id)}
+              className={`w-full flex items-center gap-2 px-2 h-10 rounded-lg text-[13px] font-medium tracking-tight mb-0.5 transition-all ${
+                d.id === activeChannelId
+                  ? 'bg-accent/15 text-accent border border-accent/30'
+                  : 'text-mute hover:text-white hover:bg-white/[0.04]'
+              }`}
+            >
+              <div className="relative shrink-0">
+                <Avatar initials={getInitials(d.otherUser.full_name)} color={colorFor(d.otherUser.full_name)} size={24} />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-sidebar"
+                  style={{ background: d.otherUser.status === 'online' ? '#22C55E' : d.otherUser.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
+              </div>
+              <span className="flex-1 text-left truncate">{d.otherUser.full_name.split(' ')[0]}</span>
+            </button>
+          ))}
+          <button onClick={() => setShowNewDm(true)}
+            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-0.5 transition-all">
+            <Plus size={14} /> Новое сообщение
           </button>
         </div>
       </div>
@@ -235,10 +355,28 @@ export default function ChatsPage() {
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Channel header */}
         <div className="px-5 py-3.5 border-b border-line flex items-center gap-3 shrink-0">
-          <Hash size={16} className="text-mute shrink-0" />
-          <span className="text-[14px] font-semibold tracking-tight">{activeCh?.name ?? ''}</span>
-          {activeCh?.description && (
-            <span className="text-[12px] text-mute ml-1 hidden sm:block">· {activeCh.description}</span>
+          {activeDm ? (
+            <>
+              <div className="relative shrink-0">
+                <Avatar initials={getInitials(activeDm.otherUser.full_name)} color={colorFor(activeDm.otherUser.full_name)} size={30} />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-[#0A0E27]"
+                  style={{ background: activeDm.otherUser.status === 'online' ? '#22C55E' : activeDm.otherUser.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
+              </div>
+              <div>
+                <span className="text-[14px] font-semibold tracking-tight">{activeDm.otherUser.full_name}</span>
+                <span className="text-[12px] text-mute ml-2">
+                  {activeDm.otherUser.status === 'online' ? 'Онлайн' : activeDm.otherUser.status === 'busy' ? 'На встрече' : 'Офлайн'}
+                </span>
+              </div>
+            </>
+          ) : (
+            <>
+              <Hash size={16} className="text-mute shrink-0" />
+              <span className="text-[14px] font-semibold tracking-tight">{activeCh?.name ?? ''}</span>
+              {(activeCh as ChannelRow)?.description && (
+                <span className="text-[12px] text-mute ml-1 hidden sm:block">· {(activeCh as ChannelRow).description}</span>
+              )}
+            </>
           )}
           <div className="ml-auto flex items-center gap-1 text-[12px] text-mute2">
             <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse-dot" />
@@ -250,7 +388,12 @@ export default function ChatsPage() {
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {loading && <div className="text-center py-8 text-mute text-[13px]">Загрузка…</div>}
           {!loading && messages.length === 0 && (
-            <div className="text-center py-12 text-mute text-[13px]">Сообщений ещё нет. Напишите первым!</div>
+            <div className="text-center py-12">
+              <MessageSquare size={32} className="text-mute mx-auto mb-3" />
+              <div className="text-mute text-[13px]">
+                {activeDm ? `Начните переписку с ${activeDm.otherUser.full_name.split(' ')[0]}` : 'Сообщений ещё нет. Напишите первым!'}
+              </div>
+            </div>
           )}
           <div className="space-y-4">
             {messages.map(m => {
@@ -274,7 +417,6 @@ export default function ChatsPage() {
                       </div>
                     )}
 
-                    {/* Quoted parent */}
                     {parent && (
                       <div className={`mb-1 px-3 py-1.5 rounded-lg border-l-2 border-accent/50 bg-white/[0.03] text-[12px] max-w-full ${isMe ? 'text-right' : ''}`}>
                         <div className="text-accent font-medium truncate">{parent.sender?.full_name ?? 'Пользователь'}</div>
@@ -288,7 +430,6 @@ export default function ChatsPage() {
                       {m.content}
                     </div>
 
-                    {/* Reactions display */}
                     {Object.keys(msgRx).length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {Object.entries(msgRx).map(([emoji, users]) => (
@@ -305,9 +446,8 @@ export default function ChatsPage() {
                       </div>
                     )}
 
-                    {/* Hover actions: reply + quick reactions */}
                     <div className={`flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'flex-row-reverse' : ''}`}>
-                      <button onClick={() => startReply(m)}
+                      <button onClick={() => setReplyTo(m)}
                         className="flex items-center gap-1 px-2 h-6 text-[11px] text-mute hover:text-white rounded-lg hover:bg-white/[0.06] transition-all">
                         <Reply size={12} /> Ответить
                       </button>
@@ -331,7 +471,6 @@ export default function ChatsPage() {
 
         {/* Input area */}
         <div className="px-5 py-4 border-t border-line shrink-0 relative">
-          {/* Reply preview */}
           {replyTo && (
             <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-white/[0.04] border-l-2 border-accent">
               <Reply size={13} className="text-accent shrink-0" />
@@ -339,9 +478,7 @@ export default function ChatsPage() {
                 <div className="text-[11.5px] text-accent font-medium">Ответ · {replyTo.sender?.full_name ?? 'Пользователь'}</div>
                 <div className="text-[12px] text-mute truncate">{replyTo.content}</div>
               </div>
-              <button onClick={() => setReplyTo(null)} className="text-mute hover:text-white shrink-0">
-                <X size={14} />
-              </button>
+              <button onClick={() => setReplyTo(null)} className="text-mute hover:text-white shrink-0"><X size={14} /></button>
             </div>
           )}
 
@@ -368,7 +505,7 @@ export default function ChatsPage() {
               value={text}
               onChange={e => setText(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder={`Написать в #${activeCh?.name ?? ''}…`}
+              placeholder={activeDm ? `Написать ${activeDm.otherUser.full_name.split(' ')[0]}…` : `Написать в #${activeCh?.name ?? ''}…`}
               className="flex-1 bg-transparent outline-none text-[13.5px] placeholder:text-mute2"
             />
             <button onClick={send} disabled={!text.trim()}
@@ -393,13 +530,19 @@ export default function ChatsPage() {
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(m.full_name)} color={colorFor(m.full_name)} size={28} />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-sidebar"
-                  style={{ background: m.status === 'online' ? '#22C55E' : m.status === 'busy' ? '#F59E0B' : '#5A6188' }}
-                />
+                  style={{ background: m.status === 'online' ? '#22C55E' : m.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
               </div>
               <div className="min-w-0">
                 <div className="text-[12px] font-medium truncate">{m.full_name.split(' ')[0]}</div>
                 <div className="text-[10.5px] text-mute2 truncate capitalize">{m.role}</div>
               </div>
+              {/* Quick DM button */}
+              <button
+                onClick={e => { e.stopPropagation(); if (m.id !== user?.id) openDmWith(m) }}
+                className="ml-auto opacity-0 group-hover:opacity-100 w-6 h-6 rounded-md text-mute hover:text-accent hover:bg-accent/10 inline-flex items-center justify-center transition-all"
+              >
+                <MessageSquare size={11} />
+              </button>
             </button>
           ))}
         </div>
@@ -409,6 +552,14 @@ export default function ChatsPage() {
         <CreateChannelModal
           onClose={() => setShowCreateChannel(false)}
           onCreated={c => { setChannels(prev => [...prev, c].sort((a, b) => a.name.localeCompare(b.name))); setActiveChannelId(c.id) }}
+        />
+      )}
+      {showNewDm && (
+        <NewDmModal
+          members={members}
+          currentUserId={user?.id ?? ''}
+          onClose={() => setShowNewDm(false)}
+          onSelect={openDmWith}
         />
       )}
       {viewUserId && <UserProfileModal userId={viewUserId} onClose={() => setViewUserId(null)} />}

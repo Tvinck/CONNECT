@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
-  MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check,
+  MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check, ShoppingBag,
 } from 'lucide-react'
 import { Logomark } from '@/components/ui/Logomark'
 import { Avatar } from '@/components/ui/Avatar'
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { key: 'crm',        label: 'CRM',         href: '/crm',        icon: Users },
   { key: 'employees',  label: 'Сотрудники',  href: '/employees',  icon: User },
   { key: 'services',   label: 'Сервисы',     href: '/services',   icon: LayoutGrid },
+  { key: 'shop',       label: 'Магазин',     href: '/shop',       icon: ShoppingBag },
   { key: 'chats',      label: 'Чаты',        href: '/chats',      icon: MessageSquare },
   { key: 'management', label: 'Управление',  href: '/management', icon: Shield, ceoOnly: true },
   { key: 'profile',    label: 'Профиль',     href: '/profile',    icon: Settings },

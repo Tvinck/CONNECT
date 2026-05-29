@@ -100,17 +100,43 @@ export function ProfileClient({ profile, achievements, tasksDone, daysIn, levelD
             {achievements.length === 0 ? (
               <p className="text-mute text-[13px]">Достижения загружаются…</p>
             ) : (
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-                {achievements.map(a => (
-                  <div key={a.id} title={a.description}
-                    className={`flex flex-col items-center gap-1.5 cursor-pointer ${!a.earned ? 'opacity-30 grayscale' : ''}`}
-                  >
-                    <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-line inline-flex items-center justify-center text-2xl hover:border-line2 transition-all">
-                      {a.icon ?? '🏅'}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {achievements.map(a => {
+                  const rarity = a.points >= 25 ? 'legendary' : a.points >= 15 ? 'epic' : a.points >= 8 ? 'rare' : 'common'
+                  const rarityStyle: Record<string, { border: string; glow: string; label: string; labelColor: string }> = {
+                    legendary: { border: '#FFC833', glow: '0 0 20px -4px #FFC83366', label: 'Легендарное', labelColor: '#FFC833' },
+                    epic:      { border: '#6F4FE8', glow: '0 0 20px -4px #6F4FE866', label: 'Эпическое',   labelColor: '#6F4FE8' },
+                    rare:      { border: '#00C2FF', glow: '0 0 20px -4px #00C2FF55', label: 'Редкое',      labelColor: '#00C2FF' },
+                    common:    { border: '#232A4F', glow: 'none',                    label: 'Обычное',     labelColor: '#5A6188' },
+                  }
+                  const rs = rarityStyle[rarity]
+                  return (
+                    <div key={a.id} title={`${a.description} (+${a.points} баллов)`}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all cursor-pointer ${
+                        a.earned ? 'hover:scale-[1.03]' : 'opacity-35 grayscale saturate-0'
+                      }`}
+                      style={a.earned ? {
+                        borderColor: rs.border,
+                        boxShadow: rs.glow,
+                        background: `${rs.border}08`,
+                      } : { borderColor: '#232A4F' }}
+                    >
+                      <div className="w-14 h-14 rounded-xl inline-flex items-center justify-center text-3xl"
+                        style={a.earned ? { background: `${rs.border}15` } : {}}>
+                        {a.icon ?? '🏅'}
+                      </div>
+                      <div className="text-center">
+                        <div className="text-[12px] font-semibold leading-tight">{a.title}</div>
+                        <div className="text-[10px] mt-0.5 font-medium" style={{ color: a.earned ? rs.labelColor : '#5A6188' }}>
+                          {rs.label}
+                        </div>
+                        {a.earned && (
+                          <div className="text-[10px] text-mute2 mt-0.5">+{a.points} баллов</div>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-[10px] text-mute2 text-center leading-tight">{a.title}</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
