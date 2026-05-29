@@ -196,6 +196,30 @@ create policy users_update_self on public.users for update to authenticated
 create policy users_ceo_write   on public.users for all to authenticated
   using (public.is_ceo()) with check (public.is_ceo());
 
+-- Anti-fraud: a regular user may edit their own profile, but NOT the
+-- privileged columns (role / points / level / is_active). Only the CEO or a
+-- server-side context (service_role / SQL editor, where auth.uid() is null)
+-- can change those. This makes the gamification points tamper-proof.
+create or replace function public.lock_privileged_user_columns()
+returns trigger
+language plpgsql security definer set search_path = public
+as $$
+begin
+  if auth.uid() is null or public.is_ceo() then
+    return new;                       -- server / admin / CEO: allow anything
+  end if;
+  new.role      := old.role;          -- self-update: freeze privileged fields
+  new.points    := old.points;
+  new.level     := old.level;
+  new.is_active := old.is_active;
+  return new;
+end $$;
+
+drop trigger if exists lock_user_privileges on public.users;
+create trigger lock_user_privileges
+  before update on public.users
+  for each row execute function public.lock_privileged_user_columns();
+
 -- projects / tasks / clients / channels / knowledge: open CRUD for the team
 do $$
 declare t text;
