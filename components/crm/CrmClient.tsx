@@ -15,8 +15,11 @@
 
 'use client'
 
-import { useState } from 'react'
-import { Plus, Loader2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+
+/** Rows per page in the clients table. */
+const PAGE_SIZE = 20
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
 import { Avatar } from '@/components/ui/Avatar'
@@ -157,6 +160,13 @@ interface Props {
 export function CrmClient({ initialClients, managers }: Props) {
   const [clients, setClients] = useState<ClientRow[]>(initialClients)
   const [showAdd, setShowAdd] = useState(false)
+  const [page,    setPage]    = useState(0)
+
+  const totalPages  = Math.max(1, Math.ceil(clients.length / PAGE_SIZE))
+  const pageClients = useMemo(
+    () => clients.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [clients, page]
+  )
 
   const counts = {
     lead:   clients.filter(c => c.status === 'lead').length,
@@ -201,7 +211,7 @@ export function CrmClient({ initialClients, managers }: Props) {
             {clients.length === 0 && (
               <tr><td colSpan={6} className="text-center py-10 text-mute text-[13px]">Клиентов пока нет — добавьте первого</td></tr>
             )}
-            {clients.map(c => (
+            {pageClients.map(c => (
               <tr key={c.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
@@ -220,6 +230,42 @@ export function CrmClient({ initialClients, managers }: Props) {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination footer */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-line">
+            <span className="text-[12px] text-mute">
+              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, clients.length)} из {clients.length}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} onClick={() => setPage(i)}
+                  className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
+                    i === page
+                      ? 'bg-accent text-white'
+                      : 'border border-line text-mute hover:text-white hover:border-line2'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showAdd && (

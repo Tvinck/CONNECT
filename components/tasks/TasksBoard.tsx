@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus, Calendar, User2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
@@ -72,11 +72,12 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
     }
   }
 
-  const filtered = tasks.filter(t => {
+  // Memoised so the filter only re-runs when the task list or filters change.
+  const filtered = useMemo(() => tasks.filter(t => {
     if (filterProject  && t.project?.id !== filterProject)  return false
     if (filterPriority && t.priority !== filterPriority)    return false
     return true
-  })
+  }), [tasks, filterProject, filterPriority])
 
   return (
     <>

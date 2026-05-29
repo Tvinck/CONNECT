@@ -1,9 +1,21 @@
+/**
+ * app/(dashboard)/chats/page.tsx — Real-time team chat.
+ *
+ * Features:
+ *  - Public channels + DM channels (slug: dm:{id_a}:{id_b})
+ *  - Messages with reply threads and persistent emoji reactions (saved to DB)
+ *  - Supabase Realtime subscriptions for messages and reactions
+ *  - "Load more" button for channel history (cursor-based, oldest-first)
+ *  - Connection error banner when the WebSocket drops
+ *  - Members panel with quick-DM button
+ */
+
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
-import { Hash, Send, Plus, Smile, Reply, X, Loader2, MessageSquare, Search } from 'lucide-react'
+import { Hash, Send, Plus, Smile, Reply, X, Loader2, MessageSquare, Search, WifiOff, ChevronUp } from 'lucide-react'
 import { useAuthStore } from '@/store/auth'
 import { getInitials, colorFor } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +23,7 @@ import { UserProfileModal } from '@/components/profile/UserProfileModal'
 
 const EMOJI_QUICK = ['😀','😂','🔥','❤️','👍','👋','🎉','✅','💪','🤝','😊','🙏','💡','⚡','🚀','😅','🤔','👏','🫡','💯','😎','🌟','🔧','📦','💬','🗓️','✨','🎯','🤩','👀']
 
+/** Shape of a message row with joined sender. */
 type DbMsg = {
   id: string
   content: string
@@ -23,7 +36,14 @@ type DbMsg = {
 type ChannelRow = { id: string; name: string; description: string | null; slug?: string }
 type MemberRow  = { id: string; full_name: string; role: string; status: string }
 
+/** Fields fetched for every message. */
 const MSG_SELECT = 'id, content, channel_id, created_at, reply_to, sender:users!sender_id(id, full_name)'
+/** Number of messages to load per batch. */
+const MSG_PAGE = 60
+
+// ---------------------------------------------------------------------------
+// CreateChannelModal
+// ---------------------------------------------------------------------------
 
 function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCreated: (c: ChannelRow) => void }) {
   const supabase = createClient()
@@ -79,12 +99,11 @@ function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCre
   )
 }
 
-function NewDmModal({
-  members,
-  currentUserId,
-  onClose,
-  onSelect,
-}: {
+// ---------------------------------------------------------------------------
+// NewDmModal
+// ---------------------------------------------------------------------------
+
+function NewDmModal({ members, currentUserId, onClose, onSelect }: {
   members: MemberRow[]
   currentUserId: string
   onClose: () => void
@@ -107,11 +126,8 @@ function NewDmModal({
         <div className="px-4 pt-4 pb-2">
           <div className="flex items-center gap-2 px-3 h-9 rounded-xl bg-white/[0.04] border border-line">
             <Search size={14} className="text-mute shrink-0" />
-            <input
-              value={query} onChange={e => setQuery(e.target.value)}
-              placeholder="Поиск сотрудника…" autoFocus
-              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-mute2"
-            />
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Поиск сотрудника…" autoFocus
+              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-mute2" />
           </div>
         </div>
         <div className="max-h-[300px] overflow-y-auto p-2">
@@ -138,28 +154,37 @@ function NewDmModal({
   )
 }
 
+// ---------------------------------------------------------------------------
+// ChatsPage
+// ---------------------------------------------------------------------------
+
 export default function ChatsPage() {
   const { user } = useAuthStore()
   const supabase = createClient()
 
-  const [channels, setChannels] = useState<ChannelRow[]>([])
-  const [dmChannels, setDmChannels] = useState<(ChannelRow & { otherUser: MemberRow })[]>([])
-  const [activeChannelId, setActiveChannelId] = useState('')
-  const [messages, setMessages] = useState<DbMsg[]>([])
-  const [text, setText] = useState('')
-  const [showEmoji, setShowEmoji] = useState(false)
-  const [members, setMembers] = useState<MemberRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [reactions, setReactions] = useState<Record<string, Record<string, string[]>>>({})
-  const [replyTo, setReplyTo] = useState<DbMsg | null>(null)
+  const [channels,          setChannels]          = useState<ChannelRow[]>([])
+  const [dmChannels,        setDmChannels]        = useState<(ChannelRow & { otherUser: MemberRow })[]>([])
+  const [activeChannelId,   setActiveChannelId]   = useState('')
+  const [messages,          setMessages]          = useState<DbMsg[]>([])
+  const [text,              setText]              = useState('')
+  const [showEmoji,         setShowEmoji]         = useState(false)
+  const [members,           setMembers]           = useState<MemberRow[]>([])
+  const [loading,           setLoading]           = useState(true)
+  const [loadingMore,       setLoadingMore]       = useState(false)
+  const [hasMore,           setHasMore]           = useState(false)
+  const [realtimeError,     setRealtimeError]     = useState(false)
+  /** reactions[messageId][emoji] = [userId, …] */
+  const [reactions,         setReactions]         = useState<Record<string, Record<string, string[]>>>({})
+  const [replyTo,           setReplyTo]           = useState<DbMsg | null>(null)
   const [showCreateChannel, setShowCreateChannel] = useState(false)
-  const [showNewDm, setShowNewDm] = useState(false)
-  const [viewUserId, setViewUserId] = useState<string | null>(null)
+  const [showNewDm,         setShowNewDm]         = useState(false)
+  const [viewUserId,        setViewUserId]        = useState<string | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
   const emojiRef  = useRef<HTMLDivElement>(null)
 
+  // Close emoji picker on outside click.
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (emojiRef.current && !emojiRef.current.contains(e.target as Node)) setShowEmoji(false)
@@ -168,6 +193,7 @@ export default function ChatsPage() {
     return () => document.removeEventListener('mousedown', handler)
   }, [showEmoji])
 
+  // Load channels + members on mount.
   useEffect(() => {
     if (!user) return
     Promise.all([
@@ -175,30 +201,55 @@ export default function ChatsPage() {
       supabase.from('users').select('id, full_name, role, status').eq('is_active', true),
     ]).then(([{ data: ch }, { data: mb }]) => {
       const allChannels = (ch ?? []) as (ChannelRow & { slug?: string })[]
-      const memberList = (mb ?? []) as MemberRow[]
+      const memberList  = (mb ?? []) as MemberRow[]
       setMembers(memberList)
 
-      // Separate public channels from DM channels
       const publicChs = allChannels.filter(c => !c.slug?.startsWith('dm:'))
       const dmChs = allChannels
         .filter(c => c.slug?.startsWith('dm:'))
         .map(c => {
-          // slug format: dm:id1:id2 (sorted)
-          const parts = c.slug!.replace('dm:', '').split(':')
+          const parts  = c.slug!.replace('dm:', '').split(':')
           const otherId = parts.find(id => id !== user.id) ?? parts[0]
           const otherUser = memberList.find(m => m.id === otherId) ?? {
-            id: otherId, full_name: 'Пользователь', role: '', status: 'offline'
+            id: otherId, full_name: 'Пользователь', role: '', status: 'offline',
           }
           return { ...c, otherUser }
         })
 
       setChannels(publicChs)
       setDmChannels(dmChs)
-
-      const first = publicChs[0]
-      if (first) setActiveChannelId(first.id)
+      if (publicChs[0]) setActiveChannelId(publicChs[0].id)
     })
   }, [user?.id])
+
+  // ---------------------------------------------------------------------------
+  // Reactions helpers
+  // ---------------------------------------------------------------------------
+
+  /** Builds the reactions map from a flat DB rows array. */
+  const buildReactionsMap = (rows: { message_id: string; user_id: string; emoji: string }[]) => {
+    const map: Record<string, Record<string, string[]>> = {}
+    for (const r of rows) {
+      if (!map[r.message_id]) map[r.message_id] = {}
+      if (!map[r.message_id][r.emoji]) map[r.message_id][r.emoji] = []
+      map[r.message_id][r.emoji].push(r.user_id)
+    }
+    return map
+  }
+
+  /** Fetches all reactions for a given list of message IDs. */
+  const loadReactions = useCallback(async (messageIds: string[]) => {
+    if (!messageIds.length) return
+    const { data } = await supabase
+      .from('message_reactions')
+      .select('message_id, user_id, emoji')
+      .in('message_id', messageIds)
+    if (data) setReactions(buildReactionsMap(data))
+  }, [])
+
+  // ---------------------------------------------------------------------------
+  // Message loading
+  // ---------------------------------------------------------------------------
 
   const loadMessages = useCallback(async () => {
     if (!activeChannelId) return
@@ -206,29 +257,95 @@ export default function ChatsPage() {
     const { data } = await supabase
       .from('messages').select(MSG_SELECT)
       .eq('channel_id', activeChannelId)
-      .order('created_at', { ascending: true }).limit(100)
-    setMessages((data ?? []) as unknown as DbMsg[])
+      .order('created_at', { ascending: false })
+      .limit(MSG_PAGE)
+    const msgs = ((data ?? []) as unknown as DbMsg[]).reverse()
+    setMessages(msgs)
+    setHasMore((data ?? []).length === MSG_PAGE)
     setLoading(false)
-  }, [activeChannelId])
+    if (msgs.length) await loadReactions(msgs.map(m => m.id))
+  }, [activeChannelId, loadReactions])
 
   useEffect(() => { loadMessages() }, [loadMessages])
 
+  /** Loads older messages above the current oldest (cursor-based). */
+  const loadOlderMessages = async () => {
+    const oldest = messages[0]
+    if (!oldest || loadingMore) return
+    setLoadingMore(true)
+    const { data } = await supabase
+      .from('messages').select(MSG_SELECT)
+      .eq('channel_id', activeChannelId)
+      .lt('created_at', oldest.created_at)
+      .order('created_at', { ascending: false })
+      .limit(MSG_PAGE)
+    const older = ((data ?? []) as unknown as DbMsg[]).reverse()
+    setMessages(prev => [...older, ...prev])
+    setHasMore(older.length === MSG_PAGE)
+    setLoadingMore(false)
+    if (older.length) {
+      const { data: rxData } = await supabase
+        .from('message_reactions').select('message_id, user_id, emoji')
+        .in('message_id', older.map(m => m.id))
+      if (rxData) setReactions(prev => ({ ...prev, ...buildReactionsMap(rxData) }))
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Realtime subscriptions
+  // ---------------------------------------------------------------------------
+
   useEffect(() => {
     if (!activeChannelId) return
+
     const sub = supabase
       .channel(`chat-${activeChannelId}`)
+      // New messages
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'messages',
         filter: `channel_id=eq.${activeChannelId}`,
       }, async ({ new: row }) => {
         const { data } = await supabase.from('messages').select(MSG_SELECT).eq('id', row.id).single()
-        if (data) setMessages(prev => prev.some(m => m.id === (data as any).id) ? prev : [...prev, data as unknown as DbMsg])
+        if (data) setMessages(prev =>
+          prev.some(m => m.id === (data as DbMsg).id) ? prev : [...prev, data as unknown as DbMsg]
+        )
       })
-      .subscribe()
+      // Reaction added
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'message_reactions',
+      }, ({ new: r }) => {
+        setReactions(prev => {
+          const msg   = { ...(prev[r.message_id] ?? {}) }
+          const list  = msg[r.emoji] ?? []
+          if (list.includes(r.user_id)) return prev
+          msg[r.emoji] = [...list, r.user_id]
+          return { ...prev, [r.message_id]: msg }
+        })
+      })
+      // Reaction removed
+      .on('postgres_changes', {
+        event: 'DELETE', schema: 'public', table: 'message_reactions',
+      }, ({ old: r }) => {
+        setReactions(prev => {
+          const msg  = { ...(prev[r.message_id] ?? {}) }
+          const list = (msg[r.emoji] ?? []).filter((id: string) => id !== r.user_id)
+          if (list.length === 0) { delete msg[r.emoji] } else { msg[r.emoji] = list }
+          return { ...prev, [r.message_id]: msg }
+        })
+      })
+      .subscribe((status) => {
+        setRealtimeError(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT')
+      })
+
     return () => { supabase.removeChannel(sub) }
   }, [activeChannelId])
 
+  // Auto-scroll to the bottom when new messages arrive.
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+
+  // ---------------------------------------------------------------------------
+  // Actions
+  // ---------------------------------------------------------------------------
 
   const send = async () => {
     const content = text.trim()
@@ -240,49 +357,59 @@ export default function ChatsPage() {
       .from('messages')
       .insert({ channel_id: activeChannelId, sender_id: user.id, content, reply_to: replyId })
       .select(MSG_SELECT).single()
-    if (data) setMessages(prev => prev.some(m => m.id === (data as any).id) ? prev : [...prev, data as unknown as DbMsg])
+    if (data) setMessages(prev =>
+      prev.some(m => m.id === (data as DbMsg).id) ? prev : [...prev, data as unknown as DbMsg]
+    )
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
   }
 
-  const toggleReaction = (msgId: string, emoji: string) => {
+  /** Toggles an emoji reaction — persists the change to the DB. */
+  const toggleReaction = async (msgId: string, emoji: string) => {
     if (!user) return
+    const already = reactions[msgId]?.[emoji]?.includes(user.id) ?? false
+
+    // Optimistic update
     setReactions(prev => {
-      const msg = { ...(prev[msgId] ?? {}) }
+      const msg  = { ...(prev[msgId] ?? {}) }
       const list = msg[emoji] ?? []
-      msg[emoji] = list.includes(user.id) ? list.filter(id => id !== user.id) : [...list, user.id]
+      msg[emoji] = already ? list.filter(id => id !== user.id) : [...list, user.id]
       if (msg[emoji].length === 0) delete msg[emoji]
       return { ...prev, [msgId]: msg }
     })
+
+    // Persist to DB (fire-and-forget; Realtime will echo the change back anyway)
+    if (already) {
+      await supabase.from('message_reactions')
+        .delete().eq('message_id', msgId).eq('user_id', user.id).eq('emoji', emoji)
+    } else {
+      await supabase.from('message_reactions')
+        .insert({ message_id: msgId, user_id: user.id, emoji })
+    }
   }
 
   const openDmWith = async (member: MemberRow) => {
     if (!user) return
-    // Canonical slug: dm:{smaller_id}:{bigger_id}
     const [a, b] = [user.id, member.id].sort()
-    const slug = `dm:${a}:${b}`
+    const slug   = `dm:${a}:${b}`
 
-    // Check existing
-    const { data: existing } = await supabase.from('channels').select('id, name, description, slug').eq('slug', slug).single()
+    const { data: existing } = await supabase
+      .from('channels').select('id, name, description, slug').eq('slug', slug).single()
     if (existing) {
-      // Already exists
       const dm = { ...existing, otherUser: member }
       setDmChannels(prev => prev.some(d => d.id === existing.id) ? prev : [...prev, dm])
       setActiveChannelId(existing.id)
       return
     }
 
-    // Create DM channel
     const { data: created } = await supabase
       .from('channels')
-      .insert({ name: `ЛС: ${member.full_name}`, slug, description: null })
+      .insert({ name: `ЛС: ${member.full_name}`, slug, description: null, is_private: true })
       .select('id, name, description, slug').single()
-
     if (created) {
-      const dm = { ...created, otherUser: member }
-      setDmChannels(prev => [...prev, dm])
+      setDmChannels(prev => [...prev, { ...created, otherUser: member }])
       setActiveChannelId(created.id)
     }
   }
@@ -291,30 +418,31 @@ export default function ChatsPage() {
     new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
   const allChannelsList = [...channels, ...dmChannels]
-  const activeCh = allChannelsList.find(c => c.id === activeChannelId)
-  const activeDm = dmChannels.find(c => c.id === activeChannelId)
-  const parentOf = (id: string | null) => id ? messages.find(m => m.id === id) ?? null : null
+  const activeCh  = allChannelsList.find(c => c.id === activeChannelId)
+  const activeDm  = dmChannels.find(c => c.id === activeChannelId)
+  const parentOf  = (id: string | null) => id ? messages.find(m => m.id === id) ?? null : null
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
 
   return (
     <div className="flex" style={{ height: '100vh' }}>
+
       {/* ── Channels sidebar ── */}
       <div className="w-[220px] shrink-0 border-r border-line flex flex-col">
         <div className="px-4 py-4 border-b border-line">
           <h3 className="text-[13px] font-bold tracking-tight">Чаты</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
-          {/* Public channels */}
-          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-2">
-            Каналы
-          </div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-2">Каналы</div>
           {channels.map(c => (
             <button key={c.id} onClick={() => setActiveChannelId(c.id)}
               className={`w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[13px] font-medium tracking-tight mb-0.5 transition-all ${
                 c.id === activeChannelId
                   ? 'bg-accent/15 text-accent border border-accent/30'
                   : 'text-mute hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
+              }`}>
               <Hash size={14} className="shrink-0" />
               <span className="flex-1 text-left truncate">{c.name}</span>
             </button>
@@ -324,18 +452,14 @@ export default function ChatsPage() {
             <Plus size={14} /> Создать канал
           </button>
 
-          {/* DMs */}
-          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-4">
-            Личные
-          </div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-4">Личные</div>
           {dmChannels.map(d => (
             <button key={d.id} onClick={() => setActiveChannelId(d.id)}
               className={`w-full flex items-center gap-2 px-2 h-10 rounded-lg text-[13px] font-medium tracking-tight mb-0.5 transition-all ${
                 d.id === activeChannelId
                   ? 'bg-accent/15 text-accent border border-accent/30'
                   : 'text-mute hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
+              }`}>
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(d.otherUser.full_name)} color={colorFor(d.otherUser.full_name)} size={24} />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-sidebar"
@@ -353,6 +477,14 @@ export default function ChatsPage() {
 
       {/* ── Main chat ── */}
       <div className="flex-1 flex flex-col min-w-0 relative">
+
+        {/* Connection error banner */}
+        {realtimeError && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-err/10 border-b border-err/20 text-err text-[12px] shrink-0">
+            <WifiOff size={13} /> Соединение потеряно — сообщения могут не обновляться в реальном времени
+          </div>
+        )}
+
         {/* Channel header */}
         <div className="px-5 py-3.5 border-b border-line flex items-center gap-3 shrink-0">
           {activeDm ? (
@@ -386,28 +518,50 @@ export default function ChatsPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
+
+          {/* Load more history */}
+          {hasMore && !loading && (
+            <div className="flex justify-center mb-4">
+              <button
+                onClick={loadOlderMessages}
+                disabled={loadingMore}
+                className="inline-flex items-center gap-2 px-4 h-8 rounded-xl border border-line bg-white/[0.03] hover:bg-white/[0.05] text-[12px] text-mute hover:text-white transition-all disabled:opacity-50"
+              >
+                {loadingMore ? <Loader2 size={13} className="animate-spin" /> : <ChevronUp size={13} />}
+                {loadingMore ? 'Загрузка…' : 'Загрузить ещё'}
+              </button>
+            </div>
+          )}
+
           {loading && <div className="text-center py-8 text-mute text-[13px]">Загрузка…</div>}
+
           {!loading && messages.length === 0 && (
             <div className="text-center py-12">
               <MessageSquare size={32} className="text-mute mx-auto mb-3" />
               <div className="text-mute text-[13px]">
-                {activeDm ? `Начните переписку с ${activeDm.otherUser.full_name.split(' ')[0]}` : 'Сообщений ещё нет. Напишите первым!'}
+                {activeDm
+                  ? `Начните переписку с ${activeDm.otherUser.full_name.split(' ')[0]}`
+                  : 'Сообщений ещё нет. Напишите первым!'}
               </div>
             </div>
           )}
+
           <div className="space-y-4">
             {messages.map(m => {
-              const name   = m.sender?.full_name ?? 'Пользователь'
-              const isMe   = user?.id === m.sender?.id
-              const msgRx  = reactions[m.id] ?? {}
+              const name  = m.sender?.full_name ?? 'Пользователь'
+              const isMe  = user?.id === m.sender?.id
+              const msgRx = reactions[m.id] ?? {}
               const parent = parentOf(m.reply_to)
+
               return (
                 <div key={m.id} className={`flex items-start gap-3 group ${isMe ? 'flex-row-reverse' : ''}`}>
                   {!isMe && (
-                    <button onClick={() => m.sender && setViewUserId(m.sender.id)} className="shrink-0 mt-0.5 hover:opacity-80 transition-opacity">
+                    <button onClick={() => m.sender && setViewUserId(m.sender.id)}
+                      className="shrink-0 mt-0.5 hover:opacity-80 transition-opacity">
                       <Avatar initials={getInitials(name)} color={colorFor(name)} size={34} />
                     </button>
                   )}
+
                   <div className={`min-w-0 flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                     {!isMe && (
                       <div className="flex items-baseline gap-2.5 mb-1">
@@ -430,22 +584,24 @@ export default function ChatsPage() {
                       {m.content}
                     </div>
 
+                    {/* Persistent reactions */}
                     {Object.keys(msgRx).length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
-                        {Object.entries(msgRx).map(([emoji, users]) => (
+                        {Object.entries(msgRx).map(([emoji, uids]) => (
                           <button key={emoji} onClick={() => toggleReaction(m.id, emoji)}
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] border transition-all ${
-                              users.includes(user?.id ?? '')
+                              uids.includes(user?.id ?? '')
                                 ? 'bg-accent/20 border-accent/40 text-accent'
                                 : 'bg-white/[0.04] border-line hover:border-line2 text-white/70'
                             }`}
                           >
-                            {emoji}<span className="font-mono text-[11px]">{users.length}</span>
+                            {emoji}<span className="font-mono text-[11px]">{uids.length}</span>
                           </button>
                         ))}
                       </div>
                     )}
 
+                    {/* Hover actions: reply + quick emoji */}
                     <div className={`flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'flex-row-reverse' : ''}`}>
                       <button onClick={() => setReplyTo(m)}
                         className="flex items-center gap-1 px-2 h-6 text-[11px] text-mute hover:text-white rounded-lg hover:bg-white/[0.06] transition-all">
@@ -495,6 +651,7 @@ export default function ChatsPage() {
               </div>
             </div>
           )}
+
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-line hover:border-line2 focus-within:border-accent/50 transition-all">
             <button onClick={() => setShowEmoji(v => !v)}
               className={`transition-colors shrink-0 ${showEmoji ? 'text-accent' : 'text-mute hover:text-white'}`}>
@@ -505,7 +662,9 @@ export default function ChatsPage() {
               value={text}
               onChange={e => setText(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder={activeDm ? `Написать ${activeDm.otherUser.full_name.split(' ')[0]}…` : `Написать в #${activeCh?.name ?? ''}…`}
+              placeholder={activeDm
+                ? `Написать ${activeDm.otherUser.full_name.split(' ')[0]}…`
+                : `Написать в #${activeCh?.name ?? ''}…`}
               className="flex-1 bg-transparent outline-none text-[13.5px] placeholder:text-mute2"
             />
             <button onClick={send} disabled={!text.trim()}
@@ -526,20 +685,19 @@ export default function ChatsPage() {
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {members.map(m => (
             <button key={m.id} onClick={() => setViewUserId(m.id)}
-              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left">
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left group">
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(m.full_name)} color={colorFor(m.full_name)} size={28} />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-sidebar"
                   style={{ background: m.status === 'online' ? '#22C55E' : m.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="text-[12px] font-medium truncate">{m.full_name.split(' ')[0]}</div>
                 <div className="text-[10.5px] text-mute2 truncate capitalize">{m.role}</div>
               </div>
-              {/* Quick DM button */}
               <button
                 onClick={e => { e.stopPropagation(); if (m.id !== user?.id) openDmWith(m) }}
-                className="ml-auto opacity-0 group-hover:opacity-100 w-6 h-6 rounded-md text-mute hover:text-accent hover:bg-accent/10 inline-flex items-center justify-center transition-all"
+                className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-md text-mute hover:text-accent hover:bg-accent/10 inline-flex items-center justify-center transition-all shrink-0"
               >
                 <MessageSquare size={11} />
               </button>
