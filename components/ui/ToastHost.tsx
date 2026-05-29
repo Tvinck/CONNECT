@@ -38,13 +38,20 @@ export function ToastHost() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5 pointer-events-none">
+    <div
+      role="region"
+      aria-label="Уведомления"
+      aria-live="polite"
+      className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5 pointer-events-none"
+    >
       {toasts.map((t) => {
         const cfg = TONE_CONFIG[t.tone]
         const Icon = cfg.icon
         return (
           <div
             key={t.id}
+            role={t.tone === 'err' ? 'alert' : 'status'}
+            aria-live={t.tone === 'err' ? 'assertive' : 'polite'}
             className={`pointer-events-auto animate-toast-in flex items-start gap-3 px-4 py-3.5 rounded-2xl glass border ${cfg.border} shadow-2xl min-w-[300px] max-w-[400px]`}
           >
             {/* Tone icon */}

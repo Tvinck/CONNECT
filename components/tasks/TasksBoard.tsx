@@ -1,3 +1,13 @@
+/**
+ * components/tasks/TasksBoard.tsx — Kanban board for task management.
+ *
+ * Four columns: todo / in_progress / review / done.
+ * Cards show priority dot, project name, title, deadline, and assignee avatar.
+ * Hovering a card reveals quick-move buttons (→ column label).
+ * Status changes use optimistic UI — the local state updates immediately and
+ * is rolled back with a toast if the DB update fails.
+ */
+
 'use client'
 
 import { useState } from 'react'
@@ -6,6 +16,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { CreateTaskModal } from './CreateTaskModal'
 import { createClient } from '@/lib/supabase/client'
+import { useUIStore } from '@/store/ui'
 import { PRIORITY_COLOR, dueLabel, getInitials, colorFor } from '@/lib/utils'
 import type { TaskStatus, TaskPriority } from '@/types'
 
@@ -16,7 +27,8 @@ const COLUMNS: { key: TaskStatus; label: string; color: string }[] = [
   { key: 'done',        label: 'Готово',   color: '#22C55E' },
 ]
 
-type TaskRow = {
+/** Shape of a task row as returned by the tasks page query (exported for reuse). */
+export type TaskRow = {
   id: string
   title: string
   priority: TaskPriority
@@ -40,11 +52,24 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
   const [showCreate,    setShowCreate]    = useState(false)
   const [filterProject, setFilterProject] = useState('')
   const [filterPriority,setFilterPriority]= useState('')
-  const supabase = createClient()
+  const supabase  = createClient()
+  const addToast  = useUIStore(s => s.addToast)
 
   const changeStatus = async (taskId: string, newStatus: TaskStatus) => {
+    // Save old status so we can roll back if the DB update fails.
+    const oldStatus = tasks.find(t => t.id === taskId)?.status
+    if (!oldStatus) return
+
+    // Optimistic update — update UI before waiting for the network.
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t))
-    await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId)
+
+    const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', taskId)
+
+    if (error) {
+      // Revert to previous status and notify the user.
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: oldStatus } : t))
+      addToast('Ошибка', 'Не удалось обновить статус задачи', 'err')
+    }
   }
 
   const filtered = tasks.filter(t => {
@@ -117,7 +142,7 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ background: PRIORITY_COLOR[task.priority] }} />
                       {task.project && (
                         <span className="text-[11px] text-mute2 truncate flex items-center gap-1">
-                          {(task.project as any).emoji && <span>{(task.project as any).emoji}</span>}
+                          {task.project.emoji && <span>{task.project.emoji}</span>}
                           {task.project.name}
                         </span>
                       )}

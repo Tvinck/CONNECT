@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { TasksBoard } from '@/components/tasks/TasksBoard'
+import { TasksBoard, type TaskRow } from '@/components/tasks/TasksBoard'
 import { getCurrentProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
@@ -21,7 +21,8 @@ export default async function TasksPage() {
     supabase.from('users').select('id, full_name').eq('is_active', true).order('full_name'),
   ])
 
-  const total = (tasks ?? []).filter(t => (t as any).status !== 'done').length
+  const taskList = (tasks ?? []) as TaskRow[]
+  const total = taskList.filter(t => t.status !== 'done').length
 
   return (
     <PageContainer>
@@ -30,7 +31,7 @@ export default async function TasksPage() {
         subtitle={`Канбан-доска команды · ${total} в работе`}
       />
       <TasksBoard
-        initialTasks={(tasks ?? []) as any}
+        initialTasks={taskList}
         projects={projects ?? []}
         users={users ?? []}
       />

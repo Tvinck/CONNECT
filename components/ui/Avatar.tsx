@@ -72,6 +72,7 @@ export function Avatar({
       <span>{initials}</span>
       {dotStatus && (
         <span
+          aria-label={dotStatus === 'online' ? 'Онлайн' : dotStatus === 'busy' ? 'Занят' : 'Не в сети'}
           className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-bg ${dotStatus === 'online' ? 'animate-pulse-dot' : ''}`}
           style={{ background: STATUS_COLOR[dotStatus] }}
         />

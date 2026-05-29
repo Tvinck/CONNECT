@@ -1,3 +1,11 @@
+/**
+ * components/tasks/CreateTaskModal.tsx — Modal form for creating a new task.
+ *
+ * On submit, inserts a row in the `tasks` table and calls `onCreated` with the
+ * full row (including joined project and assignee) so the board can prepend it
+ * without a page reload.
+ */
+
 'use client'
 
 import { useState } from 'react'
@@ -6,6 +14,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import type { TaskRow } from './TasksBoard'
 import type { TaskPriority, TaskStatus } from '@/types'
 
 interface ProjectOption { id: string; name: string; color: string }
@@ -15,7 +24,8 @@ interface Props {
   projects: ProjectOption[]
   users: UserOption[]
   onClose: () => void
-  onCreated: (task: any) => void
+  /** Called with the newly created task row after a successful insert. */
+  onCreated: (task: TaskRow) => void
 }
 
 const PRIORITIES: { value: TaskPriority; label: string }[] = [

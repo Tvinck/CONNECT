@@ -21,8 +21,8 @@ import type { UserRole } from '@/types'
 /** Whitelist of roles that can be assigned when inviting. */
 const VALID_ROLES: UserRole[] = ['ceo', 'design', 'dev', 'sales', 'support']
 
-/** Simple RFC-5322 subset — catches obvious typos without the 6 kB regex. */
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+/** RFC-5322 subset — requires local@domain.tld with a 2+ char TLD. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i
 
 export async function POST(req: Request) {
   // 1. Authorize: only a logged-in CEO may invite.

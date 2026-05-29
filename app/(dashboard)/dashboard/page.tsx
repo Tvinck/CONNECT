@@ -72,10 +72,23 @@ export default async function DashboardPage() {
   const turnover = clients.reduce((s, c) => s + Number(c.total_spent || 0), 0)
   const payingClients = clients.filter((c) => c.status === 'active' || c.status === 'vip').length
 
-  const myTasks = (myTasksRes.data ?? []) as any[]
-  const activity = (activityRes.data ?? []) as any[]
-  const projects = (projectsRes.data ?? []) as any[]
-  const notifications = (notifRes.data ?? []) as any[]
+  // Local types matching the select shapes above.
+  type MyTaskRow = {
+    id: string; title: string; due_date: string | null
+    priority: string; status: string
+    project: { name: string; color: string; emoji?: string } | null
+  }
+  type ActivityRow = {
+    id: string; title: string; status: string; created_at: string
+    creator: { full_name: string } | null
+  }
+  type ProjectRow  = { id: string; name: string; emoji?: string; color: string; status: string; progress: number }
+  type NotifRow    = { id: string; type: string; title: string; body?: string; is_read: boolean; created_at: string }
+
+  const myTasks      = (myTasksRes.data   ?? []) as MyTaskRow[]
+  const activity     = (activityRes.data  ?? []) as ActivityRow[]
+  const projects     = (projectsRes.data  ?? []) as ProjectRow[]
+  const notifications = (notifRes.data    ?? []) as NotifRow[]
 
   const lvl = levelInfo(profile.points)
   const firstName = profile.full_name?.split(' ')[0] ?? 'друг'
@@ -162,7 +175,7 @@ export default async function DashboardPage() {
               <div className="text-center py-10 text-mute text-[13px]">Нет открытых задач 🎉</div>
             )}
             {myTasks.map((t) => {
-              const project = Array.isArray(t.project) ? t.project[0] : t.project
+              const project = t.project
               const color = project?.color ?? '#1472F5'
               const prio = PRIORITY_COLOR[t.priority] ?? '#8B92B4'
               return (
@@ -204,8 +217,7 @@ export default async function DashboardPage() {
                 <div className="text-mute text-[13px] py-4">Пока пусто</div>
               )}
               {activity.map((a) => {
-                const creator = Array.isArray(a.creator) ? a.creator[0] : a.creator
-                const name = creator?.full_name ?? 'Кто-то'
+                const name = a.creator?.full_name ?? 'Кто-то'
                 const color = colorFor(name)
                 return (
                   <div key={a.id} className="relative">

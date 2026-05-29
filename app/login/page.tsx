@@ -16,7 +16,7 @@ const PROJECTS = [
 export default function LoginPage() {
   const router = useRouter()
   const [supabase] = useState(() => createClient())
-  const [email, setEmail] = useState('artem@bazzar.group')
+  const [email, setEmail] = useState('')
   const [pwd, setPwd]     = useState('')
   const [showPwd, setShowPwd] = useState(false)
   const [loading, setLoading] = useState(false)
