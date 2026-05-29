@@ -30,7 +30,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
 import { getInitials, colorFor, dueLabel, PRIORITY_COLOR } from '@/lib/utils'
 import type { TaskRow } from '@/components/tasks/TasksBoard'
+import { AddTransactionModal, TX_CATEGORIES, type TxRow } from '@/components/finance/FinancesClient'
 import type { ProjectStatus, TaskStatus } from '@/types'
+import { fmtRub } from '@/lib/utils'
 
 // ─── local types ──────────────────────────────────────────────────────────────
 
@@ -70,6 +72,7 @@ interface Props {
   initialMembers: ProjectMemberRow[]
   initialLinks: ProjectLinkRow[]
   initialTasks: TaskRow[]
+  initialTransactions: TxRow[]
   allUsers: UserOption[]
 }
 
@@ -335,7 +338,7 @@ function AddLinkModal({
 
 // ─── main component ───────────────────────────────────────────────────────────
 
-export function ProjectDetail({ project: initialProject, initialMembers, initialLinks, initialTasks, allUsers }: Props) {
+export function ProjectDetail({ project: initialProject, initialMembers, initialLinks, initialTasks, initialTransactions, allUsers }: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
 
@@ -343,8 +346,10 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
   const [members,     setMembers]     = useState<ProjectMemberRow[]>(initialMembers)
   const [links,       setLinks]       = useState<ProjectLinkRow[]>(initialLinks)
   const [tasks,       setTasks]       = useState<TaskRow[]>(initialTasks)
+  const [txList,      setTxList]      = useState<TxRow[]>(initialTransactions)
   const [taskFilter,  setTaskFilter]  = useState<TaskStatus | 'all'>('all')
 
+  const [showAddTx,      setShowAddTx]      = useState(false)
   const [showEdit,       setShowEdit]       = useState(false)
   const [showAddMember,  setShowAddMember]  = useState(false)
   const [showAddLink,    setShowAddLink]    = useState(false)
@@ -616,6 +621,69 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
         )}
       </div>
 
+      {/* ── Project Finances ─────────────────────────────────────── */}
+      {(() => {
+        const txIncome  = txList.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+        const txExpense = txList.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+        const txNet     = txIncome - txExpense
+        return (
+          <div className="card p-5 mt-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[16px] font-semibold tracking-tight">Финансы проекта</h3>
+              <Button size="sm" variant="ghost" onClick={() => setShowAddTx(true)}>
+                <Plus size={13} /> Транзакция
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[
+                { label: 'Доходы',  value: txIncome,  positive: true,      always: true },
+                { label: 'Расходы', value: txExpense, positive: false,     always: true },
+                { label: 'Баланс',  value: txNet,     positive: txNet >= 0, always: true },
+              ].map(s => (
+                <div key={s.label} className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+                  <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">{s.label}</div>
+                  <div className={`text-[17px] font-bold tabular-nums ${s.positive ? 'text-ok' : 'text-err'}`}>
+                    {txNet === 0 && s.label === 'Баланс' ? fmtRub(0) : (s.positive ? '+' : '−') + fmtRub(Math.abs(s.value))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {txList.length === 0 ? (
+              <div className="text-center py-6 text-mute text-[12.5px]">Транзакций пока нет</div>
+            ) : (
+              <div className="space-y-1">
+                {txList.map(t => {
+                  const cat = TX_CATEGORIES[t.category] ?? TX_CATEGORIES.other
+                  return (
+                    <div key={t.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.02] transition-colors">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: t.type === 'income' ? '#22C55E' : '#EF4444' }} />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[13px] truncate">{t.description}</span>
+                      </div>
+                      <span className="text-[11px] text-mute shrink-0">
+                        {new Date(t.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                      </span>
+                      <span className="text-[11px] px-2 h-4.5 rounded-full inline-flex items-center"
+                        style={{ background: `${cat.color}20`, color: cat.color }}>
+                        {cat.label}
+                      </span>
+                      <span className={`text-[13px] font-bold tabular-nums font-mono shrink-0 ${
+                        t.type === 'income' ? 'text-ok' : 'text-err'
+                      }`}>
+                        {t.type === 'income' ? '+' : '−'}{fmtRub(Number(t.amount))}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
       {/* ── modals ───────────────────────────────────────────────── */}
 
       {showEdit && (
@@ -641,6 +709,15 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
           projectId={project.id}
           onClose={() => setShowAddLink(false)}
           onAdded={l => setLinks(prev => [...prev, l])}
+        />
+      )}
+
+      {showAddTx && (
+        <AddTransactionModal
+          projects={[{ id: project.id, name: project.name, color: project.color }]}
+          initialProjectId={project.id}
+          onClose={() => setShowAddTx(false)}
+          onAdded={t => setTxList(prev => [t, ...prev])}
         />
       )}
 

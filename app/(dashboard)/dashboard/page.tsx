@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -11,7 +12,7 @@ import {
 } from '@/lib/utils'
 import {
   Wallet, CheckSquare, CheckCircle, Coins, Flame,
-  ArrowRight, Clock, ChevronRight, Bolt, Gift,
+  ArrowRight, Clock, ChevronRight, Bolt, Gift, MessageSquare,
 } from 'lucide-react'
 
 const NOTIF_TONE: Record<string, { bg: string; text: string }> = {
@@ -104,6 +105,46 @@ export default async function DashboardPage() {
         }
       />
 
+      {/* ── Mobile quick-action view (hidden on md+) ── */}
+      <div className="md:hidden mb-6 space-y-3">
+        <p className="text-[13px] text-mute">
+          {activeCount > 0
+            ? `${activeCount} активных задач${urgentCount ? ` · ${urgentCount} срочных 🔥` : ''}`
+            : 'Открытых задач нет ✨'}
+        </p>
+        {(
+          [
+            { href: '/tasks',    icon: CheckSquare,  label: 'Задачи',   sub: `${activeCount} активных`,           color: '#1472F5',  bg: 'bg-accent/15',  badge: activeCount > 0 ? activeCount : 0 },
+            { href: '/finances', icon: Wallet,        label: 'Финансы',  sub: 'Доходы и расходы',                  color: '#FFC833',  bg: 'bg-gold/15',    badge: 0 },
+            { href: '/chats',    icon: MessageSquare, label: 'Чаты',     sub: 'Командное общение',                  color: '#6F4FE8',  bg: 'bg-[#6F4FE8]/15', badge: 0 },
+          ] as const
+        ).map(item => {
+          const Icon = item.icon
+          return (
+            <Link key={item.href} href={item.href}
+              className="flex items-center gap-4 p-4 rounded-2xl border border-line bg-card hover:border-line2 hover:bg-white/[0.03] transition-all active:scale-[0.98]">
+              <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}
+                style={{ color: item.color }}>
+                <Icon size={22} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[16px] font-bold tracking-tight">{item.label}</div>
+                <div className="text-[12px] text-mute mt-0.5">{item.sub}</div>
+              </div>
+              {item.badge > 0 && (
+                <span className="shrink-0 min-w-[24px] h-6 px-1.5 rounded-full bg-accent text-white text-[11px] font-bold inline-flex items-center justify-center">
+                  {item.badge}
+                </span>
+              )}
+              <ChevronRight size={16} className="text-mute2 shrink-0" />
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* ── Desktop dashboard (hidden on mobile) ── */}
+      <div className="hidden md:block space-y-5">
+
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <StatCard
@@ -157,7 +198,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Tasks + Activity */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mt-5">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2 card p-6">
           <div className="flex items-end justify-between mb-4">
             <div>
@@ -241,7 +282,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Projects + Notifications */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mt-5">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <div className="card p-6">
           <div className="flex items-end justify-between mb-4">
             <div>
@@ -312,7 +353,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Level bar */}
-      <div className="card p-6 mt-5 overflow-hidden relative">
+      <div className="card p-6 overflow-hidden relative">
         <div className="absolute -right-12 -top-12 w-48 h-48 rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(255,200,51,0.18), transparent)' }} />
         <div className="relative grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-6 items-center">
           <div className="flex items-center gap-4">
@@ -347,6 +388,8 @@ export default async function DashboardPage() {
             <ArrowRight size={14} />
           </a>
         </div>
+      </div>
+
       </div>
     </PageContainer>
   )

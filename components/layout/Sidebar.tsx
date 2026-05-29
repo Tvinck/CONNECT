@@ -20,6 +20,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
   MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check, ShoppingBag,
+  Wallet,
 } from 'lucide-react'
 import { Logomark } from '@/components/ui/Logomark'
 import { Avatar } from '@/components/ui/Avatar'
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { key: 'tasks',      label: 'Задачи',      href: '/tasks',      icon: CheckSquare },
   { key: 'projects',   label: 'Проекты',     href: '/projects',   icon: Folder },
   { key: 'knowledge',  label: 'База знаний', href: '/knowledge',  icon: BookOpen },
+  { key: 'finances',   label: 'Финансы',     href: '/finances',   icon: Wallet },
   { key: 'crm',        label: 'CRM',         href: '/crm',        icon: Users },
   { key: 'employees',  label: 'Сотрудники',  href: '/employees',  icon: User },
   { key: 'services',   label: 'Сервисы',     href: '/services',   icon: LayoutGrid },

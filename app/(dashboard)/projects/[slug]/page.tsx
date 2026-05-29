@@ -9,6 +9,7 @@ import {
 import { getCurrentProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import type { TaskRow } from '@/components/tasks/TasksBoard'
+import type { TxRow } from '@/components/finance/FinancesClient'
 
 export default async function ProjectDetailPage({ params }: { params: { slug: string } }) {
   const profile = await getCurrentProfile()
@@ -31,6 +32,7 @@ export default async function ProjectDetailPage({ params }: { params: { slug: st
     { data: links },
     { data: tasks },
     { data: allUsers },
+    { data: transactions },
   ] = await Promise.all([
     supabase
       .from('project_members')
@@ -52,6 +54,11 @@ export default async function ProjectDetailPage({ params }: { params: { slug: st
       .select('id, full_name')
       .eq('is_active', true)
       .order('full_name'),
+    supabase
+      .from('transactions')
+      .select('*, project:projects(id, name, color)')
+      .eq('project_id', project.id)
+      .order('date', { ascending: false }),
   ])
 
   return (
@@ -61,6 +68,7 @@ export default async function ProjectDetailPage({ params }: { params: { slug: st
         initialMembers={(members ?? []) as unknown as ProjectMemberRow[]}
         initialLinks={(links ?? []) as unknown as ProjectLinkRow[]}
         initialTasks={(tasks ?? []) as unknown as TaskRow[]}
+        initialTransactions={(transactions ?? []) as unknown as TxRow[]}
         allUsers={allUsers ?? []}
       />
     </PageContainer>
