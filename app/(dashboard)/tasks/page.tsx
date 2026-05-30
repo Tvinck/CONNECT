@@ -21,7 +21,7 @@ export default async function TasksPage() {
     supabase.from('users').select('id, full_name').eq('is_active', true).order('full_name'),
   ])
 
-  const taskList = (tasks ?? []) as TaskRow[]
+  const taskList = (tasks ?? []) as unknown as TaskRow[]
   const total = taskList.filter(t => t.status !== 'done').length
 
   return (

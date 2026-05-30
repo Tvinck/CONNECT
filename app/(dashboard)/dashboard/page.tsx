@@ -86,8 +86,8 @@ export default async function DashboardPage() {
   type ProjectRow  = { id: string; name: string; emoji?: string; color: string; status: string; progress: number }
   type NotifRow    = { id: string; type: string; title: string; body?: string; is_read: boolean; created_at: string }
 
-  const myTasks      = (myTasksRes.data   ?? []) as MyTaskRow[]
-  const activity     = (activityRes.data  ?? []) as ActivityRow[]
+  const myTasks      = (myTasksRes.data   ?? []) as unknown as MyTaskRow[]
+  const activity     = (activityRes.data  ?? []) as unknown as ActivityRow[]
   const projects     = (projectsRes.data  ?? []) as ProjectRow[]
   const notifications = (notifRes.data    ?? []) as NotifRow[]
 

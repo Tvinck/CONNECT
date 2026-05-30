@@ -6,8 +6,8 @@
  * unrestricted read/write access to every table.
  *
  * SECURITY RULES — this file must only ever be imported from:
- *  - API route handlers  (app/api/**/route.ts)
- *  - Server actions      (app/**/actions.ts)
+ *  - API route handlers  (app/api/[...]/route.ts)
+ *  - Server actions      (app/[...]/actions.ts)
  *  - Migration scripts   (supabase/seed*.ts)
  *
  * NEVER import this into:

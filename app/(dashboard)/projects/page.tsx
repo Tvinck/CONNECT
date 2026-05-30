@@ -3,6 +3,7 @@ import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { ProjectsClient } from '@/components/projects/ProjectsClient'
 import { getCurrentProfile } from '@/lib/auth'
+import type { ProjectStatus } from '@/types'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function ProjectsPage() {
@@ -18,7 +19,7 @@ export default async function ProjectsPage() {
   ])
 
   type TaskMeta    = { project_id: string | null; assignee_id: string | null }
-  type ProjectMeta = { id: string; name: string; slug: string; emoji?: string; color: string; status: string; progress: number; description?: string }
+  type ProjectMeta = { id: string; name: string; slug: string; emoji: string | null; color: string; status: ProjectStatus; progress: number; description: string | null }
 
   // Count tasks and distinct team members per project.
   const taskCounts: Record<string, number> = {}

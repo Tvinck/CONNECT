@@ -183,14 +183,18 @@ export function ManagementPanel({ employees }: Props) {
   const [list,          setList]          = useState<Employee[]>(employees)
   const [perms,         setPerms]         = useState(DEFAULT_PERMS)
   const [permsLoading,  setPermsLoading]  = useState(true)
+  // Tracks which cells currently have an in-flight upsert to prevent race conditions.
+  const [savingCells,   setSavingCells]   = useState<Set<string>>(new Set())
 
   // Load persisted permissions on mount; fall back to DEFAULT_PERMS if DB is empty.
   useEffect(() => {
     supabase
       .from('role_permissions')
       .select('role, section, level')
-      .then(({ data }) => {
-        if (data && data.length > 0) {
+      .then(({ data, error }) => {
+        if (error) {
+          addToast('Ошибка', 'Не удалось загрузить права доступа', 'err')
+        } else if (data && data.length > 0) {
           const loaded: Record<string, number[]> = {}
           for (const r of ROLES_SHORT) {
             loaded[r] = [...(DEFAULT_PERMS[r] ?? Array(SECTIONS.length).fill(0))]
@@ -210,9 +214,13 @@ export function ManagementPanel({ employees }: Props) {
 
   /** Cycle a cell's permission level (0→1→2→0) and persist to DB with rollback on error. */
   const cyclePermission = async (role: string, sectionIdx: number) => {
+    const cellKey = `${role}-${sectionIdx}`
+    if (savingCells.has(cellKey)) return  // prevent race from rapid clicks
+
     const prev = perms[role]?.[sectionIdx] ?? 0
     const next = (prev + 1) % 3
 
+    setSavingCells(s => new Set(s).add(cellKey))
     setPerms(p => {
       const arr = [...(p[role] ?? [])]
       arr[sectionIdx] = next
@@ -222,6 +230,8 @@ export function ManagementPanel({ employees }: Props) {
     const { error } = await supabase
       .from('role_permissions')
       .upsert({ role, section: SECTIONS[sectionIdx], level: next, updated_at: new Date().toISOString() })
+
+    setSavingCells(s => { const n = new Set(s); n.delete(cellKey); return n })
 
     if (error) {
       setPerms(p => {
@@ -286,12 +296,13 @@ export function ManagementPanel({ employees }: Props) {
                   <tr key={sec} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
                     <td className="px-4 py-3 text-[13px] font-medium">{sec}</td>
                     {ROLES_SHORT.map(r => {
-                      const val = perms[r]?.[si] ?? 0
+                      const val     = perms[r]?.[si] ?? 0
+                      const cellKey = `${r}-${si}`
                       return (
                         <td key={r} className="px-3 py-3 text-center">
                           <button
                             onClick={() => cyclePermission(r, si)}
-                            disabled={permsLoading}
+                            disabled={permsLoading || savingCells.has(cellKey)}
                             className="inline-flex hover:scale-105 active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                             title="Нажмите для изменения"
                           >

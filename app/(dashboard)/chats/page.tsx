@@ -307,7 +307,7 @@ export default function ChatsPage() {
       }, async ({ new: row }) => {
         const { data } = await supabase.from('messages').select(MSG_SELECT).eq('id', row.id).single()
         if (data) setMessages(prev =>
-          prev.some(m => m.id === (data as DbMsg).id) ? prev : [...prev, data as unknown as DbMsg]
+          prev.some(m => m.id === (data as unknown as DbMsg).id) ? prev : [...prev, data as unknown as DbMsg]
         )
       })
       // Reaction added
@@ -358,7 +358,7 @@ export default function ChatsPage() {
       .insert({ channel_id: activeChannelId, sender_id: user.id, content, reply_to: replyId })
       .select(MSG_SELECT).single()
     if (data) setMessages(prev =>
-      prev.some(m => m.id === (data as DbMsg).id) ? prev : [...prev, data as unknown as DbMsg]
+      prev.some(m => m.id === (data as unknown as DbMsg).id) ? prev : [...prev, data as unknown as DbMsg]
     )
   }
 
