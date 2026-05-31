@@ -2,19 +2,43 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
-const KIE_BASE = 'https://api.kie.ai'
+const KIE_BASE  = 'https://api.kie.ai'
+const ALLOWED_MODELS = ['V4', 'V4_5', 'V4_5PLUS'] as const
+const UUID_RE   = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export async function POST(req: NextRequest) {
   const profile = await getCurrentProfile()
   if (!profile) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const apiKey = process.env.KIE_AI_KEY
-  if (!apiKey) return NextResponse.json({ error: 'KIE_AI_KEY not configured' }, { status: 503 })
+  if (!apiKey) return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
 
-  const body = await req.json()
-  const { prompt, title, style, model = 'V4', instrumental = false, orderId } = body
+  let body: Record<string, unknown>
+  try { body = await req.json() } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
 
-  if (!prompt?.trim()) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
+  const prompt       = typeof body.prompt       === 'string' ? body.prompt.trim().slice(0, 5000) : ''
+  const title        = typeof body.title        === 'string' ? body.title.trim().slice(0, 200)   : ''
+  const style        = typeof body.style        === 'string' ? body.style.trim().slice(0, 200)   : ''
+  const model        = ALLOWED_MODELS.includes(body.model as typeof ALLOWED_MODELS[number])
+    ? (body.model as string) : 'V4'
+  const instrumental = body.instrumental === true
+  const orderId      = typeof body.orderId === 'string' && UUID_RE.test(body.orderId)
+    ? body.orderId : null
+
+  if (!prompt) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
+
+  // If orderId supplied, verify caller has access to that order
+  if (orderId) {
+    const supabase = createClient()
+    const { data: order } = await supabase
+      .from('pm_orders')
+      .select('id')
+      .eq('id', orderId)
+      .single()
+    if (!order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+  }
 
   try {
     const kieRes = await fetch(`${KIE_BASE}/api/v1/generate`, {
@@ -25,26 +49,22 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         prompt,
-        title: title || undefined,
-        style: style || undefined,
+        title:        title || undefined,
+        style:        style || undefined,
         model,
         instrumental,
-        customMode: !!(title || style),
+        customMode:   !!(title || style),
       }),
     })
 
     const kieJson = await kieRes.json()
 
     if (!kieRes.ok || kieJson.code !== 200) {
-      return NextResponse.json(
-        { error: kieJson.msg ?? 'Generation failed' },
-        { status: kieRes.status }
-      )
+      return NextResponse.json({ error: 'Generation failed' }, { status: kieRes.status })
     }
 
-    const taskId = kieJson.data?.taskId as string | undefined
+    const taskId = typeof kieJson.data?.taskId === 'string' ? kieJson.data.taskId : null
 
-    // Record this task locally in Supabase so we have history.
     if (taskId) {
       const supabase = createClient()
       await supabase.from('pm_kie_tasks').insert({
@@ -52,16 +72,17 @@ export async function POST(req: NextRequest) {
         type:         'music',
         status:       'pending',
         model,
-        title:        title || null,
+        title:        title  || null,
         prompt,
-        style:        style || null,
+        style:        style  || null,
         instrumental,
-        order_id:     orderId || null,
+        order_id:     orderId,
+        created_by:   profile.id,
       })
     }
 
     return NextResponse.json(kieJson)
-  } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
