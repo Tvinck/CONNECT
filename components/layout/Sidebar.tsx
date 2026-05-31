@@ -31,21 +31,41 @@ import { createClient } from '@/lib/supabase/client'
 import { useState, useRef, useEffect } from 'react'
 import type { UserRole } from '@/types'
 
-const NAV_ITEMS = [
-  { key: 'dashboard',  label: 'Главная',     href: '/dashboard',  icon: Home },
-  { key: 'tasks',      label: 'Задачи',      href: '/tasks',      icon: CheckSquare },
-  { key: 'projects',   label: 'Проекты',     href: '/projects',   icon: Folder },
-  { key: 'knowledge',  label: 'База знаний', href: '/knowledge',  icon: BookOpen },
-  { key: 'finances',   label: 'Финансы',     href: '/finances',   icon: Wallet },
-  { key: 'pm',         label: 'ПодариМомент', href: '/pm',         icon: Gift },
-  { key: 'crm',        label: 'CRM',         href: '/crm',        icon: Users },
-  { key: 'employees',  label: 'Сотрудники',  href: '/employees',  icon: User },
-  { key: 'services',   label: 'Сервисы',     href: '/services',   icon: LayoutGrid },
-  { key: 'shop',       label: 'Магазин',     href: '/shop',       icon: ShoppingBag },
-  { key: 'chats',      label: 'Чаты',        href: '/chats',      icon: MessageSquare },
-  { key: 'management', label: 'Управление',  href: '/management', icon: Shield, ceoOnly: true },
-  { key: 'profile',    label: 'Профиль',     href: '/profile',    icon: Settings },
-]
+const NAV_GROUPS = [
+  {
+    label: 'Работа',
+    items: [
+      { key: 'dashboard', label: 'Главная',     href: '/dashboard', icon: Home },
+      { key: 'tasks',     label: 'Задачи',      href: '/tasks',     icon: CheckSquare },
+      { key: 'projects',  label: 'Проекты',     href: '/projects',  icon: Folder },
+      { key: 'knowledge', label: 'База знаний', href: '/knowledge', icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Бизнес',
+    items: [
+      { key: 'finances', label: 'Финансы',      href: '/finances',  icon: Wallet },
+      { key: 'pm',       label: 'ПодариМомент', href: '/pm',        icon: Gift },
+      { key: 'crm',      label: 'CRM',          href: '/crm',       icon: Users },
+      { key: 'services', label: 'Сервисы',      href: '/services',  icon: LayoutGrid },
+      { key: 'shop',     label: 'Магазин',      href: '/shop',      icon: ShoppingBag },
+    ],
+  },
+  {
+    label: 'Команда',
+    items: [
+      { key: 'employees', label: 'Сотрудники', href: '/employees', icon: User },
+      { key: 'chats',     label: 'Чаты',       href: '/chats',     icon: MessageSquare },
+    ],
+  },
+  {
+    label: 'Управление',
+    items: [
+      { key: 'management', label: 'Управление', href: '/management', icon: Shield, ceoOnly: true },
+      { key: 'profile',    label: 'Профиль',    href: '/profile',    icon: Settings },
+    ],
+  },
+] as const
 
 interface SidebarProps {
   taskCount?: number
@@ -70,10 +90,6 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   const status = user?.status ?? 'offline'
 
   const roleMeta = ROLES.find((r) => r.id === role) || ROLES[0]
-
-  const items = NAV_ITEMS.filter(
-    (item) => !item.ceoOnly || role === 'ceo'
-  )
 
   const badges: Record<string, number> = {
     tasks: taskCount,
@@ -138,45 +154,56 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
         />
 
         {/* Navigation */}
-        <div className="px-3 flex-1 overflow-y-auto">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-3 mb-2 font-semibold">
-            Меню
-          </div>
-          <nav className="space-y-1">
-            {items.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname.startsWith(item.href)
-              const badge = badges[item.key]
+        <div className="px-3 flex-1 overflow-y-auto space-y-4">
+          {NAV_GROUPS.map((group) => {
+            const visibleItems = group.items.filter(
+              (item) => !('ceoOnly' in item && item.ceoOnly) || role === 'ceo'
+            )
+            if (visibleItems.length === 0) return null
+            return (
+              <div key={group.label}>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-3 mb-1.5 font-semibold">
+                  {group.label}
+                </div>
+                <nav className="space-y-0.5">
+                  {visibleItems.map((item) => {
+                    const Icon = item.icon
+                    const isActive = pathname.startsWith(item.href)
+                    const badge = badges[item.key as keyof typeof badges]
+                    const isCeoOnly = 'ceoOnly' in item && item.ceoOnly
 
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`nav-item w-full flex items-center gap-3 px-3 h-10 rounded-lg text-[13.5px] font-medium tracking-tight
-                    ${isActive ? 'nav-active text-white' : 'text-mute hover:text-white hover:bg-white/[0.03]'}`}
-                >
-                  <span className={isActive ? 'text-accent' : item.ceoOnly ? 'text-gold' : ''}>
-                    <Icon size={18} />
-                  </span>
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.ceoOnly && !isActive && (
-                    <span className="text-[9px] text-gold/70 font-mono uppercase tracking-wider">
-                      CEO
-                    </span>
-                  )}
-                  {badge ? (
-                    <span
-                      className={`min-w-[20px] h-5 px-1.5 rounded-md inline-flex items-center justify-center text-[10.5px] font-semibold
-                        ${isActive ? 'bg-accent text-white' : 'bg-white/[0.06] text-mute'}`}
-                    >
-                      {badge}
-                    </span>
-                  ) : null}
-                </Link>
-              )
-            })}
-          </nav>
+                    return (
+                      <Link
+                        key={item.key}
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`nav-item w-full flex items-center gap-3 px-3 h-9 rounded-lg text-[13px] font-medium tracking-tight
+                          ${isActive ? 'nav-active text-white' : 'text-mute hover:text-white hover:bg-white/[0.03]'}`}
+                      >
+                        <span className={isActive ? 'text-accent' : isCeoOnly ? 'text-gold' : ''}>
+                          <Icon size={17} />
+                        </span>
+                        <span className="flex-1 text-left">{item.label}</span>
+                        {isCeoOnly && !isActive && (
+                          <span className="text-[9px] text-gold/70 font-mono uppercase tracking-wider">
+                            CEO
+                          </span>
+                        )}
+                        {badge ? (
+                          <span
+                            className={`min-w-[20px] h-5 px-1.5 rounded-md inline-flex items-center justify-center text-[10.5px] font-semibold
+                              ${isActive ? 'bg-accent text-white' : 'bg-white/[0.06] text-mute'}`}
+                          >
+                            {badge}
+                          </span>
+                        ) : null}
+                      </Link>
+                    )
+                  })}
+                </nav>
+              </div>
+            )
+          })}
         </div>
 
         {/* Footer */}

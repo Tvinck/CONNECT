@@ -27,6 +27,14 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
 
   const stuckCount = useMemo(() => orders.filter(isStuck).length, [orders])
 
+  const payCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: orders.length }
+    for (const o of orders) {
+      counts[o.payment_status] = (counts[o.payment_status] ?? 0) + 1
+    }
+    return counts
+  }, [orders])
+
   const filtered = useMemo(() => {
     let list = orders
     if (stuckOnly)                 list = list.filter(isStuck)
@@ -119,7 +127,7 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
           >
             {PAY_FILTER_LABEL[f]}
             <span className="ml-1.5 opacity-60">
-              {f === 'all' ? orders.length : orders.filter(o => o.payment_status === f).length}
+              {payCounts[f] ?? 0}
             </span>
           </button>
         ))}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Loader2, RefreshCw, Music, Play, Pause, Download, Trash2,
-  Zap, AlertCircle, CheckCircle, Clock, Mic, MicOff, Sparkles,
+  AlertCircle, CheckCircle, Mic, MicOff, Sparkles, Copy, Check as CheckIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Modal }  from '@/components/ui/Modal'
@@ -63,8 +63,9 @@ const STATUS_LABEL: Record<KieTask['status'], string> = {
 // ─── mini audio player ────────────────────────────────────────────────────────
 
 function AudioPlayer({ url, title }: { url: string; title?: string | null }) {
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const [playing, setPlaying] = useState(false)
+  const audioRef    = useRef<HTMLAudioElement>(null)
+  const lastTickRef = useRef(0)
+  const [playing,  setPlaying]  = useState(false)
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
 
@@ -108,7 +109,12 @@ function AudioPlayer({ url, title }: { url: string; title?: string | null }) {
       <audio
         ref={audioRef}
         src={url}
-        onTimeUpdate={() => setProgress(audioRef.current?.currentTime ?? 0)}
+        onTimeUpdate={() => {
+          const now = Date.now()
+          if (now - lastTickRef.current < 100) return
+          lastTickRef.current = now
+          setProgress(audioRef.current?.currentTime ?? 0)
+        }}
         onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
         onEnded={() => setPlaying(false)}
       />
@@ -287,6 +293,29 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
   )
 }
 
+// ─── copy id chip ─────────────────────────────────────────────────────────────
+
+function CopyId({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    navigator.clipboard.writeText(id).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+  return (
+    <button
+      onClick={copy}
+      className="mt-1.5 flex items-center gap-1 text-[10px] text-mute2 font-mono hover:text-white transition-colors group"
+    >
+      <span className="group-hover:underline">ID: {id}</span>
+      {copied
+        ? <CheckIcon size={10} className="text-ok shrink-0" />
+        : <Copy size={10} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />}
+    </button>
+  )
+}
+
 // ─── task card ────────────────────────────────────────────────────────────────
 
 function TaskCard({
@@ -382,11 +411,9 @@ function TaskCard({
         </div>
       )}
 
-      {/* Task ID for debugging */}
+      {/* Task ID */}
       {task.task_id && (
-        <div className="mt-1.5 text-[10px] text-mute2 font-mono">
-          ID: {task.task_id}
-        </div>
+        <CopyId id={task.task_id} />
       )}
     </div>
   )
@@ -426,16 +453,16 @@ export function KieTab({ initialTasks }: Props) {
     return () => clearInterval(interval)
   }, [tasks, pollTask])
 
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     setCreditsLoad(true); setCreditsErr('')
     const res = await fetch('/api/kie/credits')
     const json = await res.json()
     setCreditsLoad(false)
     if (!res.ok) { setCreditsErr(json.error ?? 'Ошибка'); return }
     setCredits(json.data?.credit ?? json.credit ?? 0)
-  }
+  }, [])
 
-  useEffect(() => { fetchCredits() }, [])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchCredits() }, [fetchCredits])
 
   const handleTaskStarted = (task: KieTask) => {
     setTasks(prev => [task, ...prev])
