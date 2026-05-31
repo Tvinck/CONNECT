@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { CrmClient } from '@/components/crm/CrmClient'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { getCurrentProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
@@ -21,7 +22,9 @@ export default async function CrmPage() {
   return (
     <PageContainer>
       <Header title="CRM" subtitle="Клиентская база и воронка продаж" />
-      <CrmClient initialClients={(clients ?? []) as any} managers={managers ?? []} />
+      <ErrorBoundary label="Ошибка загрузки CRM">
+        <CrmClient initialClients={(clients ?? []) as any} managers={managers ?? []} />
+      </ErrorBoundary>
     </PageContainer>
   )
 }

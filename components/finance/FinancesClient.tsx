@@ -18,7 +18,7 @@
 
 import { useMemo, useState } from 'react'
 import {
-  Plus, Trash2, Loader2, TrendingUp, TrendingDown, Scale, Filter,
+  Plus, Trash2, Loader2, TrendingUp, TrendingDown, Scale, Filter, Search, X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
@@ -207,22 +207,31 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
   const addToast   = useUIStore(s => s.addToast)
   const isCeo      = user?.role === 'ceo'
 
-  const [txList,       setTxList]       = useState<TxRow[]>(initialTransactions)
-  const [filterType,   setFilterType]   = useState<'all' | 'income' | 'expense'>('all')
-  const [filterProject,setFilterProject]= useState('')
-  const [showAdd,      setShowAdd]      = useState(false)
-  const [deletingId,   setDeletingId]   = useState<string | null>(null)
-  const [page,         setPage]         = useState(0)
+  const [txList,        setTxList]        = useState<TxRow[]>(initialTransactions)
+  const [filterType,    setFilterType]    = useState<'all' | 'income' | 'expense'>('all')
+  const [filterProject, setFilterProject] = useState('')
+  const [search,        setSearch]        = useState('')
+  const [showAdd,       setShowAdd]       = useState(false)
+  const [deletingId,    setDeletingId]    = useState<string | null>(null)
+  const [page,          setPage]          = useState(0)
 
-  const filtered = useMemo(() => txList.filter(t => {
-    if (filterType !== 'all' && t.type !== filterType) return false
-    if (filterProject && t.project_id !== filterProject) return false
-    return true
-  }), [txList, filterType, filterProject])
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return txList.filter(t => {
+      if (filterType !== 'all' && t.type !== filterType) return false
+      if (filterProject && t.project_id !== filterProject) return false
+      if (q && !t.description.toLowerCase().includes(q)) return false
+      return true
+    })
+  }, [txList, filterType, filterProject, search])
 
+  // Single pass — avoids 2 separate filter+reduce chains
   const totals = useMemo(() => {
-    const income  = filtered.filter(t => t.type === 'income').reduce((s, t)  => s + Number(t.amount), 0)
-    const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+    let income = 0, expense = 0
+    for (const t of filtered) {
+      if (t.type === 'income') income += Number(t.amount)
+      else expense += Number(t.amount)
+    }
     return { income, expense, net: income - expense }
   }, [filtered])
 
@@ -279,7 +288,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
 
       {/* Filters + Add button */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
-        <div className="flex items-center gap-1.5 text-mute2"><Filter size={14} /></div>
+        <div className="flex items-center gap-1.5 text-mute2 shrink-0"><Filter size={14} /></div>
         <select
           value={filterType}
           onChange={e => { setFilterType(e.target.value as typeof filterType); setPage(0) }}
@@ -297,8 +306,21 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
           <option value="">Все проекты</option>
           {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <div className="flex-1" />
-        <Button onClick={() => setShowAdd(true)}><Plus size={15} /> Добавить</Button>
+        <div className="relative flex-1 min-w-[180px]">
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute2 pointer-events-none" />
+          <input
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(0) }}
+            placeholder="Поиск по описанию…"
+            className="w-full h-9 pl-8 pr-7 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-white placeholder:text-mute2 outline-none focus:border-accent/60 transition-all"
+          />
+          {search && (
+            <button onClick={() => { setSearch(''); setPage(0) }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-white">
+              <X size={12} />
+            </button>
+          )}
+        </div>
+        <Button onClick={() => setShowAdd(true)} className="shrink-0"><Plus size={15} /> Добавить</Button>
       </div>
 
       {/* Transactions table */}

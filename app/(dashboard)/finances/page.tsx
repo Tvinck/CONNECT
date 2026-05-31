@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { FinancesClient } from '@/components/finance/FinancesClient'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { getCurrentProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 
@@ -26,10 +27,12 @@ export default async function FinancesPage() {
   return (
     <PageContainer>
       <Header title="Финансы" subtitle="Доходы, расходы и баланс" />
-      <FinancesClient
-        initialTransactions={(transactions ?? []) as Parameters<typeof FinancesClient>[0]['initialTransactions']}
-        projects={projects ?? []}
-      />
+      <ErrorBoundary label="Ошибка загрузки финансов">
+        <FinancesClient
+          initialTransactions={(transactions ?? []) as Parameters<typeof FinancesClient>[0]['initialTransactions']}
+          projects={projects ?? []}
+        />
+      </ErrorBoundary>
     </PageContainer>
   )
 }

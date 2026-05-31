@@ -1,24 +1,8 @@
-/**
- * components/crm/CrmClient.tsx — Client-side CRM view.
- *
- * Shows a funnel summary (Лиды / Активные / VIP counts) and a full client table
- * with status tags, manager assignment, spend, and timestamps.
- *
- * Sub-components:
- *  - AddClientModal — form for creating a new client record with status,
- *    manager, email, phone, source, and turnover fields.
- *
- * Data flow:
- *  - `initialClients` and `managers` are fetched server-side and passed as props.
- *  - A newly created client is prepended to the local state (no reload needed).
- */
-
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Loader2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 
-/** Rows per page in the clients table. */
 const PAGE_SIZE = 20
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
@@ -52,22 +36,99 @@ const STATUS_OPTIONS: { value: ClientStatus; label: string }[] = [
   { value: 'vip', label: 'VIP' }, { value: 'churned', label: 'Ушёл' },
 ]
 
+// ─── shared form fields ────────────────────────────────────────────────────────
+
+const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
+const LABEL  = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
+
+// ─── client form (shared by add + edit) ───────────────────────────────────────
+
+function ClientForm({
+  name, setName,
+  email, setEmail,
+  phone, setPhone,
+  source, setSource,
+  status, setStatus,
+  spent, setSpent,
+  managerId, setManagerId,
+  managers,
+  error,
+}: {
+  name: string; setName: (v: string) => void
+  email: string; setEmail: (v: string) => void
+  phone: string; setPhone: (v: string) => void
+  source: string; setSource: (v: string) => void
+  status: ClientStatus; setStatus: (v: ClientStatus) => void
+  spent: string; setSpent: (v: string) => void
+  managerId: string; setManagerId: (v: string) => void
+  managers: ManagerOption[]
+  error: string
+}) {
+  return (
+    <div className="space-y-4 max-h-[55vh] overflow-y-auto">
+      <div>
+        <label className={LABEL}>Имя клиента *</label>
+        <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="Анна Сергеева" className={FIELD} />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className={LABEL}>Email</label>
+          <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="anna@mail.ru" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Телефон</label>
+          <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" placeholder="+7 900 …" className={FIELD} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className={LABEL}>Источник</label>
+          <input value={source} onChange={e => setSource(e.target.value)} placeholder="WB / Ozon / …" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Оборот, ₽</label>
+          <input value={spent} onChange={e => setSpent(e.target.value.replace(/[^0-9]/g, ''))}
+            placeholder="0" inputMode="numeric" className={FIELD} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className={LABEL}>Статус</label>
+          <select value={status} onChange={e => setStatus(e.target.value as ClientStatus)} className={SELECT}>
+            {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={LABEL}>Менеджер</label>
+          <select value={managerId} onChange={e => setManagerId(e.target.value)} className={SELECT}>
+            <option value="">Не назначен</option>
+            {managers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
+          </select>
+        </div>
+      </div>
+      {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
+    </div>
+  )
+}
+
+// ─── add modal ─────────────────────────────────────────────────────────────────
+
 function AddClientModal({ managers, onClose, onCreated }: { managers: ManagerOption[]; onClose: () => void; onCreated: (c: ClientRow) => void }) {
   const supabase = createClient()
-  const [name, setName]         = useState('')
-  const [email, setEmail]       = useState('')
-  const [phone, setPhone]       = useState('')
-  const [source, setSource]     = useState('')
-  const [status, setStatus]     = useState<ClientStatus>('lead')
-  const [spent, setSpent]       = useState('')
+  const [name,      setName]      = useState('')
+  const [email,     setEmail]     = useState('')
+  const [phone,     setPhone]     = useState('')
+  const [source,    setSource]    = useState('')
+  const [status,    setStatus]    = useState<ClientStatus>('lead')
+  const [spent,     setSpent]     = useState('')
   const [managerId, setManagerId] = useState('')
-  const [saving, setSaving]     = useState(false)
-  const [error, setError]       = useState('')
+  const [saving,    setSaving]    = useState(false)
+  const [error,     setError]     = useState('')
 
   const create = async () => {
     if (!name.trim()) { setError('Укажите имя клиента'); return }
-    setSaving(true)
-    setError('')
+    setSaving(true); setError('')
     const { data, error: dbErr } = await supabase
       .from('clients')
       .insert({
@@ -87,15 +148,8 @@ function AddClientModal({ managers, onClose, onCreated }: { managers: ManagerOpt
     onClose()
   }
 
-  const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
-  const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
-  const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
-
   return (
-    <Modal
-      title="Новый клиент"
-      onClose={onClose}
-      maxWidth="max-w-[460px]"
+    <Modal title="Новый клиент" onClose={onClose} maxWidth="max-w-[460px]"
       footer={
         <>
           <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
@@ -105,52 +159,85 @@ function AddClientModal({ managers, onClose, onCreated }: { managers: ManagerOpt
         </>
       }
     >
-      <div className="space-y-4 max-h-[55vh] overflow-y-auto">
-        <div>
-          <label className={LABEL}>Имя клиента *</label>
-          <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="Анна Сергеева" className={FIELD} />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={LABEL}>Email</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="anna@mail.ru" className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Телефон</label>
-            <input value={phone} onChange={e => setPhone(e.target.value)} type="tel" placeholder="+7 900 …" className={FIELD} />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={LABEL}>Источник</label>
-            <input value={source} onChange={e => setSource(e.target.value)} placeholder="WB / Ozon / …" className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Оборот, ₽</label>
-            <input value={spent} onChange={e => setSpent(e.target.value.replace(/[^0-9]/g, ''))}
-              placeholder="0" inputMode="numeric" className={FIELD} />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={LABEL}>Статус</label>
-            <select value={status} onChange={e => setStatus(e.target.value as ClientStatus)} className={SELECT}>
-              {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={LABEL}>Менеджер</label>
-            <select value={managerId} onChange={e => setManagerId(e.target.value)} className={SELECT}>
-              <option value="">Не назначен</option>
-              {managers.map(m => <option key={m.id} value={m.id}>{m.full_name}</option>)}
-            </select>
-          </div>
-        </div>
-        {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
-      </div>
+      <ClientForm
+        name={name} setName={setName}
+        email={email} setEmail={setEmail}
+        phone={phone} setPhone={setPhone}
+        source={source} setSource={setSource}
+        status={status} setStatus={setStatus}
+        spent={spent} setSpent={setSpent}
+        managerId={managerId} setManagerId={setManagerId}
+        managers={managers}
+        error={error}
+      />
     </Modal>
   )
 }
+
+// ─── edit modal ────────────────────────────────────────────────────────────────
+
+function EditClientModal({ client, managers, onClose, onUpdated }: { client: ClientRow; managers: ManagerOption[]; onClose: () => void; onUpdated: (c: ClientRow) => void }) {
+  const supabase = createClient()
+  const [name,      setName]      = useState(client.name)
+  const [email,     setEmail]     = useState(client.email ?? '')
+  const [phone,     setPhone]     = useState(client.phone ?? '')
+  const [source,    setSource]    = useState(client.source ?? '')
+  const [status,    setStatus]    = useState<ClientStatus>(client.status)
+  const [spent,     setSpent]     = useState(String(client.total_spent || ''))
+  const [managerId, setManagerId] = useState(client.manager?.id ?? '')
+  const [saving,    setSaving]    = useState(false)
+  const [error,     setError]     = useState('')
+
+  const save = async () => {
+    if (!name.trim()) { setError('Укажите имя клиента'); return }
+    setSaving(true); setError('')
+    const { data, error: dbErr } = await supabase
+      .from('clients')
+      .update({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        source: source.trim() || null,
+        status,
+        total_spent: Number(spent) || 0,
+        manager_id: managerId || null,
+      })
+      .eq('id', client.id)
+      .select('*, manager:users!manager_id(id, full_name)')
+      .single()
+    setSaving(false)
+    if (dbErr) { setError(dbErr.message); return }
+    if (data) onUpdated(data as unknown as ClientRow)
+    onClose()
+  }
+
+  return (
+    <Modal title={`Клиент: ${client.name}`} onClose={onClose} maxWidth="max-w-[460px]"
+      footer={
+        <>
+          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
+          <Button className="flex-1" onClick={save} disabled={saving}>
+            {saving && <Loader2 size={15} className="animate-spin" />} Сохранить
+          </Button>
+        </>
+      }
+    >
+      <ClientForm
+        name={name} setName={setName}
+        email={email} setEmail={setEmail}
+        phone={phone} setPhone={setPhone}
+        source={source} setSource={setSource}
+        status={status} setStatus={setStatus}
+        spent={spent} setSpent={setSpent}
+        managerId={managerId} setManagerId={setManagerId}
+        managers={managers}
+        error={error}
+      />
+    </Modal>
+  )
+}
+
+// ─── main component ────────────────────────────────────────────────────────────
 
 interface Props {
   initialClients: ClientRow[]
@@ -160,28 +247,51 @@ interface Props {
 export function CrmClient({ initialClients, managers }: Props) {
   const [clients, setClients] = useState<ClientRow[]>(initialClients)
   const [showAdd, setShowAdd] = useState(false)
+  const [editing, setEditing] = useState<ClientRow | null>(null)
+  const [search,  setSearch]  = useState('')
   const [page,    setPage]    = useState(0)
 
-  const totalPages  = Math.max(1, Math.ceil(clients.length / PAGE_SIZE))
+  // Single-pass funnel counts
+  const counts = useMemo(() => {
+    const r = { lead: 0, active: 0, vip: 0, churned: 0 }
+    for (const c of clients) r[c.status as keyof typeof r] = (r[c.status as keyof typeof r] ?? 0) + 1
+    return r
+  }, [clients])
+
+  const funnel = [
+    { label: 'Лиды',     n: counts.lead,    color: '#1472F5' },
+    { label: 'Активные', n: counts.active,  color: '#22C55E' },
+    { label: 'VIP',      n: counts.vip,     color: '#FFC833' },
+    { label: 'Ушли',     n: counts.churned, color: '#5A6188' },
+  ]
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return clients
+    return clients.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.email?.toLowerCase().includes(q) ||
+      c.phone?.toLowerCase().includes(q) ||
+      c.source?.toLowerCase().includes(q)
+    )
+  }, [clients, search])
+
+  const totalPages  = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const pageClients = useMemo(
-    () => clients.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
-    [clients, page]
+    () => filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [filtered, page]
   )
 
-  const counts = {
-    lead:   clients.filter(c => c.status === 'lead').length,
-    active: clients.filter(c => c.status === 'active').length,
-    vip:    clients.filter(c => c.status === 'vip').length,
+  const handleSearch = (v: string) => { setSearch(v); setPage(0) }
+
+  const handleUpdated = (updated: ClientRow) => {
+    setClients(prev => prev.map(c => c.id === updated.id ? updated : c))
   }
-  const funnel = [
-    { label: 'Лиды',     n: counts.lead,   color: '#1472F5' },
-    { label: 'Активные', n: counts.active, color: '#22C55E' },
-    { label: 'VIP',      n: counts.vip,    color: '#FFC833' },
-  ]
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      {/* Funnel summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {funnel.map(f => (
           <div key={f.label} className="card p-5 text-center">
             <div className="text-[32px] font-bold tabular-nums" style={{ color: f.color }}>{f.n}</div>
@@ -190,9 +300,26 @@ export function CrmClient({ initialClients, managers }: Props) {
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[17px] font-semibold tracking-tight">Все клиенты · {clients.length}</h3>
-        <Button onClick={() => setShowAdd(true)}><Plus size={16} /> Добавить клиента</Button>
+      {/* Header row */}
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <h3 className="text-[17px] font-semibold tracking-tight shrink-0">
+          Клиенты · {clients.length}
+        </h3>
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute2 pointer-events-none" />
+          <input
+            value={search}
+            onChange={e => handleSearch(e.target.value)}
+            placeholder="Имя, email, телефон, источник…"
+            className="w-full h-9 pl-8 pr-8 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all"
+          />
+          {search && (
+            <button onClick={() => handleSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-white">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <Button onClick={() => setShowAdd(true)} className="shrink-0"><Plus size={16} /> Добавить</Button>
       </div>
 
       <div className="card overflow-x-auto">
@@ -208,15 +335,26 @@ export function CrmClient({ initialClients, managers }: Props) {
             </tr>
           </thead>
           <tbody>
-            {clients.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-10 text-mute text-[13px]">Клиентов пока нет — добавьте первого</td></tr>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-mute text-[13px]">
+                  {clients.length === 0 ? 'Клиентов пока нет — добавьте первого' : 'Ничего не найдено'}
+                </td>
+              </tr>
             )}
             {pageClients.map(c => (
-              <tr key={c.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
+              <tr
+                key={c.id}
+                onClick={() => setEditing(c)}
+                className="border-b border-line last:border-0 hover:bg-white/[0.03] transition-colors cursor-pointer"
+              >
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
                     <Avatar initials={getInitials(c.name)} color={colorFor(c.name)} size={32} />
-                    <span className="text-[13.5px] font-medium tracking-tight">{c.name}</span>
+                    <div className="min-w-0">
+                      <div className="text-[13.5px] font-medium tracking-tight truncate">{c.name}</div>
+                      {c.email && <div className="text-[11.5px] text-mute2 truncate">{c.email}</div>}
+                    </div>
                   </div>
                 </td>
                 <td className="px-5 py-3.5 text-[12.5px] text-mute hidden md:table-cell">{c.source ?? '—'}</td>
@@ -231,11 +369,11 @@ export function CrmClient({ initialClients, managers }: Props) {
           </tbody>
         </table>
 
-        {/* Pagination footer */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3 border-t border-line">
             <span className="text-[12px] text-mute">
-              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, clients.length)} из {clients.length}
+              {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} из {filtered.length}
             </span>
             <div className="flex items-center gap-1">
               <button
@@ -245,17 +383,22 @@ export function CrmClient({ initialClients, managers }: Props) {
               >
                 <ChevronLeft size={14} />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i} onClick={() => setPage(i)}
-                  className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
-                    i === page
-                      ? 'bg-accent text-white'
-                      : 'border border-line text-mute hover:text-white hover:border-line2'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+              {totalPages <= 7
+                ? Array.from({ length: totalPages }, (_, i) => (
+                    <button key={i} onClick={() => setPage(i)}
+                      className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
+                        i === page ? 'bg-accent text-white' : 'border border-line text-mute hover:text-white hover:border-line2'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))
+                : (
+                  <span className="px-2 text-[12px] text-mute">
+                    стр. {page + 1} / {totalPages}
+                  </span>
+                )
+              }
               <button
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1}
@@ -272,7 +415,16 @@ export function CrmClient({ initialClients, managers }: Props) {
         <AddClientModal
           managers={managers}
           onClose={() => setShowAdd(false)}
-          onCreated={c => setClients(prev => [c, ...prev])}
+          onCreated={c => { setClients(prev => [c, ...prev]); setPage(0) }}
+        />
+      )}
+
+      {editing && (
+        <EditClientModal
+          client={editing}
+          managers={managers}
+          onClose={() => setEditing(null)}
+          onUpdated={handleUpdated}
         />
       )}
     </>
