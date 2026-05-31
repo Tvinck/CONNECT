@@ -17,6 +17,7 @@ export default async function PodariMomentPage() {
     { data: clients },
     { data: logs },
     { data: kieTasks },
+    { data: promos },
   ] = await Promise.all([
     supabase
       .from('pm_orders')
@@ -40,6 +41,10 @@ export default async function PodariMomentPage() {
       .select('*')
       .order('created_at', { ascending: false })
       .limit(50),
+    supabase
+      .from('pm_promos')
+      .select('*')
+      .order('created_at', { ascending: false }),
   ])
 
   return (
@@ -50,6 +55,7 @@ export default async function PodariMomentPage() {
         initialClients={(clients ?? []) as PMClient[]}
         initialLogs={(logs ?? []) as PMApiLog[]}
         initialKieTasks={(kieTasks ?? []) as unknown as Parameters<typeof PMPanel>[0]['initialKieTasks']}
+        initialPromos={(promos ?? []) as { id: string; code: string; discount: number; uses: number }[]}
       />
     </PageContainer>
   )

@@ -7,31 +7,30 @@ import { createClient } from '@/lib/supabase/client'
 import { useUIStore }   from '@/store/ui'
 import type { PMProduct } from './types'
 
+type Promo = { id: string; code: string; discount: number; uses: number }
+
 interface Props {
   products: PMProduct[]
+  initialPromos: Promo[]
 }
 
-type Promo = { code: string; discount: number; uses: number }
-
-const DEMO_PROMOS: Promo[] = [
-  { code: 'АВИТО15',   discount: 15, uses: 3 },
-  { code: 'ПИКСЕЛЬ10', discount: 10, uses: 7 },
-]
-
-export function SettingsTab({ products: initialProducts }: Props) {
+export function SettingsTab({ products: initialProducts, initialPromos }: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
 
-  const [products,   setProducts]   = useState<PMProduct[]>(initialProducts)
-  const [editing,    setEditing]    = useState<string | null>(null)
-  const [editPrice,  setEditPrice]  = useState('')
-  const [editCost,   setEditCost]   = useState('')
-  const [editActive, setEditActive] = useState(true)
-  const [saving,     setSaving]     = useState(false)
+  const [products,    setProducts]    = useState<PMProduct[]>(initialProducts)
+  const [editing,     setEditing]     = useState<string | null>(null)
+  const [editPrice,   setEditPrice]   = useState('')
+  const [editCost,    setEditCost]    = useState('')
+  const [editActive,  setEditActive]  = useState(true)
+  const [saving,      setSaving]      = useState(false)
 
-  const [promos,     setPromos]     = useState<Promo[]>(DEMO_PROMOS)
-  const [newCode,    setNewCode]    = useState('')
-  const [newDisc,    setNewDisc]    = useState('')
+  const [promos,      setPromos]      = useState<Promo[]>(initialPromos)
+  const [newCode,     setNewCode]     = useState('')
+  const [newDisc,     setNewDisc]     = useState('')
+  const [savingPromo, setSavingPromo] = useState(false)
+
+  // ─── product actions ────────────────────────────────────────────────────────
 
   const startEdit = (p: PMProduct) => {
     setEditing(p.id)
@@ -40,7 +39,7 @@ export function SettingsTab({ products: initialProducts }: Props) {
     setEditActive(p.is_active)
   }
 
-  const cancelEdit = () => { setEditing(null) }
+  const cancelEdit = () => setEditing(null)
 
   const saveProduct = async (p: PMProduct) => {
     const price = parseFloat(editPrice)
@@ -60,14 +59,35 @@ export function SettingsTab({ products: initialProducts }: Props) {
     addToast('Готово', `${p.name} обновлён`, 'ok')
   }
 
-  const addPromo = () => {
+  // ─── promo actions ───────────────────────────────────────────────────────────
+
+  const addPromo = async () => {
     const disc = parseInt(newDisc)
     if (!newCode.trim() || !disc || disc < 1 || disc > 99) {
-      addToast('Ошибка', 'Укажите код и скидку (1-99%)', 'err'); return
+      addToast('Ошибка', 'Укажите код и скидку (1–99%)', 'err'); return
     }
-    setPromos(prev => [...prev, { code: newCode.trim().toUpperCase(), discount: disc, uses: 0 }])
+    const code = newCode.trim().toUpperCase()
+    if (promos.some(p => p.code === code)) {
+      addToast('Ошибка', 'Такой промокод уже существует', 'err'); return
+    }
+    setSavingPromo(true)
+    const { data, error } = await supabase
+      .from('pm_promos')
+      .insert({ code, discount: disc })
+      .select('*')
+      .single()
+    setSavingPromo(false)
+    if (error) { addToast('Ошибка', error.message, 'err'); return }
+    setPromos(prev => [data as Promo, ...prev])
     setNewCode(''); setNewDisc('')
-    addToast('Готово', `Промокод ${newCode.toUpperCase()} добавлен`, 'accent')
+    addToast('Готово', `Промокод ${code} добавлен`, 'accent')
+  }
+
+  const deletePromo = async (id: string) => {
+    const snapshot = promos
+    setPromos(prev => prev.filter(p => p.id !== id))
+    const { error } = await supabase.from('pm_promos').delete().eq('id', id)
+    if (error) { addToast('Ошибка', error.message, 'err'); setPromos(snapshot) }
   }
 
   return (
@@ -111,17 +131,15 @@ export function SettingsTab({ products: initialProducts }: Props) {
                           />
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editActive}
-                            onChange={e => setEditActive(e.target.checked)}
-                            className="rounded"
-                          />
-                          <span className="text-[12.5px] text-mute">Продукт активен</span>
-                        </label>
-                      </div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={editActive}
+                          onChange={e => setEditActive(e.target.checked)}
+                          className="rounded"
+                        />
+                        <span className="text-[12.5px] text-mute">Продукт активен</span>
+                      </label>
                       <div className="flex items-center gap-2">
                         <Button size="sm" onClick={() => saveProduct(p)} disabled={saving}>
                           {saving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
@@ -165,14 +183,21 @@ export function SettingsTab({ products: initialProducts }: Props) {
         <h3 className="text-[15px] font-semibold mb-1">Промокоды</h3>
         <p className="text-[12px] text-mute mb-4">Скидки для рекламы на Авито и других каналах</p>
 
+        {promos.length === 0 && (
+          <div className="text-center py-6 text-mute text-[12.5px]">Промокодов пока нет</div>
+        )}
+
         <div className="space-y-2 mb-4">
           {promos.map(promo => (
-            <div key={promo.code} className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.025] border border-line rounded-xl">
+            <div key={promo.id} className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.025] border border-line rounded-xl">
               <code className="text-[14px] font-bold font-mono text-accent flex-1">{promo.code}</code>
               <span className="text-[13px] font-semibold text-ok">−{promo.discount}%</span>
               <span className="text-[11px] text-mute">{promo.uses} исп.</span>
-              <button onClick={() => setPromos(prev => prev.filter(p => p.code !== promo.code))}
-                className="text-mute hover:text-err transition-colors">
+              <button
+                onClick={() => deletePromo(promo.id)}
+                className="text-mute hover:text-err transition-colors"
+                aria-label="Удалить промокод"
+              >
                 <Trash2 size={13} />
               </button>
             </div>
@@ -196,13 +221,11 @@ export function SettingsTab({ products: initialProducts }: Props) {
             max={99}
             className="w-28 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px]"
           />
-          <Button size="sm" onClick={addPromo}>
-            <Plus size={13} /> Добавить
+          <Button size="sm" onClick={addPromo} disabled={savingPromo}>
+            {savingPromo ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+            Добавить
           </Button>
         </div>
-        <p className="text-[11px] text-mute2 mt-3">
-          Промокоды хранятся локально. Для применения на сайте — передайте их в API ПодариМомент.
-        </p>
       </div>
     </div>
   )

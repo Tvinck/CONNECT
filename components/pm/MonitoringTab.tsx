@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { CheckCircle, XCircle, AlertCircle, Trash2, RefreshCw } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore }   from '@/store/ui'
@@ -14,19 +14,19 @@ interface Props {
 }
 
 const SERVICES = [
-  { id: 'suno',    name: 'Suno API',  desc: 'Генерация ИИ-музыки',    product: '🎵' },
-  { id: 'heygen',  name: 'HeyGen',    desc: 'Видео от знаменитости',  product: '🎭' },
-  { id: 'ffmpeg',  name: 'FFmpeg',    desc: 'Сборка видео из фото',   product: '🎬' },
-  { id: 'yukassa', name: 'ЮКасса',   desc: 'Приём платежей',         product: '💳' },
-  { id: 'resend',  name: 'Resend',    desc: 'Email-рассылка',         product: '📧' },
+  { id: 'suno',    name: 'Suno API',  desc: 'Генерация ИИ-музыки',   product: '🎵' },
+  { id: 'heygen',  name: 'HeyGen',    desc: 'Видео от знаменитости', product: '🎭' },
+  { id: 'ffmpeg',  name: 'FFmpeg',    desc: 'Сборка видео из фото',  product: '🎬' },
+  { id: 'yukassa', name: 'ЮКасса',   desc: 'Приём платежей',        product: '💳' },
+  { id: 'resend',  name: 'Resend',    desc: 'Email-рассылка',        product: '📧' },
 ]
 
 const LOG_COLOR = { info: '#22C55E', warn: '#F59E0B', error: '#EF4444' }
 const LOG_LABEL = { info: 'INFO', warn: 'WARN', error: 'ERR' }
 const LOG_ICON  = {
-  info:  <CheckCircle  size={14} className="text-ok" />,
-  warn:  <AlertCircle  size={14} className="text-warn" />,
-  error: <XCircle      size={14} className="text-err" />,
+  info:  <CheckCircle size={14} className="text-ok" />,
+  warn:  <AlertCircle size={14} className="text-warn" />,
+  error: <XCircle     size={14} className="text-err" />,
 }
 
 export function MonitoringTab({ logs: initialLogs, orders }: Props) {
@@ -50,21 +50,28 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
     return 'ok'
   }
 
+  // Single-pass counts for filter badges
+  const logCounts = useMemo(() => {
+    const r = { info: 0, warn: 0, error: 0 }
+    for (const l of logs) r[l.level as keyof typeof r]++
+    return r
+  }, [logs])
+
   const deleteLog = async (id: string) => {
+    const snapshot = logs
     setLogs(prev => prev.filter(l => l.id !== id))
     const { error } = await supabase.from('pm_api_logs').delete().eq('id', id)
-    if (error) {
-      addToast('Ошибка', error.message, 'err')
-      setLogs(initialLogs)
-    }
+    if (error) { addToast('Ошибка', error.message, 'err'); setLogs(snapshot) }
   }
 
   const clearErrors = async () => {
     const errIds = logs.filter(l => l.level === 'error').map(l => l.id)
+    if (errIds.length === 0) return
+    const snapshot = logs
     setLogs(prev => prev.filter(l => l.level !== 'error'))
     const { error } = await supabase.from('pm_api_logs').delete().in('id', errIds)
-    if (error) { addToast('Ошибка', error.message, 'err'); setLogs(initialLogs) }
-    else addToast('Готово', 'Ошибки очищены', 'accent')
+    if (error) { addToast('Ошибка', error.message, 'err'); setLogs(snapshot) }
+    else addToast('Готово', `${errIds.length} ошибок очищено`, 'accent')
   }
 
   const visibleLogs = filter === 'all' ? logs : logs.filter(l => l.level === filter)
@@ -117,16 +124,15 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
           })}
         </div>
         <p className="text-[11px] text-mute2 mt-3">
-          * Статус определяется по последним ошибкам в логе за прошедший час. Для реального мониторинга — подключите health-check API.
+          * Статус по ошибкам в логе за последний час. Для реального мониторинга подключите health-check эндпоинт.
         </p>
       </div>
 
       {/* Error log */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[15px] font-semibold">Лог ошибок</h3>
+          <h3 className="text-[15px] font-semibold">Лог событий</h3>
           <div className="flex items-center gap-2">
-            {/* Level filter */}
             <div className="flex gap-1">
               {(['all', 'error', 'warn', 'info'] as const).map(f => (
                 <button
@@ -137,12 +143,12 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
                 >
                   {f === 'all' ? 'Все' : f.toUpperCase()}
                   <span className="ml-1 opacity-60">
-                    {f === 'all' ? logs.length : logs.filter(l => l.level === f).length}
+                    {f === 'all' ? logs.length : logCounts[f as keyof typeof logCounts]}
                   </span>
                 </button>
               ))}
             </div>
-            {logs.some(l => l.level === 'error') && (
+            {logCounts.error > 0 && (
               <Button size="sm" variant="ghost" onClick={clearErrors} className="text-err border-err/20 hover:bg-err/10">
                 <Trash2 size={12} /> Очистить ошибки
               </Button>
@@ -175,6 +181,7 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
                 </div>
                 <button
                   onClick={() => deleteLog(log.id)}
+                  aria-label="Удалить запись"
                   className="opacity-0 group-hover:opacity-100 text-mute hover:text-err transition-all"
                 >
                   <Trash2 size={12} />

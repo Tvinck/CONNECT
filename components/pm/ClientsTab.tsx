@@ -12,10 +12,29 @@ interface Props {
 
 type SortKey = 'total_spent' | 'order_count' | 'last_order_at' | 'created_at'
 
+// RFC 4180 CSV cell escaping
+function csvCell(v: string | number | null | undefined): string {
+  const s = String(v ?? '')
+  return s.includes(',') || s.includes('"') || s.includes('\n')
+    ? `"${s.replace(/"/g, '""')}"`
+    : s
+}
+
 export function ClientsTab({ clients }: Props) {
-  const [source,  setSource]  = useState<'all' | 'pixel' | 'new'>('all')
-  const [search,  setSearch]  = useState('')
-  const [sort,    setSort]    = useState<SortKey>('total_spent')
+  const [source, setSource] = useState<'all' | 'pixel' | 'new'>('all')
+  const [search, setSearch] = useState('')
+  const [sort,   setSort]   = useState<SortKey>('total_spent')
+
+  // Single-pass stats — avoids 3 separate .filter()/.reduce() chains
+  const stats = useMemo(() => {
+    let pixelCount = 0, newCount = 0, totalRev = 0
+    for (const c of clients) {
+      if (c.source === 'pixel') pixelCount++
+      else if (c.source === 'new') newCount++
+      totalRev += Number(c.total_spent)
+    }
+    return { pixelCount, newCount, totalRev }
+  }, [clients])
 
   const filtered = useMemo(() => {
     let list = clients
@@ -32,19 +51,23 @@ export function ClientsTab({ clients }: Props) {
     })
   }, [clients, source, search, sort])
 
-  const pixelCount = clients.filter(c => c.source === 'pixel').length
-  const newCount   = clients.filter(c => c.source === 'new').length
-  const totalRev   = clients.reduce((s, c) => s + Number(c.total_spent), 0)
-
   const exportCsv = () => {
     const header = 'email,name,source,orders,total_spent,last_order'
     const rows   = filtered.map(c =>
-      `${c.email},${c.name ?? ''},${c.source},${c.order_count},${c.total_spent},${c.last_order_at ?? ''}`
+      [
+        csvCell(c.email),
+        csvCell(c.name),
+        csvCell(c.source),
+        c.order_count,
+        c.total_spent,
+        c.last_order_at ?? '',
+      ].join(',')
     )
-    const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/csv' })
+    // BOM ensures Excel opens UTF-8 correctly without re-encoding dialog
+    const blob = new Blob(['﻿' + [header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')
-    a.href = url; a.download = 'pm_clients.csv'; a.click()
+    a.href = url; a.download = `pm_clients_${new Date().toISOString().slice(0, 10)}.csv`; a.click()
     URL.revokeObjectURL(url)
   }
 
@@ -58,12 +81,12 @@ export function ClientsTab({ clients }: Props) {
         </div>
         <div className="card p-4">
           <div className="text-[11px] text-mute2 uppercase tracking-wider font-semibold mb-1">База Пиксель</div>
-          <div className="text-[24px] font-bold text-accent">{pixelCount}</div>
-          <div className="text-[11px] text-mute">+ {newCount} новых</div>
+          <div className="text-[24px] font-bold text-accent">{stats.pixelCount}</div>
+          <div className="text-[11px] text-mute">+ {stats.newCount} новых</div>
         </div>
         <div className="card p-4">
           <div className="text-[11px] text-mute2 uppercase tracking-wider font-semibold mb-1">Общая выручка</div>
-          <div className="text-[24px] font-bold text-ok tabular-nums">{fmtRub(totalRev)}</div>
+          <div className="text-[24px] font-bold text-ok tabular-nums">{fmtRub(stats.totalRev)}</div>
         </div>
       </div>
 
@@ -79,7 +102,6 @@ export function ClientsTab({ clients }: Props) {
           />
         </div>
 
-        {/* Source filter */}
         {(['all', 'pixel', 'new'] as const).map(s => (
           <button
             key={s}
@@ -87,11 +109,12 @@ export function ClientsTab({ clients }: Props) {
             className={`h-9 px-4 rounded-xl border text-[12.5px] font-medium transition-colors
               ${source === s ? 'bg-accent/20 border-accent/40 text-accent' : 'border-line text-mute hover:text-white'}`}
           >
-            {s === 'all' ? `Все (${clients.length})` : s === 'pixel' ? `Пиксель (${pixelCount})` : `Новые (${newCount})`}
+            {s === 'all'   ? `Все (${clients.length})`
+             : s === 'pixel' ? `Пиксель (${stats.pixelCount})`
+             : `Новые (${stats.newCount})`}
           </button>
         ))}
 
-        {/* Sort */}
         <select
           value={sort}
           onChange={e => setSort(e.target.value as SortKey)}
@@ -103,8 +126,8 @@ export function ClientsTab({ clients }: Props) {
           <option value="created_at">По дате регистрации</option>
         </select>
 
-        <Button size="sm" variant="ghost" onClick={exportCsv}>
-          <Download size={13} /> CSV
+        <Button size="sm" variant="ghost" onClick={exportCsv} title={`Экспорт ${filtered.length} клиентов в CSV`}>
+          <Download size={13} /> CSV ({filtered.length})
         </Button>
       </div>
 
@@ -122,7 +145,11 @@ export function ClientsTab({ clients }: Props) {
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-12 text-center text-mute text-[12.5px]">Клиентов не найдено</td></tr>
+              <tr>
+                <td colSpan={5} className="px-4 py-12 text-center text-mute text-[12.5px]">
+                  {clients.length === 0 ? 'Клиентов пока нет' : 'Ничего не найдено'}
+                </td>
+              </tr>
             ) : filtered.map(c => (
               <tr key={c.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-3">

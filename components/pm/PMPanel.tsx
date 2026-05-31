@@ -52,6 +52,7 @@ interface TabProps {
   initialClients: PMClient[]
   initialLogs: PMApiLog[]
   initialKieTasks: KieTask[]
+  initialPromos: { id: string; code: string; discount: number; uses: number }[]
 }
 
 export function PMPanel(props: TabProps) {
@@ -107,7 +108,7 @@ export function PMPanel(props: TabProps) {
       {tab === 'dashboard'  && <DashboardTab orders={props.initialOrders} products={props.products} />}
       {tab === 'kie'        && <KieTab       initialTasks={props.initialKieTasks} />}
       {tab === 'monitoring' && <MonitoringTab logs={props.initialLogs} orders={props.initialOrders} />}
-      {tab === 'settings'   && <SettingsTab  products={props.products} />}
+      {tab === 'settings'   && <SettingsTab  products={props.products} initialPromos={props.initialPromos} />}
       {tab === 'clients'    && <ClientsTab   clients={props.initialClients} />}
     </div>
   )
