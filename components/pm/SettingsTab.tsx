@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useUIStore }   from '@/store/ui'
 import type { PMProduct } from './types'
 
-type Promo = { id: string; code: string; discount: number; uses: number }
+type Promo = { id: string; code: string; discount: number; uses: number; source?: string | null }
 
 interface Props {
   products: PMProduct[]
@@ -28,6 +28,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
   const [promos,      setPromos]      = useState<Promo[]>(initialPromos)
   const [newCode,     setNewCode]     = useState('')
   const [newDisc,     setNewDisc]     = useState('')
+  const [newSource,   setNewSource]   = useState('')
   const [savingPromo, setSavingPromo] = useState(false)
   const [copiedCode,  setCopiedCode]  = useState<string | null>(null)
 
@@ -81,13 +82,13 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
     setSavingPromo(true)
     const { data, error } = await supabase
       .from('pm_promos')
-      .insert({ code, discount: disc })
+      .insert({ code, discount: disc, source: newSource.trim() || null })
       .select('*')
       .single()
     setSavingPromo(false)
     if (error) { addToast('Ошибка', error.message, 'err'); return }
     setPromos(prev => [data as Promo, ...prev])
-    setNewCode(''); setNewDisc('')
+    setNewCode(''); setNewDisc(''); setNewSource('')
     addToast('Готово', `Промокод ${code} добавлен`, 'accent')
   }
 
@@ -198,7 +199,11 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
         <div className="space-y-2 mb-4">
           {promos.map(promo => (
             <div key={promo.id} className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.025] border border-line rounded-xl">
-              <code className="text-[14px] font-bold font-mono text-accent flex-1">{promo.code}</code>
+              <code className="text-[14px] font-bold font-mono text-accent">{promo.code}</code>
+              {promo.source && (
+                <span className="text-[10.5px] px-1.5 h-4 rounded bg-white/[0.06] text-mute font-medium">{promo.source}</span>
+              )}
+              <div className="flex-1" />
               <span className="text-[13px] font-semibold text-ok">−{promo.discount}%</span>
               <span className="text-[11px] text-mute">{promo.uses} исп.</span>
               <button
@@ -223,12 +228,12 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
         </div>
 
         {/* Add promo */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <input
             value={newCode}
             onChange={e => setNewCode(e.target.value.toUpperCase())}
             placeholder="КОД"
-            className="w-40 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] font-mono font-bold placeholder:font-normal placeholder:text-mute2"
+            className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] font-mono font-bold placeholder:font-normal placeholder:text-mute2"
           />
           <input
             type="number"
@@ -237,7 +242,13 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
             placeholder="Скидка %"
             min={1}
             max={99}
-            className="w-28 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px]"
+            className="w-24 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px]"
+          />
+          <input
+            value={newSource}
+            onChange={e => setNewSource(e.target.value.toLowerCase())}
+            placeholder="Канал (avito, vk...)"
+            className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
           />
           <Button size="sm" onClick={addPromo} disabled={savingPromo}>
             {savingPromo ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}

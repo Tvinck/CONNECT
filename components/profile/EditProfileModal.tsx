@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Camera, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/auth'
+import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { auditLog } from '@/lib/audit'
+import { getInitials, colorFor } from '@/lib/utils'
 import type { User, UserStatus } from '@/types'
 
 interface Props {
@@ -26,27 +29,58 @@ const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-se
 export function EditProfileModal({ profile, onClose, onSaved }: Props) {
   const { setUser } = useAuthStore()
   const supabase = createClient()
+  const fileRef = useRef<HTMLInputElement>(null)
 
-  const [fullName, setFullName] = useState(profile.full_name)
-  const [position, setPosition] = useState(profile.position ?? '')
-  const [status,   setStatus]   = useState<UserStatus>(profile.status)
-  const [saving,   setSaving]   = useState(false)
-  const [error,    setError]    = useState('')
+  const [fullName,    setFullName]    = useState(profile.full_name)
+  const [position,    setPosition]    = useState(profile.position ?? '')
+  const [status,      setStatus]      = useState<UserStatus>(profile.status)
+  const [avatarUrl,   setAvatarUrl]   = useState(profile.avatar_url ?? '')
+  const [uploading,   setUploading]   = useState(false)
+  const [saving,      setSaving]      = useState(false)
+  const [error,       setError]       = useState('')
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 3 * 1024 * 1024) { setError('Файл не более 3 МБ'); return }
+    if (!file.type.startsWith('image/')) { setError('Только изображения'); return }
+
+    setUploading(true); setError('')
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `avatars/${profile.id}.${ext}`
+
+    const { error: upErr } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true, contentType: file.type })
+
+    if (upErr) { setError(upErr.message); setUploading(false); return }
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+    setAvatarUrl(publicUrl)
+    setUploading(false)
+  }
 
   const save = async () => {
     if (!fullName.trim()) { setError('Имя не может быть пустым'); return }
     setSaving(true); setError('')
     const { data, error: dbErr } = await supabase
       .from('users')
-      .update({ full_name: fullName.trim(), position: position.trim() || null, status })
+      .update({ full_name: fullName.trim(), position: position.trim() || null, status, avatar_url: avatarUrl || null })
       .eq('id', profile.id)
       .select()
       .single<User>()
     setSaving(false)
     if (dbErr) { setError(dbErr.message); return }
-    if (data) { setUser(data); onSaved(data) }
+    if (data) {
+      setUser(data)
+      onSaved(data)
+      auditLog({ action: 'profile.update', entityType: 'user', entityId: profile.id })
+    }
     onClose()
   }
+
+  const initials = getInitials(fullName || profile.full_name)
+  const color = colorFor(fullName || profile.full_name)
 
   return (
     <Modal
@@ -55,14 +89,40 @@ export function EditProfileModal({ profile, onClose, onSaved }: Props) {
       maxWidth="max-w-[440px]"
       footer={
         <>
-          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
-          <Button className="flex-1" onClick={save} disabled={saving}>
+          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving || uploading}>Отмена</Button>
+          <Button className="flex-1" onClick={save} disabled={saving || uploading}>
             {saving && <Loader2 size={15} className="animate-spin" />} Сохранить
           </Button>
         </>
       }
     >
       <div className="space-y-4">
+        {/* Avatar upload */}
+        <div className="flex items-center gap-4">
+          <div className="relative shrink-0">
+            <Avatar initials={initials} color={color} size={64} src={avatarUrl || undefined} />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-accent hover:bg-[#2A82FF] inline-flex items-center justify-center shadow-lg transition-colors"
+            >
+              {uploading ? <Loader2 size={11} className="animate-spin text-white" /> : <Camera size={11} className="text-white" />}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[13.5px] font-semibold">{fullName || 'Имя'}</div>
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="text-[12px] text-accent hover:underline mt-0.5"
+            >
+              {uploading ? 'Загрузка...' : avatarUrl ? 'Изменить фото' : 'Загрузить фото'}
+            </button>
+            <div className="text-[10.5px] text-mute2 mt-0.5">JPG, PNG — до 3 МБ</div>
+          </div>
+        </div>
+
         <div>
           <label className={LABEL}>Имя и фамилия</label>
           <input value={fullName} onChange={e => setFullName(e.target.value)}

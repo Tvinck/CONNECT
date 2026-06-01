@@ -32,6 +32,8 @@ interface AvatarProps {
   status?: Status
   /** Extra Tailwind classes applied to the outer wrapper. */
   className?: string
+  /** Optional photo URL — shown instead of initials when set. */
+  src?: string
 }
 
 /** Colours for the status indicator dot. */
@@ -52,8 +54,9 @@ export function Avatar({
   online = false,
   status,
   className = '',
+  src,
 }: AvatarProps) {
-  const style = {
+  const gradientStyle = {
     width: size,
     height: size,
     background: `linear-gradient(135deg, ${color} 0%, ${shadeColor(color, -30)} 100%)`,
@@ -66,10 +69,15 @@ export function Avatar({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-full text-white font-semibold tracking-tight ${ring ? 'ring-2 ring-bg' : ''} ${className}`}
-      style={style}
+      className={`relative inline-flex items-center justify-center rounded-full text-white font-semibold tracking-tight overflow-hidden ${ring ? 'ring-2 ring-bg' : ''} ${className}`}
+      style={src ? { width: size, height: size, flexShrink: 0 } : gradientStyle}
     >
-      <span>{initials}</span>
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={initials} className="w-full h-full object-cover" />
+      ) : (
+        <span>{initials}</span>
+      )}
       {dotStatus && (
         <span
           aria-label={dotStatus === 'online' ? 'Онлайн' : dotStatus === 'busy' ? 'Занят' : 'Не в сети'}
