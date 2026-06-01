@@ -6,12 +6,25 @@
  * Hovering a card reveals quick-move buttons (→ column label).
  * Status changes use optimistic UI — the local state updates immediately and
  * is rolled back with a toast if the DB update fails.
+ *
+ * Drag & drop: DndContext + useDraggable (cards) + useDroppable (columns).
+ * Dragged card goes semi-transparent; target column highlights.
  */
 
 'use client'
 
 import { useMemo, useState } from 'react'
 import { Plus, Calendar, User2 } from 'lucide-react'
+import {
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+} from '@dnd-kit/core'
+import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { CreateTaskModal } from './CreateTaskModal'
@@ -47,13 +60,89 @@ interface Props {
   users: UserOption[]
 }
 
+// ─── Draggable card wrapper ───────────────────────────────────────────────────
+
+interface DraggableCardProps {
+  id: string
+  children: React.ReactNode
+}
+
+function DraggableCard({ id, children }: DraggableCardProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id })
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      style={{ opacity: isDragging ? 0.4 : 1, touchAction: 'none' }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ─── Droppable column wrapper ─────────────────────────────────────────────────
+
+interface DroppableColumnProps {
+  id: TaskStatus
+  isOver: boolean
+  children: React.ReactNode
+}
+
+function DroppableColumn({ id, isOver, children }: DroppableColumnProps) {
+  const { setNodeRef } = useDroppable({ id })
+  return (
+    <div
+      ref={setNodeRef}
+      className="space-y-2.5 min-h-[80px] rounded-xl transition-colors duration-150"
+      style={isOver ? { background: 'rgba(255,255,255,0.04)', outline: '1.5px dashed rgba(255,255,255,0.18)' } : undefined}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ─── Main board ──────────────────────────────────────────────────────────────
+
 export function TasksBoard({ initialTasks, projects, users }: Props) {
   const [tasks,         setTasks]         = useState<TaskRow[]>(initialTasks)
   const [showCreate,    setShowCreate]    = useState(false)
   const [filterProject, setFilterProject] = useState('')
   const [filterPriority,setFilterPriority]= useState('')
+  const [overColumn,    setOverColumn]    = useState<TaskStatus | null>(null)
   const supabase  = createClient()
   const addToast  = useUIStore(s => s.addToast)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor),
+  )
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function handleDragStart(_event: DragStartEvent) {
+    // Reserved for future DragOverlay if needed.
+  }
+
+  function handleDragOver({ over }: DragOverEvent) {
+    if (over && COLUMNS.some(c => c.key === over.id)) {
+      setOverColumn(over.id as TaskStatus)
+    } else {
+      setOverColumn(null)
+    }
+  }
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    setOverColumn(null)
+    if (!over) return
+    const newStatus = over.id as TaskStatus
+    const task = tasks.find(t => t.id === active.id)
+    if (!task || task.status === newStatus) return
+    changeStatus(task.id, newStatus)
+  }
+
+  function handleDragCancel() {
+    setOverColumn(null)
+  }
 
   const changeStatus = async (taskId: string, newStatus: TaskStatus) => {
     // Save old status so we can roll back if the DB update fails.
@@ -110,87 +199,98 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
       </div>
 
       {/* Kanban columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-        {COLUMNS.map(col => {
-          const colTasks = filtered.filter(t => t.status === col.key)
-          return (
-            <div key={col.key} className="flex flex-col gap-3">
-              {/* Column header */}
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
-                  <span className="text-[13px] font-semibold tracking-tight">{col.label}</span>
+      <DndContext
+        sensors={sensors}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+          {COLUMNS.map(col => {
+            const colTasks = filtered.filter(t => t.status === col.key)
+            const isOver   = overColumn === col.key
+            return (
+              <div key={col.key} className="flex flex-col gap-3">
+                {/* Column header */}
+                <div className="flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
+                    <span className="text-[13px] font-semibold tracking-tight">{col.label}</span>
+                  </div>
+                  <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
+                    {colTasks.length}
+                  </span>
                 </div>
-                <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
-                  {colTasks.length}
-                </span>
-              </div>
-              <div className="h-1 w-full rounded-full" style={{ background: `${col.color}30` }}>
-                <div className="h-full rounded-full transition-all" style={{ background: col.color, width: colTasks.length > 0 ? '100%' : '0%' }} />
-              </div>
+                <div className="h-1 w-full rounded-full" style={{ background: `${col.color}30` }}>
+                  <div className="h-full rounded-full transition-all" style={{ background: col.color, width: colTasks.length > 0 ? '100%' : '0%' }} />
+                </div>
 
-              {/* Task cards */}
-              <div className="space-y-2.5 min-h-[80px]">
-                {colTasks.length === 0 && (
-                  <div className="text-center py-6 text-mute text-[12.5px] border border-dashed border-line rounded-xl">
-                    Нет задач
-                  </div>
-                )}
-                {colTasks.map(task => (
-                  <div key={task.id} className="card card-tight p-4 hover:border-line2 transition-all cursor-default group">
-                    {/* Priority dot + project */}
-                    <div className="flex items-center gap-2 mb-2.5">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: PRIORITY_COLOR[task.priority] }} />
-                      {task.project && (
-                        <span className="text-[11px] text-mute2 truncate flex items-center gap-1">
-                          {task.project.emoji && <span>{task.project.emoji}</span>}
-                          {task.project.name}
-                        </span>
-                      )}
+                {/* Task cards — droppable zone */}
+                <DroppableColumn id={col.key} isOver={isOver}>
+                  {colTasks.length === 0 && (
+                    <div className="text-center py-6 text-mute text-[12.5px] border border-dashed border-line rounded-xl">
+                      Нет задач
                     </div>
-
-                    {/* Title */}
-                    <div className="text-[13.5px] font-medium leading-snug mb-3">{task.title}</div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1 text-[11.5px] text-mute2">
-                        <Calendar size={11} />
-                        <span>{dueLabel(task.due_date)}</span>
-                      </div>
-                      {task.assignee ? (
-                        <Avatar
-                          initials={getInitials(task.assignee.full_name)}
-                          color={colorFor(task.assignee.full_name)}
-                          size={22}
-                        />
-                      ) : (
-                        <div className="w-5.5 h-5.5 rounded-full bg-white/[0.06] border border-line inline-flex items-center justify-center">
-                          <User2 size={10} className="text-mute2" />
+                  )}
+                  {colTasks.map(task => (
+                    <DraggableCard key={task.id} id={task.id}>
+                      <div className="card card-tight p-4 hover:border-line2 transition-all cursor-grab active:cursor-grabbing group">
+                        {/* Priority dot + project */}
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <div className="w-2 h-2 rounded-full shrink-0" style={{ background: PRIORITY_COLOR[task.priority] }} />
+                          {task.project && (
+                            <span className="text-[11px] text-mute2 truncate flex items-center gap-1">
+                              {task.project.emoji && <span>{task.project.emoji}</span>}
+                              {task.project.name}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* Status change (hover) */}
-                    <div className="mt-2.5 pt-2.5 border-t border-line opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="flex gap-1 flex-wrap">
-                        {COLUMNS.filter(c => c.key !== col.key).map(c => (
-                          <button key={c.key}
-                            onClick={() => changeStatus(task.id, c.key)}
-                            className="text-[10.5px] px-2 h-5 rounded-md border border-line hover:border-line2 text-mute hover:text-white transition-all"
-                          >
-                            → {c.label}
-                          </button>
-                        ))}
+                        {/* Title */}
+                        <div className="text-[13.5px] font-medium leading-snug mb-3">{task.title}</div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1 text-[11.5px] text-mute2">
+                            <Calendar size={11} />
+                            <span>{dueLabel(task.due_date)}</span>
+                          </div>
+                          {task.assignee ? (
+                            <Avatar
+                              initials={getInitials(task.assignee.full_name)}
+                              color={colorFor(task.assignee.full_name)}
+                              size={22}
+                            />
+                          ) : (
+                            <div className="w-5.5 h-5.5 rounded-full bg-white/[0.06] border border-line inline-flex items-center justify-center">
+                              <User2 size={10} className="text-mute2" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Status change (hover) — kept for keyboard/mouse users */}
+                        <div className="mt-2.5 pt-2.5 border-t border-line opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex gap-1 flex-wrap">
+                            {COLUMNS.filter(c => c.key !== col.key).map(c => (
+                              <button key={c.key}
+                                onClick={() => changeStatus(task.id, c.key)}
+                                className="text-[10.5px] px-2 h-5 rounded-md border border-line hover:border-line2 text-mute hover:text-white transition-all"
+                              >
+                                → {c.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    </DraggableCard>
+                  ))}
+                </DroppableColumn>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      </DndContext>
 
       {showCreate && (
         <CreateTaskModal
