@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Plus, Loader2, ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { Plus, Loader2, ChevronLeft, ChevronRight, Search, X, Trash2 } from 'lucide-react'
 
 const PAGE_SIZE = 20
 import { Button } from '@/components/ui/Button'
@@ -176,17 +176,25 @@ function AddClientModal({ managers, onClose, onCreated }: { managers: ManagerOpt
 
 // ─── edit modal ────────────────────────────────────────────────────────────────
 
-function EditClientModal({ client, managers, onClose, onUpdated }: { client: ClientRow; managers: ManagerOption[]; onClose: () => void; onUpdated: (c: ClientRow) => void }) {
+function EditClientModal({ client, managers, onClose, onUpdated, onDeleted }: {
+  client: ClientRow
+  managers: ManagerOption[]
+  onClose: () => void
+  onUpdated: (c: ClientRow) => void
+  onDeleted: (id: string) => void
+}) {
   const supabase = createClient()
-  const [name,      setName]      = useState(client.name)
-  const [email,     setEmail]     = useState(client.email ?? '')
-  const [phone,     setPhone]     = useState(client.phone ?? '')
-  const [source,    setSource]    = useState(client.source ?? '')
-  const [status,    setStatus]    = useState<ClientStatus>(client.status)
-  const [spent,     setSpent]     = useState(String(client.total_spent || ''))
-  const [managerId, setManagerId] = useState(client.manager?.id ?? '')
-  const [saving,    setSaving]    = useState(false)
-  const [error,     setError]     = useState('')
+  const [name,          setName]          = useState(client.name)
+  const [email,         setEmail]         = useState(client.email ?? '')
+  const [phone,         setPhone]         = useState(client.phone ?? '')
+  const [source,        setSource]        = useState(client.source ?? '')
+  const [status,        setStatus]        = useState<ClientStatus>(client.status)
+  const [spent,         setSpent]         = useState(String(client.total_spent || ''))
+  const [managerId,     setManagerId]     = useState(client.manager?.id ?? '')
+  const [saving,        setSaving]        = useState(false)
+  const [deleting,      setDeleting]      = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [error,         setError]         = useState('')
 
   const save = async () => {
     if (!name.trim()) { setError('Укажите имя клиента'); return }
@@ -211,15 +219,50 @@ function EditClientModal({ client, managers, onClose, onUpdated }: { client: Cli
     onClose()
   }
 
+  const doDelete = async () => {
+    setDeleting(true)
+    const { error: dbErr } = await supabase.from('clients').delete().eq('id', client.id)
+    setDeleting(false)
+    if (dbErr) { setError(dbErr.message); return }
+    onDeleted(client.id)
+    onClose()
+  }
+
   return (
     <Modal title={`Клиент: ${client.name}`} onClose={onClose} maxWidth="max-w-[460px]"
       footer={
-        <>
-          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
-          <Button className="flex-1" onClick={save} disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin" />} Сохранить
-          </Button>
-        </>
+        <div className="flex items-center gap-2 w-full">
+          {confirmDelete ? (
+            <>
+              <span className="text-[12.5px] text-err flex-1">Удалить клиента безвозвратно?</span>
+              <button
+                onClick={doDelete}
+                disabled={deleting}
+                className="text-[12px] text-err font-semibold px-3 h-9 rounded-xl bg-err/15 hover:bg-err/25 transition-colors disabled:opacity-40"
+              >
+                {deleting ? <Loader2 size={13} className="animate-spin" /> : 'Удалить'}
+              </button>
+              <button onClick={() => setConfirmDelete(false)} className="text-[12px] text-mute px-3 h-9 rounded-xl hover:text-white transition-colors">
+                Отмена
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                disabled={saving}
+                className="w-9 h-9 rounded-xl border border-line text-mute hover:text-err hover:border-err/30 inline-flex items-center justify-center transition-all disabled:opacity-40"
+                aria-label="Удалить клиента"
+              >
+                <Trash2 size={14} />
+              </button>
+              <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
+              <Button className="flex-1" onClick={save} disabled={saving}>
+                {saving && <Loader2 size={15} className="animate-spin" />} Сохранить
+              </Button>
+            </>
+          )}
+        </div>
       }
     >
       <ClientForm
@@ -286,6 +329,11 @@ export function CrmClient({ initialClients, managers }: Props) {
 
   const handleUpdated = (updated: ClientRow) => {
     setClients(prev => prev.map(c => c.id === updated.id ? updated : c))
+  }
+
+  const handleDeleted = (id: string) => {
+    setClients(prev => prev.filter(c => c.id !== id))
+    setEditing(null)
   }
 
   return (
@@ -425,6 +473,7 @@ export function CrmClient({ initialClients, managers }: Props) {
           managers={managers}
           onClose={() => setEditing(null)}
           onUpdated={handleUpdated}
+          onDeleted={handleDeleted}
         />
       )}
     </>

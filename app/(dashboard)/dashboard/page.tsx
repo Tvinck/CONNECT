@@ -4,6 +4,7 @@ import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
+import { NotificationsWidget } from '@/components/dashboard/NotificationsWidget'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile } from '@/lib/auth'
 import {
@@ -316,40 +317,10 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="card p-6">
-          <div className="flex items-end justify-between mb-4">
-            <div>
-              <h3 className="text-[17px] font-semibold tracking-tight">Уведомления</h3>
-              <p className="text-[12.5px] text-mute mt-0.5">
-                {notifications.filter((n) => !n.is_read).length} непрочитанных
-              </p>
-            </div>
-            <button className="text-[12.5px] text-mute hover:text-white">Отметить всё</button>
-          </div>
-          <div className="space-y-3">
-            {notifications.length === 0 && (
-              <div className="text-mute text-[13px] py-4">Новых уведомлений нет</div>
-            )}
-            {notifications.map((n) => {
-              const tone = NOTIF_TONE[n.type] ?? NOTIF_TONE.info
-              return (
-                <div key={n.id} className="flex items-start gap-3 p-3 rounded-xl border border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer transition-all">
-                  <div className={`w-9 h-9 rounded-lg ${tone.bg} ${tone.text} inline-flex items-center justify-center shrink-0`}>
-                    {n.type === 'task' && <CheckSquare size={16} />}
-                    {n.type === 'ach' && <span className="text-base">🏆</span>}
-                    {n.type === 'alert' && <Flame size={16} />}
-                    {(n.type === 'info' || !['task', 'ach', 'alert'].includes(n.type)) && <CheckSquare size={16} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold tracking-tight">{n.title}</div>
-                    <div className="text-[11.5px] text-mute mt-0.5 line-clamp-2">{n.body}</div>
-                  </div>
-                  <span className="text-[10.5px] text-mute2 font-mono shrink-0">{timeAgo(n.created_at)}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <NotificationsWidget
+          initialNotifications={notifications}
+          userId={profile.id}
+        />
       </div>
 
       {/* Level bar */}

@@ -23,10 +23,11 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
 
-  const [busy,     setBusy]     = useState(false)
-  const [notes,    setNotes]    = useState(order.admin_notes ?? '')
-  const [fileUrl,  setFileUrl]  = useState('')
-  const [showUpload, setShowUpload] = useState(false)
+  const [busy,          setBusy]          = useState(false)
+  const [notes,         setNotes]         = useState(order.admin_notes ?? '')
+  const [fileUrl,       setFileUrl]       = useState('')
+  const [showUpload,    setShowUpload]    = useState(false)
+  const [confirmRefund, setConfirmRefund] = useState(false)
 
   const patch = async (fields: Partial<PMOrder>) => {
     setBusy(true)
@@ -220,14 +221,32 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
             <CheckCircle size={13} /> Выполнен
           </Button>
 
-          <Button
-            size="sm"
-            onClick={markRefunded}
-            disabled={busy || order.payment_status === 'refunded'}
-            className="flex items-center gap-2 justify-center bg-err/10 text-err border-err/20 hover:bg-err/20"
-          >
-            <RotateCcw size={13} /> Возврат
-          </Button>
+          {confirmRefund ? (
+            <div className="flex items-center gap-2 col-span-2 sm:col-span-1">
+              <span className="text-[12px] text-err flex-1">Подтвердить возврат?</span>
+              <button
+                onClick={() => { markRefunded(); setConfirmRefund(false) }}
+                className="text-[11.5px] text-err font-semibold px-2 h-7 rounded-lg bg-err/15 hover:bg-err/25 transition-colors"
+              >
+                Да
+              </button>
+              <button
+                onClick={() => setConfirmRefund(false)}
+                className="text-[11.5px] text-mute px-2 h-7 rounded-lg hover:text-white transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => setConfirmRefund(true)}
+              disabled={busy || order.payment_status === 'refunded'}
+              className="flex items-center gap-2 justify-center bg-err/10 text-err border-err/20 hover:bg-err/20"
+            >
+              <RotateCcw size={13} /> Возврат
+            </Button>
+          )}
         </div>
 
         {/* Admin notes */}

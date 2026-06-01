@@ -19,6 +19,7 @@
 import { useMemo, useState } from 'react'
 import {
   Plus, Trash2, Loader2, TrendingUp, TrendingDown, Scale, Filter, Search, X,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
@@ -213,6 +214,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
   const [search,        setSearch]        = useState('')
   const [showAdd,       setShowAdd]       = useState(false)
   const [deletingId,    setDeletingId]    = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [page,          setPage]          = useState(0)
 
   const filtered = useMemo(() => {
@@ -239,6 +241,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
   const pageRows    = filtered.slice(page * PAGE, (page + 1) * PAGE)
 
   const deleteTx = async (id: string) => {
+    setConfirmDelete(null)
     setDeletingId(id)
     const { error } = await supabase.from('transactions').delete().eq('id', id)
     setDeletingId(null)
@@ -379,17 +382,32 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
                     </td>
                     <td className="px-3 py-3.5 text-right">
                       {canDelete(t) && (
-                        <button
-                          onClick={() => deleteTx(t.id)}
-                          disabled={deletingId === t.id}
-                          aria-label="Удалить"
-                          className="w-7 h-7 rounded-lg text-mute hover:text-err transition-all inline-flex items-center justify-center disabled:opacity-40"
-                        >
-                          {deletingId === t.id
-                            ? <Loader2 size={13} className="animate-spin" />
-                            : <Trash2 size={13} />
-                          }
-                        </button>
+                        deletingId === t.id ? (
+                          <Loader2 size={13} className="animate-spin text-mute" />
+                        ) : confirmDelete === t.id ? (
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => deleteTx(t.id)}
+                              className="text-[11px] text-err font-semibold px-1.5 h-6 rounded hover:bg-err/10 transition-colors"
+                            >
+                              Удалить
+                            </button>
+                            <button
+                              onClick={() => setConfirmDelete(null)}
+                              className="text-[11px] text-mute px-1.5 h-6 rounded hover:text-white transition-colors"
+                            >
+                              Отмена
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDelete(t.id)}
+                            aria-label="Удалить"
+                            className="w-7 h-7 rounded-lg text-mute hover:text-err transition-all inline-flex items-center justify-center"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )
                       )}
                     </td>
                   </tr>
@@ -405,15 +423,32 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
             <span className="text-[12px] text-mute">
               {page * PAGE + 1}–{Math.min((page + 1) * PAGE, filtered.length)} из {filtered.length}
             </span>
-            <div className="flex gap-1">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i} onClick={() => setPage(i)}
-                  className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
-                    i === page ? 'bg-accent text-white' : 'border border-line text-mute hover:text-white'
-                  }`}>
-                  {i + 1}
-                </button>
-              ))}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              {totalPages <= 7
+                ? Array.from({ length: totalPages }, (_, i) => (
+                    <button key={i} onClick={() => setPage(i)}
+                      className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
+                        i === page ? 'bg-accent text-white' : 'border border-line text-mute hover:text-white'
+                      }`}>
+                      {i + 1}
+                    </button>
+                  ))
+                : <span className="px-2 text-[12px] text-mute tabular-nums">стр. {page + 1} / {totalPages}</span>
+              }
+              <button
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={page === totalPages - 1}
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={14} />
+              </button>
             </div>
           </div>
         )}

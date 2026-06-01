@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AlertTriangle, Search } from 'lucide-react'
+import { AlertTriangle, Search, Download } from 'lucide-react'
 import { Tag } from '@/components/ui/Tag'
 import { OrderModal } from './OrderModal'
 import type { PMOrder, PMProduct, PaymentStatus, GenStatus } from './types'
@@ -58,6 +58,23 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
     setSelected(updated)
   }
 
+  const exportCsv = () => {
+    const escape = (v: string | number | null | undefined) => {
+      const s = String(v ?? '')
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s
+    }
+    const header = 'id,email,name,recipient,occasion,product,amount,payment,gen_status,created_at'
+    const rows = filtered.map(o => [
+      o.id, o.client_email, o.client_name, o.recipient, o.occasion,
+      o.product?.name, o.amount, o.payment_status, o.gen_status, o.created_at,
+    ].map(escape).join(','))
+    const blob = new Blob(['﻿' + [header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url; a.download = `pm_orders_${new Date().toISOString().slice(0, 10)}.csv`; a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div>
       {/* Stuck warning banner */}
@@ -112,6 +129,14 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
             <option key={s} value={s}>{GEN_LABEL[s]}</option>
           )}
         </select>
+
+        <button
+          onClick={exportCsv}
+          title={`Экспорт ${filtered.length} заказов в CSV`}
+          className="h-9 px-3 rounded-xl border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center gap-1.5 text-[12.5px] transition-colors"
+        >
+          <Download size={13} /> CSV ({filtered.length})
+        </button>
       </div>
 
       {/* Payment status chips */}

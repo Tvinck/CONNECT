@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Pencil, Check, X, Loader2, Plus, Trash2 } from 'lucide-react'
+import { Pencil, Check, X, Loader2, Plus, Trash2, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore }   from '@/store/ui'
@@ -29,6 +29,14 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
   const [newCode,     setNewCode]     = useState('')
   const [newDisc,     setNewDisc]     = useState('')
   const [savingPromo, setSavingPromo] = useState(false)
+  const [copiedCode,  setCopiedCode]  = useState<string | null>(null)
+
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedCode(code)
+      setTimeout(() => setCopiedCode(null), 1500)
+    })
+  }
 
   // ─── product actions ────────────────────────────────────────────────────────
 
@@ -193,6 +201,16 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
               <code className="text-[14px] font-bold font-mono text-accent flex-1">{promo.code}</code>
               <span className="text-[13px] font-semibold text-ok">−{promo.discount}%</span>
               <span className="text-[11px] text-mute">{promo.uses} исп.</span>
+              <button
+                onClick={() => copyCode(promo.code)}
+                title="Скопировать"
+                className="text-mute hover:text-white transition-colors"
+                aria-label="Скопировать промокод"
+              >
+                {copiedCode === promo.code
+                  ? <Check size={13} className="text-ok" />
+                  : <Copy size={13} />}
+              </button>
               <button
                 onClick={() => deletePromo(promo.id)}
                 className="text-mute hover:text-err transition-colors"
