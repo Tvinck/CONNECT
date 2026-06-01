@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { ToastHost } from '@/components/ui/ToastHost'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow'
 import { getCurrentProfile } from '@/lib/auth'
 
 export default async function DashboardLayout({
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
         <Sidebar />
         <main className="flex-1 min-w-0 overflow-y-auto">{children}</main>
         <ToastHost />
+        <OnboardingFlow role={profile.role} name={profile.full_name} />
       </div>
     </AuthProvider>
   )
