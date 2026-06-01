@@ -24,7 +24,7 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core'
-import type { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core'
+import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { CreateTaskModal } from './CreateTaskModal'
@@ -118,11 +118,6 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
     useSensor(KeyboardSensor),
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function handleDragStart(_event: DragStartEvent) {
-    // Reserved for future DragOverlay if needed.
-  }
-
   function handleDragOver({ over }: DragOverEvent) {
     if (over && COLUMNS.some(c => c.key === over.id)) {
       setOverColumn(over.id as TaskStatus)
@@ -201,7 +196,6 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
       {/* Kanban columns */}
       <DndContext
         sensors={sensors}
-        onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}

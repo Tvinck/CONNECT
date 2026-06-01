@@ -337,8 +337,9 @@ function TaskCard({
       'border-line bg-white/[0.02]'
     }`}>
       <div className="flex items-start gap-3">
-        {/* Cover art */}
+        {/* Cover art — external Kie.ai URL, next/image not applicable */}
         {task.image_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img src={task.image_url} alt={task.title ?? ''} className="w-12 h-12 rounded-xl object-cover shrink-0" />
         ) : (
           <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center shrink-0">
