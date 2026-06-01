@@ -45,8 +45,12 @@ export function EditProfileModal({ profile, onClose, onSaved }: Props) {
     if (file.size > 3 * 1024 * 1024) { setError('Файл не более 3 МБ'); return }
     if (!file.type.startsWith('image/')) { setError('Только изображения'); return }
 
+    const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+    const rawExt = file.name.split('.').pop()?.toLowerCase() ?? ''
+    if (!ALLOWED_EXT.includes(rawExt)) { setError('Формат не поддерживается. Используйте JPG, PNG или WebP'); return }
+
     setUploading(true); setError('')
-    const ext = file.name.split('.').pop() ?? 'jpg'
+    const ext  = rawExt === 'jpeg' ? 'jpg' : rawExt
     const path = `avatars/${profile.id}.${ext}`
 
     const { error: upErr } = await supabase.storage

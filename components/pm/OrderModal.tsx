@@ -30,7 +30,7 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
   const [showUpload,    setShowUpload]    = useState(false)
   const [confirmRefund, setConfirmRefund] = useState(false)
 
-  const patch = async (fields: Partial<PMOrder>) => {
+  const patch = async (fields: Partial<PMOrder>, auditAction?: Parameters<typeof auditLog>[0]) => {
     setBusy(true)
     const { data, error } = await supabase
       .from('pm_orders')
@@ -41,25 +41,24 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
     setBusy(false)
     if (error) { addToast('Ошибка', error.message, 'err'); return }
     onUpdated(data as unknown as PMOrder)
+    // Log only after confirmed DB success
+    if (auditAction) auditLog(auditAction)
   }
 
-  const restartGen = () => {
-    auditLog({ action: 'order.restart', entityType: 'order', entityId: order.id })
-    return patch({ gen_status: 'pending', gen_started_at: null, gen_done_at: null })
-  }
+  const restartGen  = () => patch(
+    { gen_status: 'pending', gen_started_at: null, gen_done_at: null },
+    { action: 'order.restart', entityType: 'order', entityId: order.id },
+  )
 
-  const markDone = () => {
-    auditLog({ action: 'order.manual_done', entityType: 'order', entityId: order.id })
-    return patch({ gen_status: 'manual', gen_done_at: new Date().toISOString(), sent_at: new Date().toISOString() })
-  }
+  const markDone    = () => patch(
+    { gen_status: 'manual', gen_done_at: new Date().toISOString(), sent_at: new Date().toISOString() },
+    { action: 'order.manual_done', entityType: 'order', entityId: order.id },
+  )
 
-  const markRefunded = () => {
-    auditLog({ action: 'order.refund', entityType: 'order', entityId: order.id, meta: { amount: order.amount } })
-    return patch({
-      payment_status: 'refunded',
-      admin_notes: (notes ? notes + '\n' : '') + `Возврат оформлен ${new Date().toLocaleDateString('ru-RU')}`,
-    })
-  }
+  const markRefunded = () => patch(
+    { payment_status: 'refunded', admin_notes: (notes ? notes + '\n' : '') + `Возврат оформлен ${new Date().toLocaleDateString('ru-RU')}` },
+    { action: 'order.refund', entityType: 'order', entityId: order.id, meta: { amount: order.amount } },
+  )
 
   const saveNotes = () => patch({ admin_notes: notes })
 

@@ -152,7 +152,9 @@ export function AuditLogPanel({ logs }: Props) {
                   </div>
                   {log.meta && Object.keys(log.meta).length > 0 && (
                     <div className="text-[11px] text-mute mt-0.5 font-mono truncate">
-                      {Object.entries(log.meta).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                      {Object.entries(log.meta).map(([k, v]) =>
+                        `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v ?? '')}`
+                      ).join(' · ')}
                     </div>
                   )}
                 </div>

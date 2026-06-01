@@ -16,6 +16,7 @@
  */
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 /** Returns a Supabase client that reads the auth session from server cookies. */
@@ -43,5 +44,18 @@ export function createClient() {
         },
       },
     }
+  )
+}
+
+/**
+ * Service-role client that bypasses RLS.
+ * ONLY use in trusted server-side contexts (CRON jobs, background tasks).
+ * NEVER expose to the browser or use in client components.
+ */
+export function createServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
   )
 }

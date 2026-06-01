@@ -11,19 +11,23 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY "Authenticated upload own avatar"
+-- Users can only upload/overwrite their OWN avatar: path must be avatars/{uid}.{ext}
+-- storage.filename() returns the filename part (e.g. "abc-123.jpg")
+-- We verify it starts with the caller's uid so User A can't overwrite User B's file.
+CREATE POLICY "Upload own avatar"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'avatars'
     AND auth.role() = 'authenticated'
-    AND (storage.foldername(name))[1] = 'avatars'
+    AND storage.filename(name) LIKE (auth.uid()::text || '.%')
   );
 
-CREATE POLICY "Authenticated update own avatar"
+CREATE POLICY "Update own avatar"
   ON storage.objects FOR UPDATE
   USING (
     bucket_id = 'avatars'
     AND auth.role() = 'authenticated'
+    AND storage.filename(name) LIKE (auth.uid()::text || '.%')
   );
 
 CREATE POLICY "Public read avatars"

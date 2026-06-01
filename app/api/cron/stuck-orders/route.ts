@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server'
-import { createClient }  from '@/lib/supabase/server'
+import { NextResponse }        from 'next/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { sendEmail, emailStuckOrder } from '@/lib/email'
 
 // Called by Vercel CRON or any external scheduler (e.g. every 30 min).
@@ -7,8 +7,8 @@ import { sendEmail, emailStuckOrder } from '@/lib/email'
 // Add to vercel.json:
 //   { "crons": [{ "path": "/api/cron/stuck-orders", "schedule": "*/30 * * * *" }] }
 //
-// Orders are "stuck" when: payment_status = 'paid' AND gen_status IN ('pending','processing')
-// AND gen_started_at is older than 15 minutes (or gen_started_at is null and paid_at > 15 min).
+// Uses the service-role client so it can bypass RLS — this endpoint has no
+// user session (no cookies), so the anon client would fail the is_ceo() check.
 
 export async function GET(req: Request) {
   const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret')
@@ -16,10 +16,9 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createClient()
-  const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+  const supabase = createServiceClient()
+  const cutoff   = new Date(Date.now() - 15 * 60 * 1000).toISOString()
 
-  // Find stuck orders: paid but generation not done and started > 15 min ago (or never started)
   const { data: stuck, error } = await supabase
     .from('pm_orders')
     .select('id, client_email, paid_at, gen_started_at, product:pm_products(name)')
@@ -30,27 +29,33 @@ export async function GET(req: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const results: { id: string; action: string }[] = []
+  // Process all orders in parallel: batch DB updates + batch emails
+  const orders = stuck ?? []
+  await Promise.all(
+    orders.map(order =>
+      supabase
+        .from('pm_orders')
+        .update({ gen_status: 'pending', gen_started_at: null })
+        .eq('id', order.id)
+    )
+  )
 
-  for (const order of stuck ?? []) {
-    // Reset to pending so the generation worker picks it up again
-    await supabase
-      .from('pm_orders')
-      .update({ gen_status: 'pending', gen_started_at: null })
-      .eq('id', order.id)
-
-    // Notify CEO
-    const product = Array.isArray(order.product) ? order.product[0] : order.product
-    const { subject, html } = emailStuckOrder({
-      orderId: order.id,
-      email:   order.client_email,
-      product: product?.name ?? 'Неизвестный продукт',
-      paidAt:  order.paid_at ?? order.gen_started_at ?? new Date().toISOString(),
+  // Send email alerts (best-effort, fire-and-forget)
+  await Promise.all(
+    orders.map(order => {
+      const product = Array.isArray(order.product) ? order.product[0] : order.product
+      const { subject, html } = emailStuckOrder({
+        orderId: order.id,
+        email:   order.client_email,
+        product: product?.name ?? 'Неизвестный продукт',
+        paidAt:  order.paid_at ?? order.gen_started_at ?? new Date().toISOString(),
+      })
+      return sendEmail(subject, html)
     })
-    await sendEmail(subject, html)
+  )
 
-    results.push({ id: order.id, action: 'requeued' })
-  }
-
-  return NextResponse.json({ processed: results.length, orders: results })
+  return NextResponse.json({
+    processed: orders.length,
+    orders: orders.map(o => ({ id: o.id, action: 'requeued' })),
+  })
 }

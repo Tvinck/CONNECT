@@ -136,11 +136,14 @@ export function OnboardingFlow({ role, name }: Props) {
   }, [])
 
   const dismiss = useCallback(() => {
-    setExiting(true)
-    setTimeout(() => {
-      localStorage.setItem(STORAGE_KEY, 'done')
-      setVisible(false)
-    }, 280)
+    setExiting(prev => {
+      if (prev) return prev // already dismissing — ignore duplicate calls
+      setTimeout(() => {
+        localStorage.setItem(STORAGE_KEY, 'done')
+        setVisible(false)
+      }, 280)
+      return true
+    })
   }, [])
 
   useEffect(() => {

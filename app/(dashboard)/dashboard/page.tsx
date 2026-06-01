@@ -29,8 +29,10 @@ export default async function DashboardPage() {
 
   const supabase = createClient()
 
-  const isCeo = profile.role === 'ceo'
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+  const isCeo      = profile.role === 'ceo'
+  const today      = new Date()
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10)
+  const monthEnd   = today.toISOString().slice(0, 10)
 
   const [
     activeCountRes,
@@ -68,9 +70,9 @@ export default async function DashboardPage() {
     // My unread notifications
     supabase.from('notifications').select('*')
       .eq('user_id', profile.id).order('created_at', { ascending: false }).limit(5),
-    // CEO: current month P&L
+    // CEO: current month P&L (this month only, no future-dated entries)
     isCeo
-      ? supabase.from('transactions').select('type, amount').gte('date', monthStart)
+      ? supabase.from('transactions').select('type, amount').gte('date', monthStart).lte('date', monthEnd)
       : Promise.resolve({ data: null }),
   ])
 
