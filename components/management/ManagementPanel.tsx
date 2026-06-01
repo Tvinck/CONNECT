@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
+import { auditLog } from '@/lib/audit'
 import { colorFor, getInitials } from '@/lib/utils'
 import type { UserRole } from '@/types'
 
@@ -232,6 +233,7 @@ export function ManagementPanel({ employees }: Props) {
       .upsert({ role, section: SECTIONS[sectionIdx], level: next, updated_at: new Date().toISOString() })
 
     setSavingCells(s => { const n = new Set(s); n.delete(cellKey); return n })
+    if (!error) auditLog({ action: 'user.role_change', entityType: 'role_permission', meta: { role, section: SECTIONS[sectionIdx], level: next } })
 
     if (error) {
       setPerms(p => {

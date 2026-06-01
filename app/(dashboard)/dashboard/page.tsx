@@ -29,6 +29,9 @@ export default async function DashboardPage() {
 
   const supabase = createClient()
 
+  const isCeo = profile.role === 'ceo'
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
+
   const [
     activeCountRes,
     urgentCountRes,
@@ -38,6 +41,7 @@ export default async function DashboardPage() {
     activityRes,
     projectsRes,
     notifRes,
+    txRes,
   ] = await Promise.all([
     // My open tasks
     supabase.from('tasks').select('id', { count: 'exact', head: true })
@@ -64,6 +68,10 @@ export default async function DashboardPage() {
     // My unread notifications
     supabase.from('notifications').select('*')
       .eq('user_id', profile.id).order('created_at', { ascending: false }).limit(5),
+    // CEO: current month P&L
+    isCeo
+      ? supabase.from('transactions').select('type, amount').gte('date', monthStart)
+      : Promise.resolve({ data: null }),
   ])
 
   const activeCount = activeCountRes.count ?? 0
@@ -73,6 +81,15 @@ export default async function DashboardPage() {
   const clients = (clientsRes.data ?? []) as { total_spent: number; status: string }[]
   const turnover = clients.reduce((s, c) => s + Number(c.total_spent || 0), 0)
   const payingClients = clients.filter((c) => c.status === 'active' || c.status === 'vip').length
+
+  // CEO P&L (current month)
+  type TxRow = { type: string; amount: number }
+  const txRows = (txRes.data ?? []) as TxRow[]
+  const plIncome  = txRows.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+  const plExpense = txRows.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+  const plProfit  = plIncome - plExpense
+  const plMargin  = plIncome > 0 ? Math.round((plProfit / plIncome) * 100) : 0
+  const currentMonth = new Date().toLocaleString('ru-RU', { month: 'long' })
 
   // Local types matching the select shapes above.
   type MyTaskRow = {
@@ -197,6 +214,24 @@ export default async function DashboardPage() {
           </div>
         </StatCard>
       </div>
+
+      {/* CEO P&L banner */}
+      {isCeo && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Доходы', value: fmtRub(plIncome),  color: '#22C55E', sub: currentMonth },
+            { label: 'Расходы', value: fmtRub(plExpense), color: '#EF4444', sub: currentMonth },
+            { label: 'Прибыль', value: fmtRub(plProfit),  color: plProfit >= 0 ? '#22C55E' : '#EF4444', sub: 'чистая' },
+            { label: 'Маржа',   value: `${plMargin}%`,    color: plMargin >= 30 ? '#22C55E' : plMargin >= 10 ? '#F59E0B' : '#EF4444', sub: 'рентабельность' },
+          ].map(item => (
+            <div key={item.label} className="card p-4 flex flex-col gap-1">
+              <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold">{item.label}</div>
+              <div className="text-[22px] font-bold tabular-nums" style={{ color: item.color }}>{item.value}</div>
+              <div className="text-[10.5px] text-mute">{item.sub}</div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Tasks + Activity */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">

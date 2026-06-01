@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Tag }    from '@/components/ui/Tag'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore }   from '@/store/ui'
+import { auditLog }     from '@/lib/audit'
 import type { PMOrder } from './types'
 import { PAY_LABEL, PAY_COLOR, GEN_LABEL, GEN_COLOR, isStuck } from './types'
 import { timeAgo } from '@/lib/utils'
@@ -42,22 +43,23 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
     onUpdated(data as unknown as PMOrder)
   }
 
-  const restartGen = () => patch({
-    gen_status: 'pending',
-    gen_started_at: null,
-    gen_done_at: null,
-  })
+  const restartGen = () => {
+    auditLog({ action: 'order.restart', entityType: 'order', entityId: order.id })
+    return patch({ gen_status: 'pending', gen_started_at: null, gen_done_at: null })
+  }
 
-  const markDone = () => patch({
-    gen_status: 'manual',
-    gen_done_at: new Date().toISOString(),
-    sent_at: new Date().toISOString(),
-  })
+  const markDone = () => {
+    auditLog({ action: 'order.manual_done', entityType: 'order', entityId: order.id })
+    return patch({ gen_status: 'manual', gen_done_at: new Date().toISOString(), sent_at: new Date().toISOString() })
+  }
 
-  const markRefunded = () => patch({
-    payment_status: 'refunded',
-    admin_notes: (notes ? notes + '\n' : '') + `Возврат оформлен ${new Date().toLocaleDateString('ru-RU')}`,
-  })
+  const markRefunded = () => {
+    auditLog({ action: 'order.refund', entityType: 'order', entityId: order.id, meta: { amount: order.amount } })
+    return patch({
+      payment_status: 'refunded',
+      admin_notes: (notes ? notes + '\n' : '') + `Возврат оформлен ${new Date().toLocaleDateString('ru-RU')}`,
+    })
+  }
 
   const saveNotes = () => patch({ admin_notes: notes })
 
