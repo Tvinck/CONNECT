@@ -206,7 +206,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
   const supabase   = createClient()
   const { user }   = useAuthStore()
   const addToast   = useUIStore(s => s.addToast)
-  const isCeo      = user?.role === 'ceo'
+  const isCeoOrCoowner = user?.role === 'ceo' || user?.role === 'coowner'
 
   const [txList,        setTxList]        = useState<TxRow[]>(initialTransactions)
   const [filterType,    setFilterType]    = useState<'all' | 'income' | 'expense'>('all')
@@ -249,7 +249,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
     setTxList(prev => prev.filter(t => t.id !== id))
   }
 
-  const canDelete = (t: TxRow) => isCeo || t.created_by === user?.id
+  const canDelete = (t: TxRow) => isCeoOrCoowner || t.created_by === user?.id
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })

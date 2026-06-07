@@ -15,7 +15,7 @@ const STATUS_LABEL: Record<string, string> = {
   online: 'Онлайн', busy: 'На встрече', offline: 'Не в сети',
 }
 const ROLE_LABEL: Record<string, string> = {
-  ceo: 'CEO', design: 'Дизайнер', dev: 'Разработка', sales: 'Продажи', support: 'Поддержка',
+  ceo: 'CEO', coowner: 'Совладелец', design: 'Дизайнер', dev: 'Разработка', sales: 'Продажи', support: 'Поддержка',
 }
 
 type Emp = User & { tasks_done?: number }

@@ -252,7 +252,7 @@ function EditArticleModal({ article, onClose, onUpdated }: {
 export function KnowledgeClient({ initialArticles }: { initialArticles: Article[] }) {
   const supabase = createClient()
   const { user } = useAuthStore()
-  const isCeo = user?.role === 'ceo'
+  const isCeoOrCoowner = user?.role === 'ceo' || user?.role === 'coowner'
 
   const [articles,    setArticles]    = useState<Article[]>(initialArticles)
   const [query,       setQuery]       = useState('')
@@ -283,7 +283,7 @@ export function KnowledgeClient({ initialArticles }: { initialArticles: Article[
   const visible = filtered.slice(0, visibleCount)
 
   /** Returns true if the current user may edit or delete this article. */
-  const canEdit = (a: Article) => isCeo || user?.id === a.author?.id
+  const canEdit = (a: Article) => isCeoOrCoowner || user?.id === a.author?.id
 
   const openArticle = async (a: Article) => {
     setViewing(a)

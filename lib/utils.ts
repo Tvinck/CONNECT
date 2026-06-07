@@ -57,6 +57,7 @@ export function shadeColor(hex: string, percent: number): string {
 /** All user roles with display label, emoji, and brand colour. */
 export const ROLES = [
   { id: 'ceo',     label: 'CEO',          emoji: '👑', color: '#FFC833' },
+  { id: 'coowner', label: 'Совладелец',   emoji: '🤝', color: '#6F4FE8' },
   { id: 'design',  label: 'Дизайнер',     emoji: '🎨', color: '#FF4D9D' },
   { id: 'sales',   label: 'Продажи',      emoji: '💰', color: '#F59E0B' },
   { id: 'dev',     label: 'Разработка',   emoji: '💻', color: '#1472F5' },
@@ -174,7 +175,11 @@ export function timeAgo(iso: string): string {
 export function dueLabel(iso?: string | null): string {
   if (!iso) return 'Без срока'
   const due = new Date(iso)
-  const diffDays = Math.ceil((due.getTime() - Date.now()) / 86400000)
+  const d1 = new Date(due.getFullYear(), due.getMonth(), due.getDate())
+  const today = new Date()
+  const d2 = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const diffDays = Math.round((d1.getTime() - d2.getTime()) / 86400000)
+
   if (diffDays < 0) return 'Просрочено'
   if (diffDays === 0) return 'Сегодня'
   if (diffDays === 1) return 'Завтра'

@@ -19,6 +19,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, Pencil, Plus, Trash2, ExternalLink, Link2, Loader2, User2,
+  Server, Activity, Users, CreditCard, Globe, Search, Copy, Check, Info, Calendar, Key, AlertCircle, Gift
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
@@ -26,9 +27,19 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
 import { Progress } from '@/components/ui/Progress'
 import { CreateTaskModal } from '@/components/tasks/CreateTaskModal'
+import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
 import { createClient } from '@/lib/supabase/client'
+import { createClient as createVeilClient } from '@supabase/supabase-js'
 import { useUIStore } from '@/store/ui'
 import { getInitials, colorFor, dueLabel, PRIORITY_COLOR } from '@/lib/utils'
+import { Finances } from './ProjectDetail/Finances'
+import { Links } from './ProjectDetail/Links'
+import { Team } from './ProjectDetail/Team'
+
+const veilSupabase = createVeilClient(
+  process.env.NEXT_PUBLIC_VEIL_SUPABASE_URL || 'https://hvsexqyieibkspnnvigd.supabase.co',
+  process.env.NEXT_PUBLIC_VEIL_SUPABASE_ANON_KEY || ''
+)
 import type { TaskRow } from '@/components/tasks/TasksBoard'
 import { AddTransactionModal, TX_CATEGORIES, type TxRow } from '@/components/finance/FinancesClient'
 import type { ProjectStatus, TaskStatus } from '@/types'
@@ -36,6 +47,7 @@ import { fmtRub } from '@/lib/utils'
 
 // ─── local types ──────────────────────────────────────────────────────────────
 
+/** Полные метаданные проекта */
 export type ProjectFull = {
   id: string
   name: string
@@ -48,6 +60,7 @@ export type ProjectFull = {
   created_at: string
 }
 
+/** Описание строки участника команды проекта */
 export type ProjectMemberRow = {
   role: 'lead' | 'member'
   user: {
@@ -59,286 +72,112 @@ export type ProjectMemberRow = {
   }
 }
 
+/** Описание строки ссылки проекта */
 export type ProjectLinkRow = {
   id: string
   label: string
   url: string
 }
 
-type UserOption = { id: string; full_name: string }
+/** Опция выбора сотрудника для назначения задач */
+export type UserOption = { id: string; full_name: string }
 
+/** Входящие свойства компонента ProjectDetail */
 interface Props {
+  /** Модель текущего проекта */
   project: ProjectFull
+  /** Первоначальный список участников проекта */
   initialMembers: ProjectMemberRow[]
+  /** Первоначальный список ссылок проекта */
   initialLinks: ProjectLinkRow[]
+  /** Первоначальный список задач проекта */
   initialTasks: TaskRow[]
+  /** Первоначальный список транзакций проекта */
   initialTransactions: TxRow[]
+  /** Список всех активных сотрудников для назначения */
   allUsers: UserOption[]
+  /** VPN-серверы (только для проекта Veil VPN) */
+  vpnServers?: any[] | null
+  /** VPN-подписки клиентов (только для проекта Veil VPN) */
+  vpnSubscriptions?: any[] | null
+  /** История VPN-платежей клиентов (только для проекта Veil VPN) */
+  vpnOrders?: any[] | null
+  /** Реферальные связи VPN (только для проекта Veil VPN) */
+  vpnReferrals?: any[] | null
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
+/** Цветовые тона для различных статусов проекта */
 const STATUS_TONE: Record<string, 'ok' | 'warn' | 'mute'> = {
   active: 'ok', dev: 'warn', planning: 'mute',
 }
+
+/** Русскоязычные лейблы для статусов проекта */
 const STATUS_LABEL: Record<string, string> = {
   active: 'Активный', dev: 'В разработке', planning: 'Планирование',
 }
+
+/** Цветовые схемы для ролей участников проекта */
 const ROLE_TONE: Record<string, 'accent' | 'mute'> = { lead: 'accent', member: 'mute' }
+
+/** Русскоязычные названия ролей участников проекта */
 const ROLE_LABEL: Record<string, string> = { lead: 'Лид', member: 'Участник' }
 
+/** Локализованные лейблы статусов задач */
 const TASK_STATUS_LABEL: Record<string, string> = {
   todo: 'Сделать', in_progress: 'В работе', review: 'Проверка', done: 'Готово',
 }
+
+/** Цветовые схемы статусов задач */
 const TASK_STATUS_TONE: Record<string, 'mute' | 'accent' | 'warn' | 'ok'> = {
   todo: 'mute', in_progress: 'accent', review: 'warn', done: 'ok',
 }
 
-const COLOR_OPTIONS = ['#1472F5', '#FF4D9D', '#22C55E', '#F59E0B', '#00C2FF', '#6F4FE8']
-const EMOJI_OPTIONS = ['🎁', '✨', '🛒', '🚀', '📦', '💡', '🎨', '📊', '🔧', '🌟', '🎯', '💬']
+/** Доступные цвета для кастомизации проекта */
+export const COLOR_OPTIONS = ['#1472F5', '#FF4D9D', '#22C55E', '#F59E0B', '#00C2FF', '#6F4FE8']
 
-/** Returns the hostname of a URL, or empty string on parse failure. */
+/** Предустановленные иконки/эмодзи для проекта */
+export const EMOJI_OPTIONS = ['🎁', '✨', '🛒', '🚀', '📦', '💡', '🎨', '📊', '🔧', '🌟', '🎯', '💬']
+
+/**
+ * Извлекает хостнейм из предоставленной URL строки.
+ * 
+ * @param url URL адрес
+ * @returns Строка хостнейма (например, 'github.com') или пустая строка в случае ошибки парсинга
+ */
 function domainOf(url: string) {
   try { return new URL(url).hostname } catch { return '' }
 }
 
-const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
-const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
-const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
+/** Стили для полей ввода (HTML input) */
+export const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
 
-// ─── sub-modals ───────────────────────────────────────────────────────────────
+/** Стили для селектов (HTML select) */
+export const SELECT = 'w-full h-10 px-3 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
 
-function EditProjectModal({
-  project, onClose, onSaved,
-}: {
-  project: ProjectFull
-  onClose: () => void
-  onSaved: (p: ProjectFull) => void
-}) {
-  const supabase = createClient()
-  const [name,        setName]        = useState(project.name)
-  const [emoji,       setEmoji]       = useState(project.emoji ?? '🚀')
-  const [color,       setColor]       = useState(project.color)
-  const [status,      setStatus]      = useState<ProjectStatus>(project.status)
-  const [progress,    setProgress]    = useState(project.progress)
-  const [description, setDescription] = useState(project.description ?? '')
-  const [saving,      setSaving]      = useState(false)
-  const [error,       setError]       = useState('')
+/** Стили для заголовков полей форм (HTML label) */
+export const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
-  const save = async () => {
-    if (!name.trim()) { setError('Укажите название'); return }
-    setSaving(true); setError('')
-    const { data, error: dbErr } = await supabase
-      .from('projects')
-      .update({ name: name.trim(), emoji, color, status, progress, description: description.trim() || null })
-      .eq('id', project.id)
-      .select('id, name, slug, emoji, color, status, progress, description, created_at')
-      .single()
-    setSaving(false)
-    if (dbErr) { setError(dbErr.message); return }
-    if (data) onSaved(data as ProjectFull)
-    onClose()
-  }
-
-  return (
-    <Modal
-      title="Редактировать проект"
-      onClose={onClose}
-      footer={
-        <>
-          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
-          <Button className="flex-1" onClick={save} disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin" />} Сохранить
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <div>
-          <label className={LABEL}>Название *</label>
-          <input value={name} onChange={e => setName(e.target.value)} autoFocus className={FIELD} />
-        </div>
-        <div>
-          <label className={LABEL}>Иконка</label>
-          <div className="flex flex-wrap gap-1.5">
-            {EMOJI_OPTIONS.map(em => (
-              <button key={em} onClick={() => setEmoji(em)} type="button"
-                className={`w-9 h-9 rounded-xl text-lg inline-flex items-center justify-center border transition-all ${
-                  emoji === em ? 'border-accent bg-accent/15' : 'border-line hover:border-line2 bg-white/[0.02]'
-                }`}>
-                {em}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className={LABEL}>Цвет</label>
-          <div className="flex gap-2">
-            {COLOR_OPTIONS.map(c => (
-              <button key={c} onClick={() => setColor(c)} type="button"
-                className={`w-8 h-8 rounded-lg transition-all ${color === c ? 'ring-2 ring-offset-2 ring-offset-[#151829]' : ''}`}
-                style={{ background: c, boxShadow: color === c ? `0 0 0 2px ${c}` : 'none' }} />
-            ))}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={LABEL}>Статус</label>
-            <select value={status} onChange={e => setStatus(e.target.value as ProjectStatus)} className={SELECT}>
-              <option value="planning">Планирование</option>
-              <option value="dev">В разработке</option>
-              <option value="active">Активный</option>
-            </select>
-          </div>
-          <div>
-            <label className={LABEL}>Готовность: {progress}%</label>
-            <input type="range" min={0} max={100} step={5} value={progress}
-              onChange={e => setProgress(Number(e.target.value))}
-              className="w-full h-10 accent-accent" />
-          </div>
-        </div>
-        <div>
-          <label className={LABEL}>Описание</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2}
-            placeholder="О проекте…"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none" />
-        </div>
-        {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
-      </div>
-    </Modal>
-  )
-}
-
-function AddMemberModal({
-  projectId, allUsers, existing, onClose, onAdded,
-}: {
-  projectId: string
-  allUsers: UserOption[]
-  existing: ProjectMemberRow[]
-  onClose: () => void
-  onAdded: (m: ProjectMemberRow) => void
-}) {
-  const supabase = createClient()
-  const available = allUsers.filter(u => !existing.some(m => m.user.id === u.id))
-  const [userId,  setUserId]  = useState(available[0]?.id ?? '')
-  const [role,    setRole]    = useState<'lead' | 'member'>('member')
-  const [saving,  setSaving]  = useState(false)
-  const [error,   setError]   = useState('')
-
-  const add = async () => {
-    if (!userId) { setError('Выберите сотрудника'); return }
-    setSaving(true); setError('')
-    const { error: dbErr } = await supabase
-      .from('project_members')
-      .insert({ project_id: projectId, user_id: userId, role })
-    setSaving(false)
-    if (dbErr) { setError(dbErr.message); return }
-    const picked = allUsers.find(u => u.id === userId)!
-    onAdded({ role, user: { id: picked.id, full_name: picked.full_name, role: '', position: null, status: 'offline' } })
-    onClose()
-  }
-
-  return (
-    <Modal
-      title="Добавить участника"
-      onClose={onClose}
-      maxWidth="max-w-[400px]"
-      footer={
-        <>
-          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
-          <Button className="flex-1" onClick={add} disabled={saving || available.length === 0}>
-            {saving && <Loader2 size={15} className="animate-spin" />} Добавить
-          </Button>
-        </>
-      }
-    >
-      {available.length === 0 ? (
-        <p className="text-[13px] text-mute py-2">Все сотрудники уже добавлены в проект.</p>
-      ) : (
-        <div className="space-y-4">
-          <div>
-            <label className={LABEL}>Сотрудник</label>
-            <select value={userId} onChange={e => setUserId(e.target.value)} className={SELECT}>
-              {available.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={LABEL}>Роль в проекте</label>
-            <select value={role} onChange={e => setRole(e.target.value as 'lead' | 'member')} className={SELECT}>
-              <option value="member">Участник</option>
-              <option value="lead">Лид</option>
-            </select>
-          </div>
-          {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
-        </div>
-      )}
-    </Modal>
-  )
-}
-
-function AddLinkModal({
-  projectId, onClose, onAdded,
-}: {
-  projectId: string
-  onClose: () => void
-  onAdded: (l: ProjectLinkRow) => void
-}) {
-  const supabase = createClient()
-  const [label,  setLabel]  = useState('')
-  const [url,    setUrl]    = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error,  setError]  = useState('')
-
-  const add = async () => {
-    if (!label.trim()) { setError('Укажите название ссылки'); return }
-    if (!url.trim())   { setError('Укажите URL'); return }
-    const normalized = url.trim().startsWith('http') ? url.trim() : `https://${url.trim()}`
-    setSaving(true); setError('')
-    const { data, error: dbErr } = await supabase
-      .from('project_links')
-      .insert({ project_id: projectId, label: label.trim(), url: normalized })
-      .select('id, label, url')
-      .single()
-    setSaving(false)
-    if (dbErr) { setError(dbErr.message); return }
-    if (data) onAdded(data as ProjectLinkRow)
-    onClose()
-  }
-
-  return (
-    <Modal
-      title="Добавить ссылку"
-      onClose={onClose}
-      maxWidth="max-w-[400px]"
-      footer={
-        <>
-          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
-          <Button className="flex-1" onClick={add} disabled={saving}>
-            {saving && <Loader2 size={15} className="animate-spin" />} Добавить
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <div>
-          <label className={LABEL}>Название</label>
-          <input value={label} onChange={e => setLabel(e.target.value)} autoFocus
-            placeholder="GitHub, Figma, Документация…" className={FIELD} />
-        </div>
-        <div>
-          <label className={LABEL}>URL</label>
-          <input value={url} onChange={e => setUrl(e.target.value)}
-            placeholder="https://…" type="url" className={FIELD} />
-        </div>
-        {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
-      </div>
-    </Modal>
-  )
-}
+// ─── sub-modals imports ───────────────────────────────────────────────────────────────
+import { EditProjectModal } from './EditProjectModal';
+import { AddMemberModal } from './AddMemberModal';
+import { AddLinkModal } from './AddLinkModal';
 
 // ─── main component ───────────────────────────────────────────────────────────
 
-export function ProjectDetail({ project: initialProject, initialMembers, initialLinks, initialTasks, initialTransactions, allUsers }: Props) {
+export function ProjectDetail({ 
+  project: initialProject, 
+  initialMembers, 
+  initialLinks, 
+  initialTasks, 
+  initialTransactions, 
+  allUsers,
+  vpnServers: initialVpnServers,
+  vpnSubscriptions: initialVpnSubscriptions,
+  vpnOrders: initialVpnOrders,
+  vpnReferrals: initialVpnReferrals
+}: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
 
@@ -348,6 +187,18 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
   const [tasks,       setTasks]       = useState<TaskRow[]>(initialTasks)
   const [txList,      setTxList]      = useState<TxRow[]>(initialTransactions)
   const [taskFilter,  setTaskFilter]  = useState<TaskStatus | 'all'>('all')
+  const [viewingTask, setViewingTask] = useState<TaskRow | null>(null)
+
+  // VPN admin panel states
+  const isVpn = project.slug === 'veil' || project.slug === 'veil-vpn'
+  const [activeTab, setActiveTab] = useState<'project' | 'servers' | 'subs' | 'payments' | 'referrals'>('project')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null)
+  const [vpnServers, setVpnServers] = useState<any[]>(initialVpnServers ?? [])
+  const [vpnSubs, setVpnSubs] = useState<any[]>(initialVpnSubscriptions ?? [])
+  const [vpnOrders, setVpnOrders] = useState<any[]>(initialVpnOrders ?? [])
+  const [vpnReferrals, setVpnReferrals] = useState<any[]>(initialVpnReferrals ?? [])
+  const [showCreateVpnSub, setShowCreateVpnSub] = useState(false)
 
   const [showAddTx,      setShowAddTx]      = useState(false)
   const [showEdit,       setShowEdit]       = useState(false)
@@ -357,6 +208,119 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
   const [removingMember, setRemovingMember] = useState<string | null>(null)
   const [removingLink,   setRemovingLink]   = useState<string | null>(null)
 
+  // VPN admin fields states
+  const [srvName, setSrvName] = useState('')
+  const [srvIp, setSrvIp] = useState('')
+  const [srvCountry, setSrvCountry] = useState('DE')
+  const [addingSrv, setAddingSrv] = useState(false)
+
+  /**
+   * Добавляет новый VPN-сервер во внешнюю базу данных.
+   * Генерирует случайные первоначальные метрики пинга и нагрузки.
+   */
+  const addVpnServer = async () => {
+    if (!srvName.trim()) { addToast('Ошибка', 'Укажите название сервера', 'err'); return }
+    setAddingSrv(true)
+    const mockPing = Math.floor(Math.random() * 80) + 5
+    const mockLoad = Math.floor(Math.random() * 60) + 10
+    
+    const client = isVpn ? veilSupabase : supabase
+    const { data, error } = await client
+      .from('vpn_servers')
+      .insert({ name: srvName.trim(), country_code: srvCountry, ip_address: srvIp.trim() || '127.0.0.1', ping_ms: mockPing, load_percentage: mockLoad })
+      .select()
+      .single()
+      
+    setAddingSrv(false)
+    if (error) { addToast('Ошибка', error.message, 'err'); return }
+    if (data) {
+      setVpnServers(prev => [...prev, data])
+      setSrvName('')
+      setSrvIp('')
+      addToast('Успешно', 'Сервер добавлен в базу данных', 'ok')
+    }
+  }
+
+  /**
+   * Удаляет VPN-сервер по его идентификатору.
+   * 
+   * @param id Уникальный ID сервера в базе данных
+   */
+  const deleteVpnServer = async (id: string) => {
+    const client = isVpn ? veilSupabase : supabase
+    const { error } = await client.from('vpn_servers').delete().eq('id', id)
+    if (error) { addToast('Ошибка', 'Не удалось удалить сервер', 'err'); return }
+    setVpnServers(prev => prev.filter(s => s.id !== id))
+    addToast('Успешно', 'Сервер удален из базы данных', 'ok')
+  }
+
+  /**
+   * Удаляет подписку и связанного с ней пользователя (каскадное удаление).
+   * 
+   * @param sub Объект подписки, содержащий id и user_id
+   */
+  const deleteVpnSub = async (sub: any) => {
+    if (isVpn) {
+      // Каскадное удаление со стороны profiles
+      const { error } = await veilSupabase.from('profiles').delete().eq('id', sub.user_id)
+      if (error) { addToast('Ошибка', 'Не удалось удалить пользователя', 'err'); return }
+      setVpnSubs(prev => prev.filter(s => s.id !== sub.id))
+      addToast('Успешно', 'Пользователь и его подписка удалены из базы данных', 'ok')
+    } else {
+      const { error } = await supabase.from('vpn_subscriptions').delete().eq('id', sub.id)
+      if (error) { addToast('Ошибка', 'Не удалось удалить подписку', 'err'); return }
+      setVpnSubs(prev => prev.filter(s => s.id !== sub.id))
+      addToast('Успешно', 'Подписка удалена из базы данных', 'ok')
+    }
+  }
+
+  /**
+   * Продлевает активную или закончившуюся подписку на 30 дней от даты окончания
+   * или от текущей даты (если она уже истекла).
+   * 
+   * @param sub Объект подписки
+   */
+  const extendVpnSub = async (sub: any) => {
+    try {
+      const currentExpiry = new Date(sub.expires_at)
+      const baseDate = currentExpiry.getTime() > new Date().getTime() ? currentExpiry : new Date()
+      const newExpiry = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+
+      const client = isVpn ? veilSupabase : supabase
+      const tableName = isVpn ? 'subscriptions' : 'vpn_subscriptions'
+
+      const { error } = await client
+        .from(tableName)
+        .update({ 
+          expires_at: newExpiry.toISOString(),
+          status: 'active'
+        })
+        .eq('id', sub.id)
+
+      if (error) throw error
+
+      setVpnSubs(prev => prev.map(s => s.id === sub.id ? { ...s, expires_at: newExpiry.toISOString(), status: 'active' } : s))
+      addToast('Успешно', 'Подписка продлена на 30 дней', 'ok')
+    } catch (err) {
+      console.error(err)
+      addToast('Ошибка', 'Не удалось продлить подписку', 'err')
+    }
+  }
+
+  /**
+   * Копирует VLESS ключ подписки пользователя в буфер обмена.
+   * 
+   * @param key VLESS-конфигурация ключа подписки
+   * @param id Уникальный ID строки подписки для отображения галочки
+   */
+  const copyKey = (key: string, id: string) => {
+    navigator.clipboard.writeText(key)
+    setCopiedKeyId(id)
+    setTimeout(() => setCopiedKeyId(null), 2000)
+    addToast('Успешно', 'VLESS ключ копирован в буфер', 'ok')
+  }
+
+  /** Подсчет количества задач в разрезе каждого статуса */
   const taskCounts = useMemo(() => ({
     todo:        tasks.filter(t => t.status === 'todo').length,
     in_progress: tasks.filter(t => t.status === 'in_progress').length,
@@ -457,236 +421,473 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
         </div>
       </div>
 
-      {/* ── Team + Links ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+      {/* Tab Row for VPN Project */}
+      {isVpn && (
+        <div className="flex gap-2 border-b border-line pb-4 mb-5 overflow-x-auto">
+          <button onClick={() => setActiveTab('project')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'project' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Activity size={14} /> Проектное управление
+          </button>
+          <button onClick={() => setActiveTab('servers')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'servers' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Server size={14} /> VPN Серверы ({vpnServers.length})
+          </button>
+          <button onClick={() => setActiveTab('subs')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'subs' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Users size={14} /> VPN Подписки ({vpnSubs.length})
+          </button>
+          <button onClick={() => setActiveTab('payments')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'payments' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <CreditCard size={14} /> VPN Платежи ({vpnOrders.length})
+          </button>
+          <button onClick={() => setActiveTab('referrals')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'referrals' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Gift size={14} /> VPN Рефералы ({vpnReferrals.length})
+          </button>
+        </div>
+      )}
 
-        {/* Team */}
-        <div className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[16px] font-semibold tracking-tight">
-              Команда
-              <span className="ml-2 text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
-                {members.length}
-              </span>
-            </h3>
-            <Button size="sm" variant="ghost" onClick={() => setShowAddMember(true)}>
-              <Plus size={13} /> Добавить
-            </Button>
+      {activeTab === 'project' ? (
+        <>
+          {/* ── Team + Links ─────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+            <Team
+              projectId={project.id}
+              members={members.map(m => ({ id: m.user.id, full_name: m.user.full_name, position: m.user.position }))}
+              onRemove={removeMember}
+              removingMemberId={removingMember}
+              onAdd={() => setShowAddMember(true)}
+            />
+            <Links
+              projectId={project.id}
+              links={links}
+              onRemove={removeLink}
+              removingLinkId={removingLink}
+              onAdd={() => setShowAddLink(true)}
+            />
           </div>
-
-          {members.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-6 text-center">
-              <User2 size={22} className="text-mute2" />
-              <p className="text-[12.5px] text-mute">Участников пока нет</p>
+          {/* ── Tasks ────────────────────────────────────────────────── */}
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <h3 className="text-[16px] font-semibold tracking-tight">Задачи</h3>
+                <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
+                  {tasks.length}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={taskFilter}
+                  onChange={e => setTaskFilter(e.target.value as TaskStatus | 'all')}
+                  className="h-8 px-2.5 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+                >
+                  <option value="all">Все статусы</option>
+                  <option value="todo">Сделать</option>
+                  <option value="in_progress">В работе</option>
+                  <option value="review">Проверка</option>
+                  <option value="done">Готово</option>
+                </select>
+                <Button size="sm" onClick={() => setShowCreateTask(true)}>
+                  <Plus size={13} /> Задача
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {members.map(m => (
-                <div key={m.user.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.02] transition-colors group">
-                  <Avatar initials={getInitials(m.user.full_name)} color={colorFor(m.user.full_name)} size={32} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold truncate">{m.user.full_name}</div>
-                    {m.user.position && (
-                      <div className="text-[11.5px] text-mute truncate">{m.user.position}</div>
+
+            {visibleTasks.length === 0 ? (
+              <div className="text-center py-8 text-mute text-[13px]">
+                {tasks.length === 0 ? 'Задач ещё нет — создайте первую' : 'В этом статусе нет задач'}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {visibleTasks.map(t => (
+                  <div key={t.id} onClick={() => setViewingTask(t)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.02] transition-colors cursor-pointer">
+                    <div className="w-2 h-2 rounded-full shrink-0"
+                      style={{ background: PRIORITY_COLOR[t.priority] ?? '#8B92B4' }} />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[13px] truncate">{t.title}</span>
+                    </div>
+                    <Tag tone={TASK_STATUS_TONE[t.status]}>{TASK_STATUS_LABEL[t.status]}</Tag>
+                    {t.due_date && (
+                      <span className="text-[11.5px] text-mute2 font-mono shrink-0">{dueLabel(t.due_date)}</span>
+                    )}
+                    {t.assignee ? (
+                      <Avatar
+                        initials={getInitials(t.assignee.full_name)}
+                        color={colorFor(t.assignee.full_name)}
+                        size={22}
+                      />
+                    ) : (
+                      <div className="w-5.5 h-5.5 rounded-full bg-white/[0.06] border border-line inline-flex items-center justify-center shrink-0">
+                        <User2 size={10} className="text-mute2" />
+                      </div>
                     )}
                   </div>
-                  <Tag tone={ROLE_TONE[m.role]}>{ROLE_LABEL[m.role]}</Tag>
-                  <button
-                    onClick={() => removeMember(m.user.id)}
-                    disabled={removingMember === m.user.id}
-                    aria-label={`Удалить ${m.user.full_name}`}
-                    className="w-6 h-6 rounded-lg opacity-0 group-hover:opacity-100 text-mute hover:text-err transition-all inline-flex items-center justify-center disabled:opacity-40"
-                  >
-                    {removingMember === m.user.id
-                      ? <Loader2 size={12} className="animate-spin" />
-                      : <Trash2 size={12} />
-                    }
-                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Project Finances ─────────────────────────────────────── */}
+          <div className="card p-5 mt-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[16px] font-semibold tracking-tight">Финансы проекта</h3>
+              <Button size="sm" variant="ghost" onClick={() => setShowAddTx(true)}>
+                <Plus size={13} /> Транзакция
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[
+                { label: 'Доходы',  value: txTotals.income,  positive: true                  },
+                { label: 'Расходы', value: txTotals.expense, positive: false                 },
+                { label: 'Баланс',  value: txTotals.net,     positive: txTotals.net >= 0     },
+              ].map(s => (
+                <div key={s.label} className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+                  <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">{s.label}</div>
+                  <div className={`text-[17px] font-bold tabular-nums ${s.positive ? 'text-ok' : 'text-err'}`}>
+                    {txTotals.net === 0 && s.label === 'Баланс' ? fmtRub(0) : (s.positive ? '+' : '−') + fmtRub(Math.abs(s.value))}
+                  </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
 
-        {/* Links */}
+            {txList.length === 0 ? (
+              <div className="text-center py-6 text-mute text-[12.5px]">Транзакций пока нет</div>
+            ) : (
+              <div className="space-y-1">
+                {txList.map(t => {
+                  const cat = TX_CATEGORIES[t.category] ?? TX_CATEGORIES.other
+                  return (
+                    <div key={t.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.02] transition-colors">
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: t.type === 'income' ? '#22C55E' : '#EF4444' }} />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[13px] truncate">{t.description}</span>
+                      </div>
+                      <span className="text-[11px] text-mute shrink-0">
+                        {new Date(t.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+                      </span>
+                      <span className="text-[11px] px-2 h-4.5 rounded-full inline-flex items-center"
+                        style={{ background: `${cat.color}20`, color: cat.color }}>
+                        {cat.label}
+                      </span>
+                      <span className={`text-[13px] font-bold tabular-nums font-mono shrink-0 ${
+                        t.type === 'income' ? 'text-ok' : 'text-err'
+                      }`}>
+                        {t.type === 'income' ? '+' : '−'}{fmtRub(Number(t.amount))}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      ) : activeTab === 'servers' ? (
         <div className="card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[16px] font-semibold tracking-tight">Ссылки</h3>
-            <Button size="sm" variant="ghost" onClick={() => setShowAddLink(true)}>
-              <Plus size={13} /> Добавить
-            </Button>
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <h3 className="text-[16px] font-semibold">Управление серверами VPN</h3>
+            <div className="flex gap-2 flex-wrap items-center">
+              <input value={srvName} onChange={e => setSrvName(e.target.value)} placeholder="Название (например, Швеция)" className="h-8 px-2.5 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none px-3" />
+              <input value={srvIp} onChange={e => setSrvIp(e.target.value)} placeholder="IP адрес" className="h-8 px-2.5 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none px-3" />
+              <select value={srvCountry} onChange={e => setSrvCountry(e.target.value)} className="h-8 px-2 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none text-mute">
+                <option value="DE">Германия (DE)</option>
+                <option value="FI">Финляндия (FI)</option>
+                <option value="US">США (US)</option>
+                <option value="SE">Швеция (SE)</option>
+                <option value="NL">Нидерланды (NL)</option>
+              </select>
+              <Button size="sm" onClick={addVpnServer} disabled={addingSrv}>
+                {addingSrv ? <Loader2 size={12} className="animate-spin" /> : <Plus size={13} />} Сервер
+              </Button>
+            </div>
           </div>
 
-          {links.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-6 text-center">
-              <Link2 size={22} className="text-mute2" />
-              <p className="text-[12.5px] text-mute">Ссылок пока нет</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {links.map(l => {
-                const domain = domainOf(l.url)
-                return (
-                  <div key={l.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.02] transition-colors group">
-                    <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-line inline-flex items-center justify-center shrink-0 overflow-hidden">
-                      {domain ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=16`}
-                          alt=""
-                          width={16}
-                          height={16}
-                          onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
-                        />
-                      ) : (
-                        <Link2 size={13} className="text-mute" />
-                      )}
+          <div className="space-y-3">
+            {vpnServers.length === 0 ? (
+              <div className="text-center py-8 text-mute text-[13px]">Нет активных серверов</div>
+            ) : (
+              vpnServers.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-white/[0.015] hover:bg-white/[0.025] transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-line flex items-center justify-center font-bold text-lg">
+                      <Globe size={18} className="text-accent" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[13px] font-medium truncate">{l.label}</div>
-                      <a href={l.url} target="_blank" rel="noopener noreferrer"
-                        className="text-[11.5px] text-mute hover:text-accent transition-colors inline-flex items-center gap-1 truncate max-w-full"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {domain || l.url}
-                        <ExternalLink size={10} />
-                      </a>
+                    <div>
+                      <div className="text-[13.5px] font-bold">{s.name} ({s.country_code})</div>
+                      <div className="text-[11.5px] text-mute2">{s.ip_address || 'Нет IP'}</div>
                     </div>
-                    <button
-                      onClick={() => removeLink(l.id)}
-                      disabled={removingLink === l.id}
-                      aria-label={`Удалить ссылку ${l.label}`}
-                      className="w-6 h-6 rounded-lg opacity-0 group-hover:opacity-100 text-mute hover:text-err transition-all inline-flex items-center justify-center disabled:opacity-40"
-                    >
-                      {removingLink === l.id
-                        ? <Loader2 size={12} className="animate-spin" />
-                        : <Trash2 size={12} />
-                      }
+                  </div>
+                  
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <div className="text-[11px] text-mute2 uppercase font-semibold">Пинг</div>
+                      <div className="text-[13px] font-bold text-[#00C2FF]">{s.ping_ms} ms</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-[11px] text-mute2 uppercase font-semibold">Нагрузка</div>
+                      <div className="text-[13px] font-bold text-ok">{s.load_percentage}%</div>
+                    </div>
+                    <div>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                        s.status === 'online' ? 'bg-ok/10 text-ok border border-ok/20' : 'bg-err/10 text-err border border-err/20'
+                      }`}>
+                        {s.status === 'online' ? 'Онлайн' : 'Офлайн'}
+                      </span>
+                    </div>
+                    <button onClick={() => deleteVpnServer(s.id)} className="w-8 h-8 rounded-lg hover:bg-err/10 text-mute hover:text-err transition-all flex items-center justify-center">
+                      <Trash2 size={14} />
                     </button>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Tasks ────────────────────────────────────────────────── */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-[16px] font-semibold tracking-tight">Задачи</h3>
-            <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
-              {tasks.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={taskFilter}
-              onChange={e => setTaskFilter(e.target.value as TaskStatus | 'all')}
-              className="h-8 px-2.5 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
-            >
-              <option value="all">Все статусы</option>
-              <option value="todo">Сделать</option>
-              <option value="in_progress">В работе</option>
-              <option value="review">Проверка</option>
-              <option value="done">Готово</option>
-            </select>
-            <Button size="sm" onClick={() => setShowCreateTask(true)}>
-              <Plus size={13} /> Задача
-            </Button>
-          </div>
-        </div>
-
-        {visibleTasks.length === 0 ? (
-          <div className="text-center py-8 text-mute text-[13px]">
-            {tasks.length === 0 ? 'Задач ещё нет — создайте первую' : 'В этом статусе нет задач'}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {visibleTasks.map(t => (
-              <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.02] transition-colors">
-                <div className="w-2 h-2 rounded-full shrink-0"
-                  style={{ background: PRIORITY_COLOR[t.priority] ?? '#8B92B4' }} />
-                <div className="flex-1 min-w-0">
-                  <span className="text-[13px] truncate">{t.title}</span>
                 </div>
-                <Tag tone={TASK_STATUS_TONE[t.status]}>{TASK_STATUS_LABEL[t.status]}</Tag>
-                {t.due_date && (
-                  <span className="text-[11.5px] text-mute2 font-mono shrink-0">{dueLabel(t.due_date)}</span>
-                )}
-                {t.assignee ? (
-                  <Avatar
-                    initials={getInitials(t.assignee.full_name)}
-                    color={colorFor(t.assignee.full_name)}
-                    size={22}
-                  />
+              ))
+            )}
+          </div>
+        </div>
+      ) : activeTab === 'subs' ? (
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+            <h3 className="text-[16px] font-semibold">Пользовательские подписки</h3>
+            <div className="flex items-center gap-3">
+              {isVpn && (
+                <Button size="sm" onClick={() => setShowCreateVpnSub(true)} className="bg-accent text-white">
+                  <Plus size={13} /> Создать пользователя
+                </Button>
+              )}
+              <div className="relative">
+                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Поиск по имени/ключу..." className="h-8 pl-8 pr-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none w-60" />
+                <Search size={12} className="absolute left-2.5 top-2.5 text-mute2" />
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[13px] border-collapse">
+              <thead>
+                <tr className="border-b border-line text-mute2 uppercase tracking-wider text-[11px] font-bold">
+                  <th className="pb-3 pr-4">Пользователь</th>
+                  <th className="pb-3 px-4">Статус</th>
+                  <th className="pb-3 px-4">Истекает</th>
+                  {isVpn && <th className="pb-3 px-4">Токен кабинета</th>}
+                  <th className="pb-3 px-4">Трафик (Использовано)</th>
+                  <th className="pb-3 px-4">VLESS Ключ подписки</th>
+                  <th className="pb-3 pl-4 text-right">Действия</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/30">
+                {vpnSubs.filter(s => s.username.toLowerCase().includes(searchQuery.toLowerCase()) || s.subscription_key.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                  <tr>
+                    <td colSpan={isVpn ? 7 : 6} className="text-center py-6 text-mute">Подписок не найдено</td>
+                  </tr>
                 ) : (
-                  <div className="w-5.5 h-5.5 rounded-full bg-white/[0.06] border border-line inline-flex items-center justify-center shrink-0">
-                    <User2 size={10} className="text-mute2" />
-                  </div>
+                  vpnSubs.filter(s => s.username.toLowerCase().includes(searchQuery.toLowerCase()) || s.subscription_key.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
+                    <tr key={s.id} className="hover:bg-white/[0.015] transition-colors">
+                      <td className="py-3.5 pr-4 font-semibold flex items-center gap-2">
+                        <Avatar initials={getInitials(s.username)} color={colorFor(s.username)} size={24} />
+                        <div className="flex flex-col">
+                          <span>{s.username}</span>
+                          {s.telegram_username && (
+                            <span className="text-[11px] text-mute2 font-normal">@{s.telegram_username}</span>
+                          )}
+                          {(s.tg_bot_linked || s.tg_channel_subscribed) && (
+                            <div className="flex gap-1 mt-1">
+                              {s.tg_bot_linked && (
+                                <span className="text-[9.5px] font-bold bg-ok/10 text-ok border border-ok/20 px-1.5 py-0.5 rounded-md inline-flex items-center">
+                                  🤖 Бот
+                                </span>
+                              )}
+                              {s.tg_channel_subscribed && (
+                                <span className="text-[9.5px] font-bold bg-accent/10 text-accent border border-accent/20 px-1.5 py-0.5 rounded-md inline-flex items-center">
+                                  📢 Канал
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Tag tone={s.status === 'active' ? 'ok' : s.status === 'paused' ? 'warn' : 'mute'}>
+                          {s.status === 'active' ? 'Активна' : s.status === 'paused' ? 'Пауза' : 'Истекла'}
+                        </Tag>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-[12px] text-mute">
+                        {new Date(s.expires_at).toLocaleDateString('ru-RU')}
+                      </td>
+                      {isVpn && (
+                        <td className="py-3.5 px-4 font-mono text-[12px] text-mute">
+                          <div className="flex items-center gap-1.5 bg-white/[0.02] border border-line rounded-lg px-2 py-1 max-w-[150px] justify-between">
+                            <span className="truncate text-mute2 text-[11px]">{s.token || 'нет'}</span>
+                            {s.token && (
+                              <button onClick={() => {
+                                const cabLink = `http://localhost:5173/${s.token}`
+                                navigator.clipboard.writeText(cabLink)
+                                addToast('Успешно', 'Ссылка на кабинет скопирована', 'ok')
+                              }} className="text-mute hover:text-white transition-colors shrink-0">
+                                <Copy size={11} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                      <td className="py-3.5 px-4 font-mono text-[12px] text-mute">
+                        {(s.traffic_used / (1024 * 1024 * 1024)).toFixed(2)} GiB / ♾
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5 bg-white/[0.02] border border-line rounded-lg px-2 py-1 max-w-[180px] justify-between">
+                          <span className="font-mono text-[11px] truncate text-mute2">{s.subscription_key}</span>
+                          <button onClick={() => copyKey(s.subscription_key, s.id)} className="text-mute hover:text-white transition-colors shrink-0">
+                            {copiedKeyId === s.id ? <Check size={11} color="#22C55E" /> : <Copy size={11} />}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-3.5 pl-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {isVpn && (
+                            <Button size="sm" variant="ghost" onClick={() => extendVpnSub(s)} className="text-accent hover:bg-accent/10">
+                              +30д
+                            </Button>
+                          )}
+                          <button onClick={() => deleteVpnSub(s)} className="w-7 h-7 rounded-lg hover:bg-err/10 text-mute hover:text-err transition-all inline-flex items-center justify-center">
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
-              </div>
-            ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
-
-      {/* ── Project Finances ─────────────────────────────────────── */}
-      <div className="card p-5 mt-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[16px] font-semibold tracking-tight">Финансы проекта</h3>
-          <Button size="sm" variant="ghost" onClick={() => setShowAddTx(true)}>
-            <Plus size={13} /> Транзакция
-          </Button>
         </div>
-
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {[
-            { label: 'Доходы',  value: txTotals.income,  positive: true                  },
-            { label: 'Расходы', value: txTotals.expense, positive: false                 },
-            { label: 'Баланс',  value: txTotals.net,     positive: txTotals.net >= 0     },
-          ].map(s => (
-            <div key={s.label} className="rounded-xl bg-white/[0.025] border border-line p-3.5">
-              <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">{s.label}</div>
-              <div className={`text-[17px] font-bold tabular-nums ${s.positive ? 'text-ok' : 'text-err'}`}>
-                {txTotals.net === 0 && s.label === 'Баланс' ? fmtRub(0) : (s.positive ? '+' : '−') + fmtRub(Math.abs(s.value))}
+      ) : activeTab === 'payments' ? (
+        <div className="card p-5">
+          <h3 className="text-[16px] font-semibold mb-5">История транзакций / Платежей VPN</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[13px] border-collapse">
+              <thead>
+                <tr className="border-b border-line text-mute2 uppercase tracking-wider text-[11px] font-bold">
+                  <th className="pb-3 pr-4">Пользователь</th>
+                  <th className="pb-3 px-4">Сумма</th>
+                  <th className="pb-3 px-4">Период тарифа</th>
+                  <th className="pb-3 px-4">Статус платежа</th>
+                  <th className="pb-3 pl-4 text-right">Дата</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/30">
+                {vpnOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-6 text-mute">Платежей нет</td>
+                  </tr>
+                ) : (
+                  vpnOrders.map(o => (
+                    <tr key={o.id} className="hover:bg-white/[0.015] transition-colors">
+                      <td className="py-3.5 pr-4 font-semibold flex items-center gap-2">
+                        <Avatar initials={getInitials(o.username)} color={colorFor(o.username)} size={24} />
+                        {o.username}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-ok font-mono">
+                        +{o.amount} {o.currency}
+                      </td>
+                      <td className="py-3.5 px-4 text-mute">
+                        {o.tariff_months} {o.tariff_months === 1 ? 'месяц' : o.tariff_months === 3 ? 'месяца' : 'месяцев'}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                          o.status === 'paid' ? 'bg-ok/10 text-ok border border-ok/20' : o.status === 'pending' ? 'bg-warn/10 text-warn border border-warn/20' : 'bg-err/10 text-err border border-err/20'
+                        }`}>
+                          {o.status === 'paid' ? 'Оплачен' : o.status === 'pending' ? 'В обработке' : 'Ошибка'}
+                        </span>
+                      </td>
+                      <td className="py-3.5 pl-4 text-right text-mute2 font-mono text-[12px]">
+                        {new Date(o.created_at).toLocaleString('ru-RU')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="card p-5">
+          <h3 className="text-[16px] font-semibold mb-2">Статистика Реферальных Кампаний</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
+            <div className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+              <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">Всего инвайтов</div>
+              <div className="text-[18px] font-bold text-white tabular-nums">
+                {vpnReferrals.length}
               </div>
             </div>
-          ))}
-        </div>
-
-        {txList.length === 0 ? (
-          <div className="text-center py-6 text-mute text-[12.5px]">Транзакций пока нет</div>
-        ) : (
-          <div className="space-y-1">
-            {txList.map(t => {
-              const cat = TX_CATEGORIES[t.category] ?? TX_CATEGORIES.other
-              return (
-                <div key={t.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.02] transition-colors">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{ background: t.type === 'income' ? '#22C55E' : '#EF4444' }} />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[13px] truncate">{t.description}</span>
-                  </div>
-                  <span className="text-[11px] text-mute shrink-0">
-                    {new Date(t.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-                  </span>
-                  <span className="text-[11px] px-2 h-4.5 rounded-full inline-flex items-center"
-                    style={{ background: `${cat.color}20`, color: cat.color }}>
-                    {cat.label}
-                  </span>
-                  <span className={`text-[13px] font-bold tabular-nums font-mono shrink-0 ${
-                    t.type === 'income' ? 'text-ok' : 'text-err'
-                  }`}>
-                    {t.type === 'income' ? '+' : '−'}{fmtRub(Number(t.amount))}
-                  </span>
-                </div>
-              )
-            })}
+            <div className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+              <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">Активные друзья</div>
+              <div className="text-[18px] font-bold text-ok tabular-nums">
+                {vpnReferrals.filter(r => r.status === 'active').length}
+              </div>
+            </div>
+            <div className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+              <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">Выдано бонусов</div>
+              <div className="text-[18px] font-bold text-[#FF7A00] tabular-nums">
+                {vpnReferrals.filter(r => r.status === 'active').length * 30} дн.
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[13px] border-collapse">
+              <thead>
+                <tr className="border-b border-line text-mute2 uppercase tracking-wider text-[11px] font-bold">
+                  <th className="pb-3 pr-4">Пригласитель (Реферер)</th>
+                  <th className="pb-3 px-4">Приглашенный друг</th>
+                  <th className="pb-3 px-4">Статус</th>
+                  <th className="pb-3 px-4">Начисленный бонус</th>
+                  <th className="pb-3 pl-4 text-right">Дата</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line/30">
+                {vpnReferrals.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-6 text-mute">Приглашений пока нет</td>
+                  </tr>
+                ) : (
+                  vpnReferrals.map(r => (
+                    <tr key={r.id} className="hover:bg-white/[0.015] transition-colors">
+                      <td className="py-3.5 pr-4 font-semibold text-white">
+                        {r.referrer_username}
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-white">
+                        {r.referred_username}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Tag tone={r.status === 'active' ? 'ok' : 'warn'}>
+                          {r.status === 'active' ? 'Активен' : 'Ожидает покупки'}
+                        </Tag>
+                      </td>
+                      <td className="py-3.5 px-4 text-mute">
+                        {r.status === 'active' ? `+${r.bonus_days} дней каждому` : 'нет'}
+                      </td>
+                      <td className="py-3.5 pl-4 text-right text-mute2 font-mono text-[12px]">
+                        {new Date(r.created_at).toLocaleDateString('ru-RU')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* ── modals ───────────────────────────────────────────────── */}
 
@@ -734,6 +935,172 @@ export function ProjectDetail({ project: initialProject, initialMembers, initial
           onCreated={task => { setTasks(prev => [task, ...prev]); setShowCreateTask(false) }}
         />
       )}
+
+      {viewingTask && (
+        <TaskDetailModal
+          task={viewingTask}
+          projects={[{ id: project.id, name: project.name, color: project.color }]}
+          users={allUsers}
+          onClose={() => setViewingTask(null)}
+          onUpdated={updatedTask => {
+            setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t))
+            setViewingTask(null)
+          }}
+          onDeleted={taskId => {
+            setTasks(prev => prev.filter(t => t.id !== taskId))
+            setViewingTask(null)
+          }}
+        />
+      )}
+
+      {showCreateVpnSub && (
+        <CreateVpnSubModal
+          onClose={() => setShowCreateVpnSub(false)}
+          onCreated={newSub => {
+            setVpnSubs(prev => [newSub, ...prev])
+            setShowCreateVpnSub(false)
+          }}
+          addToast={addToast}
+        />
+      )}
     </>
+  )
+}
+
+/**
+ * Модальное окно создания новой VPN подписки.
+ * Выполняет последовательные транзакции в базе данных: создание профиля клиента,
+ * генерацию 16-значного токена входа, создание подписки с VLESS-ключом и фиксацию
+ * первого оплаченного периода (350 RUB за 1 месяц).
+ */
+function CreateVpnSubModal({
+  onClose,
+  onCreated,
+  addToast
+}: {
+  onClose: () => void
+  onCreated: (newSub: any) => void
+  addToast: (title: string, msg: string, tone: 'ok' | 'err' | 'warn') => void
+}) {
+  const [username, setUsername] = useState('')
+  const [telegram, setTelegram] = useState('')
+  const [vlessKey, setVlessKey] = useState('vless://')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleCreate = async () => {
+    if (!username.trim()) { setError('Укажите имя пользователя'); return }
+    if (!vlessKey.trim()) { setError('Укажите VLESS-ключ'); return }
+    
+    setSaving(true)
+    setError('')
+    try {
+      const newUserId = crypto.randomUUID()
+      // 1. Create Profile in VEIL VPN db
+      const { error: profErr } = await veilSupabase
+        .from('profiles')
+        .insert({
+          id: newUserId,
+          username: username.trim(),
+          telegram_username: telegram.trim() || null,
+          avatar_color: ['cyan', 'purple', 'orange', 'blue', 'green'][Math.floor(Math.random() * 5)]
+        })
+      if (profErr) throw profErr
+
+      // 2. Generate random URL token
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      let generatedToken = ''
+      for (let i = 0; i < 16; i++) {
+        generatedToken += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+
+      // 3. Create Subscription
+      const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      const { error: subErr, data: newSubData } = await veilSupabase
+        .from('subscriptions')
+        .insert({
+          user_id: newUserId,
+          status: 'active',
+          expires_at: expiry.toISOString(),
+          traffic_used: 0,
+          traffic_limit: null,
+          subscription_key: vlessKey.trim(),
+          token: generatedToken
+        })
+        .select()
+        .single()
+
+      if (subErr) throw subErr
+
+      // 4. Create Order
+      const { error: ordErr } = await veilSupabase
+        .from('orders')
+        .insert({
+          user_id: newUserId,
+          amount: 350.00,
+          currency: 'RUB',
+          status: 'paid',
+          tariff_months: 1
+        })
+      if (ordErr) throw ordErr
+
+      // Callback
+      onCreated({
+        id: newSubData.id,
+        user_id: newUserId,
+        username: username.trim(),
+        telegram_username: telegram.trim(),
+        status: 'active',
+        expires_at: expiry.toISOString(),
+        traffic_used: 0,
+        traffic_limit: null,
+        subscription_key: vlessKey.trim(),
+        token: generatedToken
+      })
+      addToast('Успешно', 'Пользователь подписки создан', 'ok')
+      onClose()
+    } catch (err: any) {
+      setError(err.message || 'Ошибка при создании')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const FIELD = "w-full h-10 px-3.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px]"
+  const LABEL = "text-[11.5px] font-semibold text-mute uppercase tracking-wider block mb-1"
+
+  return (
+    <Modal
+      title="Создать VPN подписку"
+      onClose={onClose}
+      maxWidth="max-w-[420px]"
+      footer={
+        <>
+          <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>Отмена</Button>
+          <Button className="flex-1" onClick={handleCreate} disabled={saving}>
+            {saving && <Loader2 size={15} className="animate-spin" />} Создать
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <label className={LABEL}>Имя пользователя *</label>
+          <input value={username} onChange={e => setUsername(e.target.value)} autoFocus
+            placeholder="alex_cyber" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Telegram (без @)</label>
+          <input value={telegram} onChange={e => setTelegram(e.target.value)}
+            placeholder="alex_cyber_tg" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>VLESS Ключ подписки *</label>
+          <textarea value={vlessKey} onChange={e => setVlessKey(e.target.value)} rows={2}
+            className="w-full px-3.5 py-2 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[12.5px] font-mono resize-none" />
+        </div>
+        {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
+      </div>
+    </Modal>
   )
 }

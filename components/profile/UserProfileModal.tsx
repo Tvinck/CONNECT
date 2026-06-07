@@ -20,7 +20,7 @@ const STATUS_LABEL: Record<string, string> = {
   online: 'Онлайн', busy: 'Занят', offline: 'Не в сети',
 }
 const ROLE_LABEL: Record<string, string> = {
-  ceo: 'CEO', design: 'Дизайнер', dev: 'Разработка', sales: 'Продажи', support: 'Поддержка',
+  ceo: 'CEO', coowner: 'Совладелец', design: 'Дизайнер', dev: 'Разработка', sales: 'Продажи', support: 'Поддержка',
 }
 
 export function UserProfileModal({ userId, onClose }: { userId: string; onClose: () => void }) {
@@ -49,7 +49,7 @@ export function UserProfileModal({ userId, onClose }: { userId: string; onClose:
       setLoading(false)
     })()
     return () => { active = false }
-  }, [userId])
+  }, [userId, supabase])
 
   const lvl = user ? levelInfo(user.points) : null
 
@@ -78,15 +78,15 @@ export function UserProfileModal({ userId, onClose }: { userId: string; onClose:
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="text-center rounded-xl bg-white/[0.03] border border-line py-3">
+            <div className="text-center rounded-xl bg-[#F4F5FA]/50 border border-line py-3">
               <div className="text-[20px] font-bold text-gold">{user.points}</div>
               <div className="text-[10.5px] text-mute2 mt-0.5">баллов</div>
             </div>
-            <div className="text-center rounded-xl bg-white/[0.03] border border-line py-3">
+            <div className="text-center rounded-xl bg-[#F4F5FA]/50 border border-line py-3">
               <div className="text-[20px] font-bold text-ok">{tasksDone}</div>
               <div className="text-[10.5px] text-mute2 mt-0.5">задач</div>
             </div>
-            <div className="text-center rounded-xl bg-white/[0.03] border border-line py-3">
+            <div className="text-center rounded-xl bg-[#F4F5FA]/50 border border-line py-3">
               <div className="text-[14px] font-bold text-accent leading-tight px-1">{lvl?.current.name}</div>
               <div className="text-[10.5px] text-mute2 mt-0.5">уровень</div>
             </div>
@@ -110,7 +110,7 @@ export function UserProfileModal({ userId, onClose }: { userId: string; onClose:
               <div className="flex flex-wrap gap-2">
                 {achs.map(a => (
                   <div key={a.id} title={`${a.title} — ${a.description}`}
-                    className="w-9 h-9 rounded-xl bg-white/[0.04] border border-line inline-flex items-center justify-center text-lg hover:border-line2 transition-all">
+                    className="w-9 h-9 rounded-xl bg-[#F4F5FA]/50 border border-line inline-flex items-center justify-center text-lg hover:border-line2 transition-all">
                     {a.icon ?? '🏅'}
                   </div>
                 ))}

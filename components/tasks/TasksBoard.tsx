@@ -28,8 +28,10 @@ import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { CreateTaskModal } from './CreateTaskModal'
+import { TaskDetailModal } from './TaskDetailModal'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
+import { useAuthStore } from '@/store/auth'
 import { PRIORITY_COLOR, dueLabel, getInitials, colorFor } from '@/lib/utils'
 import type { TaskStatus, TaskPriority } from '@/types'
 
@@ -95,7 +97,7 @@ function DroppableColumn({ id, isOver, children }: DroppableColumnProps) {
     <div
       ref={setNodeRef}
       className="space-y-2.5 min-h-[80px] rounded-xl transition-colors duration-150"
-      style={isOver ? { background: 'rgba(255,255,255,0.04)', outline: '1.5px dashed rgba(255,255,255,0.18)' } : undefined}
+      style={isOver ? { background: 'rgba(20,114,245,0.03)', outline: '1.5px dashed rgba(20,114,245,0.25)' } : undefined}
     >
       {children}
     </div>
@@ -105,11 +107,14 @@ function DroppableColumn({ id, isOver, children }: DroppableColumnProps) {
 // ─── Main board ──────────────────────────────────────────────────────────────
 
 export function TasksBoard({ initialTasks, projects, users }: Props) {
+  const { user } = useAuthStore()
   const [tasks,         setTasks]         = useState<TaskRow[]>(initialTasks)
   const [showCreate,    setShowCreate]    = useState(false)
   const [filterProject, setFilterProject] = useState('')
   const [filterPriority,setFilterPriority]= useState('')
+  const [onlyMyTasks,   setOnlyMyTasks]   = useState(false)
   const [overColumn,    setOverColumn]    = useState<TaskStatus | null>(null)
+  const [selectedTask,  setSelectedTask]  = useState<TaskRow | null>(null)
   const supabase  = createClient()
   const addToast  = useUIStore(s => s.addToast)
 
@@ -160,18 +165,43 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
   const filtered = useMemo(() => tasks.filter(t => {
     if (filterProject  && t.project?.id !== filterProject)  return false
     if (filterPriority && t.priority !== filterPriority)    return false
+    if (onlyMyTasks && t.assignee?.id !== user?.id)         return false
     return true
-  }), [tasks, filterProject, filterPriority])
+  }), [tasks, filterProject, filterPriority, onlyMyTasks, user?.id])
 
   return (
     <>
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Segmented Control for All / My tasks */}
+          <div className="flex bg-[#E8E9F3]/50 p-1 rounded-xl">
+            <button
+              onClick={() => setOnlyMyTasks(false)}
+              className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
+                !onlyMyTasks
+                  ? 'bg-card text-[#171821] shadow-sm'
+                  : 'text-mute hover:text-[#171821]'
+              }`}
+            >
+              Все задачи
+            </button>
+            <button
+              onClick={() => setOnlyMyTasks(true)}
+              className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
+                onlyMyTasks
+                  ? 'bg-card text-[#171821] shadow-sm'
+                  : 'text-mute hover:text-[#171821]'
+              }`}
+            >
+              Мои задачи
+            </button>
+          </div>
+
           <select
             value={filterProject}
             onChange={e => setFilterProject(e.target.value)}
-            className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-line bg-white/[0.02] hover:bg-white/[0.04] text-[13px] text-mute hover:text-white transition-all outline-none"
+            className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-line bg-card hover:bg-bg text-[13px] text-mute hover:text-[#171821] transition-all outline-none"
           >
             <option value="">Все проекты</option>
             {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -179,7 +209,7 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
           <select
             value={filterPriority}
             onChange={e => setFilterPriority(e.target.value)}
-            className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-line bg-white/[0.02] hover:bg-white/[0.04] text-[13px] text-mute hover:text-white transition-all outline-none"
+            className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-line bg-card hover:bg-bg text-[13px] text-mute hover:text-[#171821] transition-all outline-none"
           >
             <option value="">Любой приоритет</option>
             <option value="urgent">Срочно</option>
@@ -212,7 +242,7 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                     <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
                     <span className="text-[13px] font-semibold tracking-tight">{col.label}</span>
                   </div>
-                  <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
+                  <span className="text-[11px] text-mute font-mono bg-[#E8E9F3]/60 px-2 h-5 rounded-md inline-flex items-center">
                     {colTasks.length}
                   </span>
                 </div>
@@ -229,7 +259,10 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                   )}
                   {colTasks.map(task => (
                     <DraggableCard key={task.id} id={task.id}>
-                      <div className="card card-tight p-4 hover:border-line2 transition-all cursor-grab active:cursor-grabbing group">
+                      <div
+                        onClick={() => setSelectedTask(task)}
+                        className="card card-tight p-4 hover:border-line2 transition-all cursor-pointer group"
+                      >
                         {/* Priority dot + project */}
                         <div className="flex items-center gap-2 mb-2.5">
                           <div className="w-2 h-2 rounded-full shrink-0" style={{ background: PRIORITY_COLOR[task.priority] }} />
@@ -257,8 +290,8 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                               size={22}
                             />
                           ) : (
-                            <div className="w-5.5 h-5.5 rounded-full bg-white/[0.06] border border-line inline-flex items-center justify-center">
-                              <User2 size={10} className="text-mute2" />
+                            <div className="w-5.5 h-5.5 rounded-full bg-bg border border-line inline-flex items-center justify-center">
+                              <User2 size={10} className="text-mute" />
                             </div>
                           )}
                         </div>
@@ -268,8 +301,10 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                           <div className="flex gap-1 flex-wrap">
                             {COLUMNS.filter(c => c.key !== col.key).map(c => (
                               <button key={c.key}
-                                onClick={() => changeStatus(task.id, c.key)}
-                                className="text-[10.5px] px-2 h-5 rounded-md border border-line hover:border-line2 text-mute hover:text-white transition-all"
+                                onClick={e => { e.stopPropagation(); changeStatus(task.id, c.key) }}
+                                onMouseDown={e => e.stopPropagation()}
+                                onTouchStart={e => e.stopPropagation()}
+                                className="text-[10.5px] px-2 h-5 rounded-md border border-line hover:border-line2 text-mute hover:text-[#171821] hover:bg-bg transition-all"
                               >
                                 → {c.label}
                               </button>
@@ -292,6 +327,23 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
           users={users}
           onClose={() => setShowCreate(false)}
           onCreated={task => setTasks(prev => [task, ...prev])}
+        />
+      )}
+
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          projects={projects}
+          users={users}
+          onClose={() => setSelectedTask(null)}
+          onUpdated={updatedTask => {
+            setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t))
+            setSelectedTask(null)
+          }}
+          onDeleted={taskId => {
+            setTasks(prev => prev.filter(t => t.id !== taskId))
+            setSelectedTask(null)
+          }}
         />
       )}
     </>

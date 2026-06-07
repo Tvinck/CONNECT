@@ -90,7 +90,7 @@ function CreateProjectModal({ onClose, onCreated }: { onClose: () => void; onCre
         <div>
           <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Название *</label>
           <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="Название проекта"
-            className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+            className="w-full h-10 px-3.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
         </div>
 
         <div>
@@ -122,7 +122,7 @@ function CreateProjectModal({ onClose, onCreated }: { onClose: () => void; onCre
           <div>
             <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Статус</label>
             <select value={status} onChange={e => setStatus(e.target.value as ProjectStatus)}
-              className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
+              className="w-full h-10 px-3 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
               <option value="planning">Планирование</option>
               <option value="dev">В разработке</option>
               <option value="active">Активный</option>
@@ -138,7 +138,7 @@ function CreateProjectModal({ onClose, onCreated }: { onClose: () => void; onCre
         <div>
           <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Описание</label>
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} placeholder="О проекте…"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none" />
+            className="w-full px-3.5 py-2.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none" />
         </div>
 
         {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}

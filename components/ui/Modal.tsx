@@ -69,7 +69,7 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative bg-[#151829] border border-line rounded-2xl w-full ${maxWidth} shadow-2xl overflow-hidden animate-modal-in`}
+        className={`relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} shadow-2xl overflow-hidden animate-modal-in`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
@@ -77,7 +77,7 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480
           <button
             onClick={onClose}
             aria-label="Закрыть"
-            className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center"
+            className="w-8 h-8 rounded-lg text-mute hover:text-[#171821] hover:bg-bg transition-all inline-flex items-center justify-center"
           >
             <X size={16} />
           </button>

@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss'
 
-const config: Config = {
+const config: Config = { darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,12 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg:      '#0A0E27',
-        card:    '#151B3D',
-        'card-hover': '#1A2148',
-        sidebar: '#0B1130',
-        line:    '#232A4F',
-        line2:   '#2C3463',
+        bg:      'var(--color-bg)',
+        card:    'var(--color-card)',
+        'card-hover': 'var(--color-card-hover)',
+        sidebar: 'var(--color-sidebar)',
+        line:    'var(--color-line)',
+        line2:   'var(--color-line2)',
         accent:  '#1472F5',
         cyan:    '#00C2FF',
         ok:      '#22C55E',
@@ -22,11 +22,11 @@ const config: Config = {
         err:     '#EF4444',
         gold:    '#FFC833',
         purple:  '#6F4FE8',
-        mute:    '#8B92B4',
-        mute2:   '#5A6188',
+        mute:    'var(--color-mute)',
+        mute2:   'var(--color-mute2)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-outfit)', 'Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         glow:      '0 0 24px -4px rgba(20,114,245,0.45)',

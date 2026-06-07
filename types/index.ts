@@ -10,7 +10,7 @@
  */
 
 /** All permission roles a user can hold. Stored in `users.role`. */
-export type UserRole = 'ceo' | 'design' | 'dev' | 'sales' | 'support'
+export type UserRole = 'ceo' | 'coowner' | 'design' | 'dev' | 'sales' | 'support'
 
 /** Online presence status. Updated by the client on focus/blur. */
 export type UserStatus = 'online' | 'offline' | 'busy'

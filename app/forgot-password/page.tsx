@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-8 relative overflow-hidden"
+      className="min-h-screen w-full flex items-center justify-center p-8 relative overflow-hidden text-white"
       style={{ background: 'radial-gradient(1200px 600px at 50% 50%, #1A2148 0%, #0A0E27 60%, #060926 100%)' }}
     >
       <div className="blob" style={{ width: 480, height: 480, background: '#1472F5', top: -100, right: -100, opacity: 0.45 }} />

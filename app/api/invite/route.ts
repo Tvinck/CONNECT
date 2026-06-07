@@ -19,7 +19,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { UserRole } from '@/types'
 
 /** Whitelist of roles that can be assigned when inviting. */
-const VALID_ROLES: UserRole[] = ['ceo', 'design', 'dev', 'sales', 'support']
+const VALID_ROLES: UserRole[] = ['ceo', 'design', 'dev', 'sales', 'support', 'coowner']
 
 /** RFC-5322 subset — requires local@domain.tld with a 2+ char TLD. */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i

@@ -67,6 +67,13 @@ const ROLE_STEPS: Record<UserRole, RoleItem[]> = {
     { icon: <Users size={16} />,      label: 'CRM',          desc: 'Воронка клиентов, добавление и редактирование' },
     { icon: <Music2 size={16} />,     label: 'Kie.ai',       desc: 'Генерация ИИ-музыки для поздравлений через Suno API' },
   ],
+  coowner: [
+    { icon: <Wallet size={16} />,     label: 'Финансы',      desc: 'Полный P&L: доходы, расходы, прибыль по фильтрам и проектам' },
+    { icon: <Gift size={16} />,       label: 'ПодариМомент', desc: 'Заказы, ИИ-генерация музыки, клиенты, промокоды, мониторинг' },
+    { icon: <Users size={16} />,      label: 'CRM',          desc: 'Воронка клиентов, добавление и редактирование' },
+    { icon: <Music2 size={16} />,     label: 'Kie.ai',       desc: 'Генерация ИИ-музыки для поздравлений через Suno API' },
+    { icon: <Folder size={16} />,     label: 'Проекты',      desc: 'Участвуй в проектах, управляй участниками и ссылками' },
+  ],
   sales: [
     { icon: <Users size={16} />,      label: 'CRM',          desc: 'Веди базу клиентов: статус, менеджер, оборот' },
     { icon: <Gift size={16} />,       label: 'ПодариМомент', desc: 'Следи за заказами и генерацией поздравлений' },
@@ -94,10 +101,10 @@ const ROLE_STEPS: Record<UserRole, RoleItem[]> = {
 }
 
 const ROLE_LABEL: Record<UserRole, string> = {
-  ceo: 'CEO', design: 'Дизайнер', dev: 'Разработчик', sales: 'Продажи', support: 'Поддержка',
+  ceo: 'CEO', coowner: 'Совладелец', design: 'Дизайнер', dev: 'Разработчик', sales: 'Продажи', support: 'Поддержка',
 }
 const ROLE_COLOR: Record<UserRole, string> = {
-  ceo: '#FFC833', design: '#6F4FE8', dev: '#1472F5', sales: '#22C55E', support: '#00C2FF',
+  ceo: '#FFC833', coowner: '#6F4FE8', design: '#FF4D9D', dev: '#1472F5', sales: '#F59E0B', support: '#22C55E',
 }
 
 // ─── sub-components ────────────────────────────────────────────────────────────

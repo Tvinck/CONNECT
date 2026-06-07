@@ -57,11 +57,8 @@ export function Avatar({
   src,
 }: AvatarProps) {
   const gradientStyle = {
-    width: size,
-    height: size,
     background: `linear-gradient(135deg, ${color} 0%, ${shadeColor(color, -30)} 100%)`,
     fontSize: Math.max(10, size * 0.36),
-    flexShrink: 0,
   }
 
   // `status` prop takes precedence; fall back to legacy `online` boolean.
@@ -69,19 +66,24 @@ export function Avatar({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-center rounded-full text-white font-semibold tracking-tight overflow-hidden ${ring ? 'ring-2 ring-bg' : ''} ${className}`}
-      style={src ? { width: size, height: size, flexShrink: 0 } : gradientStyle}
+      className={`relative inline-flex shrink-0 ${ring ? 'ring-2 ring-bg rounded-full' : ''} ${className}`}
+      style={{ width: size, height: size }}
     >
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={initials} className="w-full h-full object-cover" />
-      ) : (
-        <span>{initials}</span>
-      )}
+      <div
+        className="w-full h-full rounded-full text-white font-semibold tracking-tight overflow-hidden flex items-center justify-center"
+        style={src ? undefined : gradientStyle}
+      >
+        {src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={initials} className="w-full h-full object-cover" />
+        ) : (
+          <span>{initials}</span>
+        )}
+      </div>
       {dotStatus && (
         <span
           aria-label={dotStatus === 'online' ? 'Онлайн' : dotStatus === 'busy' ? 'Занят' : 'Не в сети'}
-          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-bg ${dotStatus === 'online' ? 'animate-pulse-dot' : ''}`}
+          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-bg z-10 ${dotStatus === 'online' ? 'animate-pulse-dot' : ''}`}
           style={{ background: STATUS_COLOR[dotStatus] }}
         />
       )}

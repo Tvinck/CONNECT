@@ -131,7 +131,29 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
         </div>
 
         {/* Timeline */}
-        <div className="flex items-center gap-0 text-[11px] text-mute">
+        <div className="relative flex items-center justify-between text-[11px] text-mute">
+          {/* Background Track */}
+          <div className="absolute top-[7px] left-[10%] right-[10%] h-[2px] bg-line -z-0" />
+
+          {/* Foreground Active Track */}
+          {(() => {
+            const steps = [
+              order.created_at,
+              order.paid_at,
+              order.gen_started_at,
+              order.gen_done_at,
+              order.sent_at,
+            ]
+            const activeIndex = steps.filter(Boolean).length - 1
+            const widthPct = activeIndex > 0 ? (activeIndex / (steps.length - 1)) * 80 : 0
+            return (
+              <div
+                className="absolute top-[7px] left-[10%] h-[2px] bg-ok transition-all duration-300 -z-0"
+                style={{ width: `${widthPct}%` }}
+              />
+            )
+          })()}
+
           {[
             { label: 'Создан',   time: order.created_at },
             { label: 'Оплачен',  time: order.paid_at },
@@ -139,11 +161,17 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
             { label: 'Готов',    time: order.gen_done_at },
             { label: 'Отправлен', time: order.sent_at },
           ].map((step, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <div className={`w-2 h-2 rounded-full ${step.time ? 'bg-ok' : 'bg-line2'}`} />
-              <span className="text-center leading-tight">{step.label}</span>
+            <div key={i} className="flex-1 flex flex-col items-center gap-1 relative z-10">
+              <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 transition-all ${
+                step.time
+                  ? 'bg-ok border-ok text-white'
+                  : 'bg-card border-line2 text-mute2'
+              }`}>
+                {step.time && <span className="w-1 h-1 bg-white rounded-full" />}
+              </div>
+              <span className="text-center leading-tight font-medium text-[11.5px] mt-1">{step.label}</span>
               {step.time && (
-                <span className="text-mute2 text-[10px]">
+                <span className="text-mute2 text-[10px] mt-0.5 whitespace-nowrap">
                   {new Date(step.time).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}

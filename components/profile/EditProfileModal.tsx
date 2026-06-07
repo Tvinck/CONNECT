@@ -60,7 +60,8 @@ export function EditProfileModal({ profile, onClose, onSaved }: Props) {
     if (upErr) { setError(upErr.message); setUploading(false); return }
 
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-    setAvatarUrl(publicUrl)
+    const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`
+    setAvatarUrl(cacheBustedUrl)
     setUploading(false)
   }
 

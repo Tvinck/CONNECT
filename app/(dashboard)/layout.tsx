@@ -13,12 +13,12 @@ export default async function DashboardLayout({
   const profile = await getCurrentProfile()
 
   if (!profile) {
-    redirect('/login')
+    redirect('/login?error=profile_missing')
   }
 
   return (
     <AuthProvider user={profile}>
-      <div className="h-screen flex bg-bg">
+      <div className="h-screen flex bg-bg text-[#171821]">
         <Sidebar />
         <main className="flex-1 min-w-0 overflow-y-auto">{children}</main>
         <ToastHost />

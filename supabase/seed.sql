@@ -75,6 +75,7 @@ update public.users set points = 150, level = 2, status = 'online'  where email 
 insert into public.projects (name, slug, emoji, color, status, progress, description) values
   ('ПодариМомент', 'podari', '🎁', '#1472F5', 'active',   80, 'Сервис подарочных эмоций и впечатлений'),
   ('PIXEL',        'pixel',  '✨', '#FF4D9D', 'dev',      35, 'Дизайн-студия и продакшн'),
+  ('Veil VPN',     'veil',   '🔒', '#6F4FE8', 'dev',      15, 'Высокоскоростной и безопасный VPN-сервис'),
   ('BAZZAR MARKET','bazzar', '🛒', '#22C55E', 'planning', 12, 'Маркетплейс товаров BAZZAR')
 on conflict (slug) do nothing;
 

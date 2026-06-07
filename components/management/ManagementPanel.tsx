@@ -47,6 +47,7 @@ const DEFAULT_PERMS: Record<string, number[]> = {
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
   { value: 'ceo',     label: 'CEO'         },
+  { value: 'coowner', label: 'Совладелец'  },
   { value: 'design',  label: 'Дизайнер'    },
   { value: 'dev',     label: 'Разработка'  },
   { value: 'sales',   label: 'Продажи'     },

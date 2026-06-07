@@ -40,7 +40,7 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   const { user } = useAuthStore()
-  const { setSidebarOpen } = useUIStore()
+  const { setSidebarOpen, addToast } = useUIStore()
   const supabase = createClient()
   const router = useRouter()
 
@@ -55,6 +55,72 @@ export function Header({ title, subtitle }: HeaderProps) {
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+
+  // Request system notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
+    }
+  }, [])
+
+  // Subscribe to real-time notifications for the current user
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel(`user-notifications-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newNotif = payload.new as Notification
+          if (!newNotif || !newNotif.title) return
+
+          // 1. Add to local notifications list
+          setNotifs((prev) => {
+            if (prev.some((n) => n.id === newNotif.id)) return prev
+            return [newNotif, ...prev]
+          })
+
+          // 2. Show in-app glassmorphic toast
+          let tone: 'ok' | 'err' | 'warn' | 'accent' = 'accent'
+          if (newNotif.type === 'task') tone = 'ok'
+          else if (newNotif.type === 'alert') tone = 'warn'
+          else if (newNotif.type === 'ach') tone = 'accent'
+
+          addToast(newNotif.title, newNotif.body || undefined, tone)
+
+          // 3. Show Browser system notification if the tab is not focused
+          if (
+            typeof window !== 'undefined' &&
+            'Notification' in window &&
+            Notification.permission === 'granted' &&
+            document.visibilityState !== 'visible'
+          ) {
+            try {
+              new Notification(newNotif.title, {
+                body: newNotif.body || undefined,
+                icon: '/favicon.ico',
+              })
+            } catch (err) {
+              console.error('Failed to trigger system notification:', err)
+            }
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, supabase, addToast])
 
   useEffect(() => {
     const q = query.trim()
@@ -76,7 +142,7 @@ export function Header({ title, subtitle }: HeaderProps) {
       setSearching(false)
     }, 250)
     return () => clearTimeout(handle)
-  }, [query])
+  }, [query, supabase])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -139,7 +205,7 @@ export function Header({ title, subtitle }: HeaderProps) {
 
   // Prefetch unread count on mount
   useEffect(() => {
-    if (!user) return
+    if (!user?.id) return
     supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
@@ -154,7 +220,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           })))
         }
       })
-  }, [user?.id])
+  }, [user?.id, supabase])
 
   return (
     <header className="flex items-center justify-between mb-7 gap-4">

@@ -41,13 +41,13 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      role: 'ceo',
+      role: 'dev',
       isLoading: true,
 
-      setUser: (user) => set({ user, role: user?.role ?? 'ceo' }),
+      setUser: (user) => set({ user, role: user?.role ?? 'dev' }),
       setRole: (role) => set({ role }),
       setLoading: (isLoading) => set({ isLoading }),
-      logout: () => set({ user: null }),
+      logout: () => set({ user: null, role: 'dev' }),
     }),
     {
       name: 'connect-auth',

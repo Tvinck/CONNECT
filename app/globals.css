@@ -7,8 +7,8 @@ html, body, #__next {
 }
 
 body {
-  background: #0A0E27;
-  color: #fff;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -17,8 +17,8 @@ body {
 /* Scrollbars */
 *::-webkit-scrollbar { width: 6px; height: 6px; }
 *::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: #232A4F; border-radius: 8px; }
-*::-webkit-scrollbar-thumb:hover { background: #2C3463; }
+*::-webkit-scrollbar-thumb { background: var(--color-line2); border-radius: 8px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--color-mute2); }
 
 /* Focus rings */
 button:focus-visible,
@@ -35,11 +35,12 @@ a:focus-visible {
 @layer components {
   /* Card */
   .card {
-    @apply bg-card border border-line rounded-2xl transition-all duration-200;
+    @apply bg-card border border-line rounded-[24px] transition-all duration-200 shadow-[0_2px_12px_rgba(0,0,0,0.01)];
   }
   .card:hover {
-    border-color: #2C3463;
-    background: #1A2148;
+    border-color: var(--color-line2);
+    background: var(--color-card-hover);
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.04);
   }
   .card-tight {
     @apply rounded-xl;
@@ -68,8 +69,8 @@ a:focus-visible {
 
   /* Form field */
   .field {
-    @apply w-full bg-[#0E1330] border border-line text-white px-4 py-3.5 rounded-xl text-sm
-           placeholder:text-mute2 focus:border-accent focus:bg-[#0B1130] outline-none transition-all duration-200;
+    @apply w-full bg-card border border-line text-slate-800 px-4 py-3.5 rounded-xl text-sm
+           placeholder:text-mute focus:border-accent focus:bg-card outline-none transition-all duration-200;
   }
   .field-icon {
     @apply pl-11;
@@ -155,3 +156,18 @@ a:focus-visible {
     background: rgba(255,255,255,0.015);
   }
 }
+
+/* Design tokens */
+:root {
+  --color-primary: #1472F5;
+  --color-bg: #F4F5FA;
+  --color-card: #FFFFFF;
+  --color-card-hover: #F9FAFC;
+  --color-sidebar: #13141C;
+  --color-line: #E8E9F3;
+  --color-line2: #DFE1ED;
+  --color-text: #171821;
+  --color-mute: #7D81A0;
+  --color-mute2: #A4A7C1;
+}
+

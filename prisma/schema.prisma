@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Core Connect models ----------
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  emoji       String?
+  color       String
+  status      ProjectStatus
+  progress    Int
+  description String?
+  created_at  DateTime @default(now())
+  links       ProjectLink[]
+  members     ProjectMember[]
+  tasks       Task[]
+  // VPN‑related optional JSON fields (kept for convenience)
+  vpnServers        Json?
+  vpnSubscriptions  Json?
+  vpnOrders         Json?
+  vpnReferrals      Json?
+}
+
+model ProjectLink {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  label     String
+  url       String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model ProjectMember {
+  id        String @id @default(uuid())
+  projectId String @map("project_id")
+  role      String
+  userId    String @map("user_id")
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  title       String
+  description String?
+  status      TaskStatus
+  priority    Int
+  dueDate     DateTime?
+  project     Project @relation(fields: [projectId], references: [id])
+}
+
+// ---------- Veil VPN models ----------
+model VpnServer {
+  id         String @id @default(uuid())
+  name       String
+  ip         String
+  location   String
+  created_at DateTime @default(now())
+}
+
+model VpnSubscription {
+  id         String @id @default(uuid())
+  userId     String @map("user_id")
+  planId     String @map("plan_id")
+  started_at DateTime @default(now())
+  expires_at DateTime?
+  user       User @relation(fields: [userId], references: [id])
+}
+
+model VpnOrder {
+  id             String @id @default(uuid())
+  subscriptionId String @map("subscription_id")
+  amount         Decimal
+  created_at     DateTime @default(now())
+  subscription   VpnSubscription @relation(fields: [subscriptionId], references: [id])
+}
+
+model VpnReferral {
+  id         String @id @default(uuid())
+  referrerId String @map("referrer_id")
+  refereeId  String @map("referee_id")
+  created_at DateTime @default(now())
+  referrer   User @relation("Referrer", fields: [referrerId], references: [id])
+  referee    User @relation("Referee",  fields: [refereeId],  references: [id])
+}
+
+// ---------- Shared Auth ----------
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  full_name   String?
+  role        String?
+  status      String?
+  created_at  DateTime @default(now())
+  // relations
+  projects    Project[]
+  vpnSubs     VpnSubscription[]
+  vpnRefsSent VpnReferral[] @relation("Referrer")
+  vpnRefsRecv VpnReferral[] @relation("Referee")
+}
+
+// ---------- Enums ----------
+enum ProjectStatus {
+  active
+  dev
+  planning
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  review
+  done
+}

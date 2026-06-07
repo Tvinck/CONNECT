@@ -60,7 +60,7 @@ export default function ServicesPage() {
   const supabase    = createClient()
   const { user }    = useAuthStore()
   const { addToast } = useUIStore()
-  const isCeo       = user?.role === 'ceo'
+  const isCeoOrCoowner = user?.role === 'ceo' || user?.role === 'coowner'
 
   const [activeCat,  setActiveCat]  = useState('all')
   /** slug → is_connected (loaded from DB). */
@@ -80,11 +80,11 @@ export default function ServicesPage() {
         }
         setLoadingDb(false)
       })
-  }, [])
+  }, [supabase])
 
   const toggle = async (slug: string) => {
-    if (!isCeo) {
-      addToast('Нет доступа', 'Управление сервисами доступно только CEO', 'warn')
+    if (!isCeoOrCoowner) {
+      addToast('Нет доступа', 'Управление сервисами доступно только руководству', 'warn')
       return
     }
     const next = !connected[slug]
@@ -133,10 +133,10 @@ export default function ServicesPage() {
         })}
       </div>
 
-      {/* CEO-only notice */}
-      {!isCeo && (
+      {/* CEO & Co-owner only notice */}
+      {!isCeoOrCoowner && (
         <div className="mb-4 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-line text-[12.5px] text-mute">
-          Подключение и отключение сервисов доступно только CEO
+          Подключение и отключение сервисов доступно только руководству
         </div>
       )}
 
@@ -167,9 +167,9 @@ export default function ServicesPage() {
 
                 <button
                   onClick={() => toggle(s.slug)}
-                  disabled={!isCeo || loadingDb || toggling === s.slug}
+                  disabled={!isCeoOrCoowner || loadingDb || toggling === s.slug}
                   className={`mt-4 w-full h-8 rounded-lg text-[12px] font-semibold transition-all border inline-flex items-center justify-center gap-1.5 ${
-                    !isCeo || loadingDb
+                    !isCeoOrCoowner || loadingDb
                       ? 'border-line text-mute cursor-not-allowed opacity-50'
                       : isOn
                         ? 'border-line text-mute hover:text-err hover:border-err/30 hover:bg-err/5'

@@ -122,7 +122,7 @@ export default function ShopPage() {
       setPurchases((purch ?? []) as Purchase[])
       setLoading(false)
     })
-  }, [])
+  }, [supabase, user?.id])
 
   const purchase = async () => {
     if (!selectedItem) return

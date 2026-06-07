@@ -70,21 +70,21 @@ function CreateChannelModal({ onClose, onCreated }: { onClose: () => void; onCre
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[420px] shadow-2xl overflow-hidden">
+      <div className="relative bg-card text-[#171821] border border-line rounded-2xl w-full max-w-[420px] shadow-2xl overflow-hidden animate-modal-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-[16px] font-bold tracking-tight">Новый канал</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center"><X size={16} /></button>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-[#171821] hover:bg-bg transition-all inline-flex items-center justify-center"><X size={16} /></button>
         </div>
         <div className="px-6 py-5 space-y-4">
           <div>
-            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Название *</label>
+            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute font-semibold mb-2">Название *</label>
             <input value={name} onChange={e => setName(e.target.value)} autoFocus placeholder="маркетинг"
-              className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+              className="w-full h-10 px-3.5 rounded-xl bg-[#F4F5FA]/50 border border-line focus:border-accent focus:bg-card outline-none text-[13.5px] text-[#171821] placeholder:text-mute transition-all" />
           </div>
           <div>
-            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Описание</label>
+            <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute font-semibold mb-2">Описание</label>
             <input value={description} onChange={e => setDescription(e.target.value)} placeholder="О чём канал"
-              className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+              className="w-full h-10 px-3.5 rounded-xl bg-[#F4F5FA]/50 border border-line focus:border-accent focus:bg-card outline-none text-[13.5px] text-[#171821] placeholder:text-mute transition-all" />
           </div>
           {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
         </div>
@@ -118,16 +118,16 @@ function NewDmModal({ members, currentUserId, onClose, onSelect }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[380px] shadow-2xl overflow-hidden">
+      <div className="relative bg-card text-[#171821] border border-line rounded-2xl w-full max-w-[380px] shadow-2xl overflow-hidden animate-modal-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-[16px] font-bold tracking-tight">Новое сообщение</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center"><X size={16} /></button>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-[#171821] hover:bg-bg transition-all inline-flex items-center justify-center"><X size={16} /></button>
         </div>
         <div className="px-4 pt-4 pb-2">
-          <div className="flex items-center gap-2 px-3 h-9 rounded-xl bg-white/[0.04] border border-line">
+          <div className="flex items-center gap-2 px-3 h-9 rounded-xl bg-[#F4F5FA]/50 border border-line">
             <Search size={14} className="text-mute shrink-0" />
             <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Поиск сотрудника…" autoFocus
-              className="flex-1 bg-transparent outline-none text-[13px] placeholder:text-mute2" />
+              className="flex-1 bg-transparent outline-none text-[13px] text-[#171821] placeholder:text-mute" />
           </div>
         </div>
         <div className="max-h-[300px] overflow-y-auto p-2">
@@ -136,15 +136,15 @@ function NewDmModal({ members, currentUserId, onClose, onSelect }: {
           )}
           {filtered.map(m => (
             <button key={m.id} onClick={() => { onSelect(m); onClose() }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-all text-left">
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-bg transition-all text-left">
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(m.full_name)} color={colorFor(m.full_name)} size={36} />
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-[#151829]"
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-card"
                   style={{ background: m.status === 'online' ? '#22C55E' : m.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
               </div>
               <div>
                 <div className="text-[13.5px] font-semibold">{m.full_name}</div>
-                <div className="text-[11px] text-mute2 capitalize">{m.role}</div>
+                <div className="text-[11px] text-mute capitalize">{m.role}</div>
               </div>
             </button>
           ))}
@@ -220,7 +220,7 @@ export default function ChatsPage() {
       setDmChannels(dmChs)
       if (publicChs[0]) setActiveChannelId(publicChs[0].id)
     })
-  }, [user?.id])
+  }, [user, supabase])
 
   // ---------------------------------------------------------------------------
   // Reactions helpers
@@ -245,7 +245,7 @@ export default function ChatsPage() {
       .select('message_id, user_id, emoji')
       .in('message_id', messageIds)
     if (data) setReactions(buildReactionsMap(data))
-  }, [])
+  }, [supabase])
 
   // ---------------------------------------------------------------------------
   // Message loading
@@ -264,7 +264,7 @@ export default function ChatsPage() {
     setHasMore((data ?? []).length === MSG_PAGE)
     setLoading(false)
     if (msgs.length) await loadReactions(msgs.map(m => m.id))
-  }, [activeChannelId, loadReactions])
+  }, [activeChannelId, loadReactions, supabase])
 
   useEffect(() => { loadMessages() }, [loadMessages])
 
@@ -338,7 +338,7 @@ export default function ChatsPage() {
       })
 
     return () => { supabase.removeChannel(sub) }
-  }, [activeChannelId])
+  }, [activeChannelId, supabase])
 
   // Auto-scroll to the bottom when new messages arrive.
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
@@ -427,56 +427,56 @@ export default function ChatsPage() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="flex" style={{ height: '100vh' }}>
+    <div className="flex bg-card" style={{ height: '100vh' }}>
 
       {/* ── Channels sidebar ── */}
-      <div className="w-[220px] shrink-0 border-r border-line flex flex-col">
+      <div className="w-[220px] shrink-0 border-r border-line flex flex-col bg-card">
         <div className="px-4 py-4 border-b border-line">
-          <h3 className="text-[13px] font-bold tracking-tight">Чаты</h3>
+          <h3 className="text-[13px] font-bold tracking-tight text-[#171821]">Чаты</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-2">Каналы</div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-mute px-2 mb-1.5 font-semibold mt-2">Каналы</div>
           {channels.map(c => (
             <button key={c.id} onClick={() => setActiveChannelId(c.id)}
               className={`w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[13px] font-medium tracking-tight mb-0.5 transition-all ${
                 c.id === activeChannelId
-                  ? 'bg-accent/15 text-accent border border-accent/30'
-                  : 'text-mute hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-accent/10 text-accent border border-accent/20'
+                  : 'text-mute hover:text-[#171821] hover:bg-bg'
               }`}>
               <Hash size={14} className="shrink-0" />
               <span className="flex-1 text-left truncate">{c.name}</span>
             </button>
           ))}
           <button onClick={() => setShowCreateChannel(true)}
-            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-0.5 transition-all">
+            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-[#171821] hover:bg-bg mt-0.5 transition-all">
             <Plus size={14} /> Создать канал
           </button>
 
-          <div className="text-[10px] uppercase tracking-[0.14em] text-mute2 px-2 mb-1.5 font-semibold mt-4">Личные</div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-mute px-2 mb-1.5 font-semibold mt-4">Личные</div>
           {dmChannels.map(d => (
             <button key={d.id} onClick={() => setActiveChannelId(d.id)}
               className={`w-full flex items-center gap-2 px-2 h-10 rounded-lg text-[13px] font-medium tracking-tight mb-0.5 transition-all ${
                 d.id === activeChannelId
-                  ? 'bg-accent/15 text-accent border border-accent/30'
-                  : 'text-mute hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-accent/10 text-accent border border-accent/20'
+                  : 'text-mute hover:text-[#171821] hover:bg-bg'
               }`}>
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(d.otherUser.full_name)} color={colorFor(d.otherUser.full_name)} size={24} />
-                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-sidebar"
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-card"
                   style={{ background: d.otherUser.status === 'online' ? '#22C55E' : d.otherUser.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
               </div>
               <span className="flex-1 text-left truncate">{d.otherUser.full_name.split(' ')[0]}</span>
             </button>
           ))}
           <button onClick={() => setShowNewDm(true)}
-            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-white hover:bg-white/[0.04] mt-0.5 transition-all">
+            className="w-full flex items-center gap-2 px-3 h-9 rounded-lg text-[12px] text-mute hover:text-[#171821] hover:bg-bg mt-0.5 transition-all">
             <Plus size={14} /> Новое сообщение
           </button>
         </div>
       </div>
 
       {/* ── Main chat ── */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      <div className="flex-1 flex flex-col min-w-0 relative bg-card text-[#171821]">
 
         {/* Connection error banner */}
         {realtimeError && (
@@ -491,7 +491,7 @@ export default function ChatsPage() {
             <>
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(activeDm.otherUser.full_name)} color={colorFor(activeDm.otherUser.full_name)} size={30} />
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-[#0A0E27]"
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-card"
                   style={{ background: activeDm.otherUser.status === 'online' ? '#22C55E' : activeDm.otherUser.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
               </div>
               <div>
@@ -510,14 +510,14 @@ export default function ChatsPage() {
               )}
             </>
           )}
-          <div className="ml-auto flex items-center gap-1 text-[12px] text-mute2">
+          <div className="ml-auto flex items-center gap-1 text-[12px] text-mute">
             <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse-dot" />
             <span>{members.filter(m => m.status === 'online').length} онлайн</span>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 overflow-y-auto px-5 py-4 bg-[#F4F5FA]/50">
 
           {/* Load more history */}
           {hasMore && !loading && (
@@ -525,7 +525,7 @@ export default function ChatsPage() {
               <button
                 onClick={loadOlderMessages}
                 disabled={loadingMore}
-                className="inline-flex items-center gap-2 px-4 h-8 rounded-xl border border-line bg-white/[0.03] hover:bg-white/[0.05] text-[12px] text-mute hover:text-white transition-all disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 h-8 rounded-xl border border-line bg-card hover:bg-bg text-[12px] text-mute hover:text-[#171821] transition-all disabled:opacity-50"
               >
                 {loadingMore ? <Loader2 size={13} className="animate-spin" /> : <ChevronUp size={13} />}
                 {loadingMore ? 'Загрузка…' : 'Загрузить ещё'}
@@ -567,19 +567,19 @@ export default function ChatsPage() {
                       <div className="flex items-baseline gap-2.5 mb-1">
                         <button onClick={() => m.sender && setViewUserId(m.sender.id)}
                           className="text-[13.5px] font-semibold hover:text-accent transition-colors">{name}</button>
-                        <span className="text-[11px] text-mute2 font-mono">{fmtTime(m.created_at)}</span>
+                        <span className="text-[11px] text-mute font-mono">{fmtTime(m.created_at)}</span>
                       </div>
                     )}
 
                     {parent && (
-                      <div className={`mb-1 px-3 py-1.5 rounded-lg border-l-2 border-accent/50 bg-white/[0.03] text-[12px] max-w-full ${isMe ? 'text-right' : ''}`}>
+                      <div className={`mb-1 px-3 py-1.5 rounded-lg border-l-2 border-accent/50 bg-card text-[12px] max-w-full ${isMe ? 'text-right' : ''}`}>
                         <div className="text-accent font-medium truncate">{parent.sender?.full_name ?? 'Пользователь'}</div>
                         <div className="text-mute truncate">{parent.content}</div>
                       </div>
                     )}
 
-                    <div className={`text-[13.5px] leading-relaxed px-3.5 py-2.5 rounded-2xl ${
-                      isMe ? 'bg-accent/25 text-white/90 rounded-tr-sm' : 'bg-white/[0.05] text-white/85 rounded-tl-sm'
+                    <div className={`text-[13.5px] leading-relaxed px-3.5 py-2.5 rounded-2xl shadow-sm ${
+                      isMe ? 'bg-accent text-white rounded-tr-sm' : 'bg-card border border-line text-[#171821] rounded-tl-sm'
                     }`}>
                       {m.content}
                     </div>
@@ -591,8 +591,8 @@ export default function ChatsPage() {
                           <button key={emoji} onClick={() => toggleReaction(m.id, emoji)}
                             className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] border transition-all ${
                               uids.includes(user?.id ?? '')
-                                ? 'bg-accent/20 border-accent/40 text-accent'
-                                : 'bg-white/[0.04] border-line hover:border-line2 text-white/70'
+                                ? 'bg-accent/10 border-accent/30 text-accent'
+                                : 'bg-card border-line hover:border-line2 text-mute hover:text-[#171821]'
                             }`}
                           >
                             {emoji}<span className="font-mono text-[11px]">{uids.length}</span>
@@ -604,19 +604,19 @@ export default function ChatsPage() {
                     {/* Hover actions: reply + quick emoji */}
                     <div className={`flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMe ? 'flex-row-reverse' : ''}`}>
                       <button onClick={() => setReplyTo(m)}
-                        className="flex items-center gap-1 px-2 h-6 text-[11px] text-mute hover:text-white rounded-lg hover:bg-white/[0.06] transition-all">
+                        className="flex items-center gap-1 px-2 h-6 text-[11px] text-mute hover:text-[#171821] rounded-lg hover:bg-bg transition-all">
                         <Reply size={12} /> Ответить
                       </button>
                       <span className="w-px h-3 bg-line" />
                       {['👍','🔥','❤️','😂','🎉'].map(e => (
                         <button key={e} onClick={() => toggleReaction(m.id, e)}
-                          className="w-6 h-6 text-sm hover:scale-125 transition-transform rounded-lg hover:bg-white/[0.06] flex items-center justify-center">
+                          className="w-6 h-6 text-sm hover:scale-125 transition-transform rounded-lg hover:bg-bg flex items-center justify-center">
                           {e}
                         </button>
                       ))}
                     </div>
 
-                    {isMe && <span className="text-[11px] text-mute2 font-mono mt-0.5">{fmtTime(m.created_at)}</span>}
+                    {isMe && <span className="text-[11px] text-mute font-mono mt-0.5">{fmtTime(m.created_at)}</span>}
                   </div>
                 </div>
               )
@@ -626,25 +626,25 @@ export default function ChatsPage() {
         </div>
 
         {/* Input area */}
-        <div className="px-5 py-4 border-t border-line shrink-0 relative">
+        <div className="px-5 py-4 border-t border-line shrink-0 relative bg-card">
           {replyTo && (
-            <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-white/[0.04] border-l-2 border-accent">
+            <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg bg-[#F4F5FA]/50 border-l-2 border-accent">
               <Reply size={13} className="text-accent shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="text-[11.5px] text-accent font-medium">Ответ · {replyTo.sender?.full_name ?? 'Пользователь'}</div>
                 <div className="text-[12px] text-mute truncate">{replyTo.content}</div>
               </div>
-              <button onClick={() => setReplyTo(null)} className="text-mute hover:text-white shrink-0"><X size={14} /></button>
+              <button onClick={() => setReplyTo(null)} className="text-mute hover:text-[#171821] shrink-0"><X size={14} /></button>
             </div>
           )}
 
           {showEmoji && (
-            <div ref={emojiRef} className="absolute bottom-full left-5 mb-2 bg-[#1C2035] border border-line rounded-2xl p-3 shadow-2xl z-50 w-72">
+            <div ref={emojiRef} className="absolute bottom-full left-5 mb-2 bg-card border border-line rounded-2xl p-3 shadow-2xl z-50 w-72 text-[#171821]">
               <div className="grid grid-cols-10 gap-0.5">
                 {EMOJI_QUICK.map(e => (
                   <button key={e}
                     onClick={() => { setText(t => t + e); setShowEmoji(false); inputRef.current?.focus() }}
-                    className="w-7 h-7 text-lg hover:bg-white/[0.08] rounded-lg flex items-center justify-center transition-all">
+                    className="w-7 h-7 text-lg hover:bg-bg rounded-lg flex items-center justify-center transition-all">
                     {e}
                   </button>
                 ))}
@@ -652,9 +652,9 @@ export default function ChatsPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/[0.03] border border-line hover:border-line2 focus-within:border-accent/50 transition-all">
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#F4F5FA]/50 border border-line hover:border-line2 focus-within:border-accent/50 transition-all text-[#171821]">
             <button onClick={() => setShowEmoji(v => !v)}
-              className={`transition-colors shrink-0 ${showEmoji ? 'text-accent' : 'text-mute hover:text-white'}`}>
+              className={`transition-colors shrink-0 ${showEmoji ? 'text-accent' : 'text-mute hover:text-[#171821]'}`}>
               <Smile size={18} />
             </button>
             <input
@@ -665,7 +665,7 @@ export default function ChatsPage() {
               placeholder={activeDm
                 ? `Написать ${activeDm.otherUser.full_name.split(' ')[0]}…`
                 : `Написать в #${activeCh?.name ?? ''}…`}
-              className="flex-1 bg-transparent outline-none text-[13.5px] placeholder:text-mute2"
+              className="flex-1 bg-transparent outline-none text-[13.5px] placeholder:text-mute"
             />
             <button onClick={send} disabled={!text.trim()}
               className="w-8 h-8 rounded-lg bg-accent/15 text-accent hover:bg-accent hover:text-white transition-all inline-flex items-center justify-center shrink-0 disabled:opacity-40 disabled:cursor-not-allowed">
@@ -676,7 +676,7 @@ export default function ChatsPage() {
       </div>
 
       {/* ── Members panel ── */}
-      <div className="w-[200px] shrink-0 border-l border-line hidden xl:flex flex-col">
+      <div className="w-[200px] shrink-0 border-l border-line hidden xl:flex flex-col bg-card">
         <div className="px-4 py-4 border-b border-line shrink-0">
           <span className="text-[11px] text-mute uppercase tracking-[0.12em] font-semibold">
             Участники · {members.length}
@@ -685,15 +685,15 @@ export default function ChatsPage() {
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {members.map(m => (
             <button key={m.id} onClick={() => setViewUserId(m.id)}
-              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-white/[0.04] transition-all text-left group">
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-bg transition-all text-left group">
               <div className="relative shrink-0">
                 <Avatar initials={getInitials(m.full_name)} color={colorFor(m.full_name)} size={28} />
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-sidebar"
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full ring-2 ring-card"
                   style={{ background: m.status === 'online' ? '#22C55E' : m.status === 'busy' ? '#F59E0B' : '#5A6188' }} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-medium truncate">{m.full_name.split(' ')[0]}</div>
-                <div className="text-[10.5px] text-mute2 truncate capitalize">{m.role}</div>
+                <div className="text-[12px] font-medium truncate text-[#171821]">{m.full_name.split(' ')[0]}</div>
+                <div className="text-[10.5px] text-mute truncate capitalize">{m.role}</div>
               </div>
               <button
                 onClick={e => { e.stopPropagation(); if (m.id !== user?.id) openDmWith(m) }}

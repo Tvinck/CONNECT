@@ -37,8 +37,8 @@ export async function GET(req: NextRequest) {
       .eq('task_id', taskId)
       .single()
 
-    const isCeo = profile.role === 'ceo'
-    if (existing && existing.created_by !== profile.id && !isCeo) {
+    const isCeoOrCoowner = profile.role === 'ceo' || profile.role === 'coowner'
+    if (existing && existing.created_by !== profile.id && !isCeoOrCoowner) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

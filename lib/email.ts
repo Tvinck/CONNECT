@@ -2,13 +2,13 @@ import { Resend } from 'resend'
 
 // Set RESEND_API_KEY in your .env.local
 // Set NOTIFY_EMAIL to the CEO's email address (e.g., artyom@bazzar.group)
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'CONNECT <noreply@bazzar.group>'
 const TO   = process.env.NOTIFY_EMAIL ?? ''
 
 /** Send a notification email. Silently swallows errors — never throws. */
 export async function sendEmail(subject: string, html: string) {
-  if (!process.env.RESEND_API_KEY || !TO) return
+  if (!resend || !TO) return
   try {
     await resend.emails.send({ from: FROM, to: TO, subject, html })
   } catch {
