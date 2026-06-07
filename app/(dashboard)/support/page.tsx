@@ -7,10 +7,7 @@ export const metadata = {
 
 export default function SupportPage() {
   return (
-    <PageContainer
-      title="Обращения клиентов"
-      description="Единое окно для связи с клиентами (Telegram и другие каналы)"
-    >
+    <PageContainer>
       <SupportClient />
     </PageContainer>
   )
