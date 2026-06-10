@@ -28,6 +28,7 @@ export function SupportClient() {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [debugText, setDebugText] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   const supabase = createVeilClient()
