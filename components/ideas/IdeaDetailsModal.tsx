@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { useUIStore } from '@/store/ui'
 import { getInitials, colorFor, timeAgo } from '@/lib/utils'
 import { CATEGORY_META, type Idea } from './IdeasClient'
+import { processMentions } from '@/lib/mentions'
 
 type Comment = {
   id: string
@@ -23,6 +24,7 @@ type Comment = {
 interface Props {
   idea: Idea
   projects: { id: string; name: string; color: string; emoji: string | null }[]
+  users?: { id: string; full_name: string; mention_tag?: string }[]
   currentUser: { id: string; full_name: string; role: string | null }
   onClose: () => void
   onVote: (type: 'up' | 'down') => void
@@ -30,7 +32,7 @@ interface Props {
   onUpdate: (updatedIdea: Idea) => void
 }
 
-export function IdeaDetailsModal({ idea, projects, currentUser, onClose, onVote, onDelete, onUpdate }: Props) {
+export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onClose, onVote, onDelete, onUpdate }: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
 
@@ -44,6 +46,11 @@ export function IdeaDetailsModal({ idea, projects, currentUser, onClose, onVote,
   const commentFileRef = useRef<HTMLInputElement>(null)
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // Mentions
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionFilter, setMentionFilter] = useState('')
+  const [mentionIndex, setMentionIndex] = useState(0)
 
   const isAuthor = currentUser.id === idea.author_id
   const isCeoOrCoowner = currentUser.role === 'ceo' || currentUser.role === 'coowner'
@@ -166,6 +173,10 @@ export function IdeaDetailsModal({ idea, projects, currentUser, onClose, onVote,
         // Update comments count on main page
         const updatedComments = [...(idea.comments ?? []), { id: data.id }]
         onUpdate({ ...idea, comments: updatedComments })
+
+        if (commentText.trim()) {
+          processMentions(commentText.trim(), currentUser.id, `/ideas?idea=${idea.id}`)
+        }
       }
     } catch (err: any) {
       addToast('Ошибка', err.message || 'Не удалось опубликовать комментарий', 'err')
@@ -226,6 +237,50 @@ export function IdeaDetailsModal({ idea, projects, currentUser, onClose, onVote,
       minute: '2-digit'
     })
   }
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value
+    setCommentText(val)
+    
+    const cursor = e.target.selectionStart
+    const textBefore = val.slice(0, cursor)
+    const match = textBefore.match(/@([a-zA-Z0-9_.]*)$/)
+    
+    if (match) {
+      setShowMentions(true)
+      setMentionFilter(match[1].toLowerCase())
+      setMentionIndex(0)
+    } else {
+      setShowMentions(false)
+    }
+  }
+
+  const insertMention = (tag: string) => {
+    const textarea = document.getElementById('comment-textarea') as HTMLTextAreaElement
+    if (!textarea) return
+    const cursor = textarea.selectionStart
+    const textBefore = commentText.slice(0, cursor)
+    const textAfter = commentText.slice(cursor)
+    
+    const match = textBefore.match(/@([a-zA-Z0-9_.]*)$/)
+    if (match) {
+      const newText = textBefore.slice(0, match.index) + `@${tag} ` + textAfter
+      setCommentText(newText)
+      setShowMentions(false)
+      setTimeout(() => {
+        textarea.focus()
+        const newPos = match.index! + tag.length + 2
+        textarea.setSelectionRange(newPos, newPos)
+      }, 10)
+    }
+  }
+
+  const filteredUsers = users
+    .filter(u => u.mention_tag)
+    .filter(u => 
+      u.mention_tag!.toLowerCase().includes(mentionFilter) || 
+      u.full_name.toLowerCase().includes(mentionFilter)
+    ).slice(0, 5)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -408,11 +463,54 @@ export function IdeaDetailsModal({ idea, projects, currentUser, onClose, onVote,
 
             {/* Comment input block */}
             <div className="bg-[#181a2b] border border-white/[0.05] rounded-xl p-3.5 space-y-3 relative">
+              
+              {/* Mentions Dropdown */}
+              {showMentions && filteredUsers.length > 0 && (
+                <div className="absolute bottom-full left-0 mb-2 w-[240px] bg-[#1c1e2e] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50 animate-fade-in">
+                  {filteredUsers.map((u, i) => (
+                    <button
+                      key={u.mention_tag}
+                      onClick={() => insertMention(u.mention_tag!)}
+                      className={`w-full text-left px-3 py-2 text-[12.5px] hover:bg-white/[0.05] transition-colors flex flex-col ${i === mentionIndex ? 'bg-white/[0.05]' : ''}`}
+                    >
+                      <span className="font-semibold text-slate-200">{u.full_name}</span>
+                      <span className="text-slate-500 text-[11px]">@{u.mention_tag}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <textarea
                 id="comment-textarea"
                 value={commentText}
-                onChange={e => setCommentText(e.target.value)}
-                placeholder="Напишите ваш комментарий… Поддерживается вставка скриншота из буфера (Ctrl+V)"
+                onChange={handleTextChange}
+                onKeyDown={e => {
+                  if (showMentions && filteredUsers.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      setMentionIndex(i => Math.min(i + 1, filteredUsers.length - 1))
+                      return
+                    }
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      setMentionIndex(i => Math.max(i - 1, 0))
+                      return
+                    }
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      insertMention(filteredUsers[mentionIndex].mention_tag!)
+                      return
+                    }
+                    if (e.key === 'Escape') {
+                      setShowMentions(false)
+                      return
+                    }
+                  } else if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    postComment()
+                  }
+                }}
+                placeholder="Напишите ваш комментарий (используйте @ для упоминания)…"
                 rows={2}
                 className="w-full bg-transparent border-0 outline-none text-[13.5px] placeholder-slate-500 text-white resize-none"
                 disabled={sendingComment}

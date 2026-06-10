@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Search, Menu, X, CheckCheck, CheckSquare, Folder, Loader2 } from 'lucide-react'
+import { Bell, Search, Menu, X, CheckCheck, CheckSquare, Folder, Loader2, Info, AlertTriangle, Trophy, BellRing } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
@@ -29,8 +29,11 @@ type SearchResult =
   | { kind: 'task';    id: string; label: string; sub: string }
   | { kind: 'project'; id: string; label: string; sub: string }
 
-const NOTIF_ICON: Record<string, string> = {
-  task: '✅', ach: '🏆', alert: '⚠️', info: 'ℹ️',
+const NOTIF_ICON: Record<string, React.ReactNode> = {
+  task: <CheckSquare size={18} className="text-ok" />,
+  ach: <Trophy size={18} className="text-gold" />,
+  alert: <AlertTriangle size={18} className="text-err" />,
+  info: <BellRing size={18} className="text-accent" />,
 }
 
 interface HeaderProps {
@@ -318,7 +321,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           </button>
 
           {showNotifs && (
-            <div className="absolute right-0 top-full mt-2 w-[340px] bg-[#151829] border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-[340px] bg-[#151829] text-white border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-line">
                 <div className="flex items-center gap-2">
@@ -356,16 +359,16 @@ export function Header({ title, subtitle }: HeaderProps) {
                     onClick={() => markRead(n.id, n.link)}
                     className={`flex gap-3 px-4 py-3.5 border-b border-line/40 last:border-0 cursor-pointer hover:bg-white/[0.03] transition-all ${n.is_read ? 'opacity-55' : ''}`}
                   >
-                    <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-line shrink-0 inline-flex items-center justify-center text-lg mt-0.5">
-                      {NOTIF_ICON[n.type] ?? 'ℹ️'}
+                    <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-line shrink-0 inline-flex items-center justify-center mt-0.5">
+                      {NOTIF_ICON[n.type] ?? <BellRing size={18} className="text-accent" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2">
-                        <div className="text-[13px] font-medium leading-snug flex-1">{n.title}</div>
+                        <div className="text-[13px] font-semibold text-white leading-snug flex-1">{n.title}</div>
                         {!n.is_read && <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-1.5" />}
                       </div>
-                      <div className="text-[12px] text-mute mt-0.5 line-clamp-2">{n.body}</div>
-                      <div className="text-[11px] text-mute2 mt-1 font-mono">{timeAgo(n.created_at)}</div>
+                      <div className="text-[12px] text-gray-300 mt-0.5 line-clamp-2">{n.body}</div>
+                      <div className="text-[11px] text-mute2 mt-1.5 font-mono">{timeAgo(n.created_at)}</div>
                     </div>
                   </div>
                 ))}

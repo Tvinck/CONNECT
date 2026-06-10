@@ -43,6 +43,7 @@ interface Props {
   initialIdeas: Idea[]
   projects: ProjectOption[]
   allTags: TagOption[]
+  users: { id: string; full_name: string }[]
   currentUser: { id: string; full_name: string; role: string | null }
 }
 
@@ -54,8 +55,13 @@ export const CATEGORY_META = {
   implemented: { label: 'Реализовано',    emoji: '✅', color: '#22C55E', icon: CheckCircle },
 } as const
 
-export function IdeasClient({ initialIdeas, projects, allTags, currentUser }: Props) {
+import { useSearchParams, useRouter } from 'next/navigation'
+
+export function IdeasClient({ initialIdeas, projects, allTags, users, currentUser }: Props) {
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
   const [ideas, setIdeas] = useState<Idea[]>(initialIdeas)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<keyof typeof CATEGORY_META>('all')
@@ -64,6 +70,42 @@ export function IdeasClient({ initialIdeas, projects, allTags, currentUser }: Pr
 
   const [showCreate, setShowCreate] = useState(false)
   const [viewingIdea, setViewingIdea] = useState<Idea | null>(null)
+
+  // Handle deep link ?idea=ID
+  useEffect(() => {
+    const ideaId = searchParams.get('idea')
+    if (ideaId && !viewingIdea) {
+      const idea = ideas.find(i => i.id === ideaId)
+      if (idea) {
+        setViewingIdea(idea)
+        const url = new URL(window.location.href)
+        url.searchParams.delete('idea')
+        window.history.replaceState({}, '', url)
+      } else {
+        // Fetch dynamically if not in initial list
+        supabase
+          .from('ideas')
+          .select(`
+            *,
+            project:projects(id, name, color, emoji),
+            author:users!author_id(id, full_name),
+            idea_tags(tag:tags(id, name)),
+            comments:idea_comments(id),
+            votes:idea_votes(user_id, value)
+          `)
+          .eq('id', ideaId)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setViewingIdea(data as any)
+              const url = new URL(window.location.href)
+              url.searchParams.delete('idea')
+              window.history.replaceState({}, '', url)
+            }
+          })
+      }
+    }
+  }, [searchParams, ideas, viewingIdea, supabase])
 
   // Recalculate tag list dynamically based on ideas tag counts
   const tagsWithCounts = useMemo(() => {
@@ -464,11 +506,11 @@ export function IdeasClient({ initialIdeas, projects, allTags, currentUser }: Pr
         />
       )}
 
-      {/* Details Modal */}
       {viewingIdea && (
         <IdeaDetailsModal
           idea={viewingIdea}
           projects={projects}
+          users={users}
           currentUser={currentUser}
           onClose={() => setViewingIdea(null)}
           onVote={type => handleVote(viewingIdea.id, type)}

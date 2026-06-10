@@ -39,7 +39,7 @@ interface ModalProps {
 /**
  * Renders a centred modal dialog with backdrop, keyboard support, and scroll lock.
  */
-export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480px]' }: ModalProps) {
+export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] max-w-5xl' }: ModalProps) {
   useEffect(() => {
     // Close on Escape key press.
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -56,10 +56,10 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480
   }, [onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop — click anywhere outside the panel to dismiss */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -69,7 +69,7 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-modal-in`}
+        className={`relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} flex flex-col shadow-2xl animate-modal-in my-auto`}
       >
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-line">

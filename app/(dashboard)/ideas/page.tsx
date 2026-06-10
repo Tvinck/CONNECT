@@ -24,6 +24,13 @@ export default async function IdeasPage() {
     .select('id, name')
     .order('name')
 
+  // Fetch users for mentions
+  const { data: users } = await supabase
+    .from('users')
+    .select('id, full_name, mention_tag')
+    .eq('is_active', true)
+    .order('full_name')
+
   // Fetch ideas with relations
   const { data: ideas } = await supabase
     .from('ideas')
@@ -43,6 +50,7 @@ export default async function IdeasPage() {
         initialIdeas={(ideas ?? []) as any}
         projects={projects ?? []}
         allTags={tags ?? []}
+        users={users ?? []}
         currentUser={profile}
       />
     </PageContainer>
