@@ -1,0 +1,525 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import {
+  X, ChevronUp, ChevronDown, MessageSquare, Clock, Eye,
+  Send, Trash2, Loader2, ThumbsUp, ThumbsDown, Link as LinkIcon, Paperclip
+} from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/Button'
+import { Avatar } from '@/components/ui/Avatar'
+import { useUIStore } from '@/store/ui'
+import { getInitials, colorFor, timeAgo } from '@/lib/utils'
+import { CATEGORY_META, type Idea } from './IdeasClient'
+
+type Comment = {
+  id: string
+  content: string
+  attachments: string[]
+  created_at: string
+  author: { id: string; full_name: string } | null
+}
+
+interface Props {
+  idea: Idea
+  projects: { id: string; name: string; color: string; emoji: string | null }[]
+  currentUser: { id: string; full_name: string; role: string | null }
+  onClose: () => void
+  onVote: (type: 'up' | 'down') => void
+  onDelete: (id: string) => void
+  onUpdate: (updatedIdea: Idea) => void
+}
+
+export function IdeaDetailsModal({ idea, projects, currentUser, onClose, onVote, onDelete, onUpdate }: Props) {
+  const supabase = createClient()
+  const addToast = useUIStore(s => s.addToast)
+
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loadingComments, setLoadingComments] = useState(true)
+  const [commentText, setCommentText] = useState('')
+  const [sendingComment, setSendingComment] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+
+  // Comment attachments
+  const commentFileRef = useRef<HTMLInputElement>(null)
+  const [attachedFile, setAttachedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const isAuthor = currentUser.id === idea.author_id
+  const isCeoOrCoowner = currentUser.role === 'ceo' || currentUser.role === 'coowner'
+  const score = idea.votes.reduce((sum, v) => sum + v.value, 0)
+  const userVote = idea.votes.find(v => v.user_id === currentUser.id)?.value
+
+  // Fetch comments & increment views once on mount
+  useEffect(() => {
+    const fetchComments = async () => {
+      const { data } = await supabase
+        .from('idea_comments')
+        .select('*, author:users!author_id(id, full_name)')
+        .eq('idea_id', idea.id)
+        .order('created_at', { ascending: true })
+      if (data) setComments(data as any[])
+      setLoadingComments(false)
+    }
+
+    const incrementViews = async () => {
+      const nextViews = (idea.views ?? 0) + 1
+      await supabase.from('ideas').update({ views: nextViews }).eq('id', idea.id)
+      onUpdate({ ...idea, views: nextViews })
+    }
+
+    fetchComments()
+    incrementViews()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idea.id])
+
+  // Listen for Clipboard Paste (Ctrl+V) inside the comment area
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      // Only paste if comment input or comment area is focused/hovered
+      const active = document.activeElement
+      if (active && (active.id === 'comment-textarea' || active.tagName === 'BODY')) {
+        if (!e.clipboardData) return
+        const items = e.clipboardData.items
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile()
+            if (file) {
+              setAttachedFile(file)
+              if (previewUrl) URL.revokeObjectURL(previewUrl)
+              setPreviewUrl(URL.createObjectURL(file))
+              addToast('Изображение вставлено', 'Скриншот прикреплен к комментарию', 'accent')
+              e.preventDefault()
+            }
+          }
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [previewUrl, addToast])
+
+  // File Upload Handlers
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && file.type.startsWith('image/')) {
+      setAttachedFile(file)
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+      setPreviewUrl(URL.createObjectURL(file))
+    }
+  }
+
+  const deleteAttachment = () => {
+    setAttachedFile(null)
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+      setPreviewUrl(null)
+    }
+  }
+
+  // Submit comment
+  const postComment = async () => {
+    if (!commentText.trim() && !attachedFile) return
+    setSendingComment(true)
+    let uploadedUrl: string | null = null
+
+    try {
+      if (attachedFile) {
+        const fileExt = attachedFile.name.split('.').pop() || 'png'
+        const filePath = `comments/${crypto.randomUUID()}.${fileExt}`
+
+        const { error: uploadErr } = await supabase.storage
+          .from('idea-attachments')
+          .upload(filePath, attachedFile)
+
+        if (uploadErr) {
+          throw new Error('Не удалось загрузить изображение: ' + uploadErr.message)
+        }
+
+        const { data: publicUrlData } = supabase.storage
+          .from('idea-attachments')
+          .getPublicUrl(filePath)
+
+        uploadedUrl = publicUrlData?.publicUrl ?? null
+      }
+
+      const { data, error: dbErr } = await supabase
+        .from('idea_comments')
+        .insert({
+          idea_id: idea.id,
+          author_id: currentUser.id,
+          content: commentText.trim(),
+          attachments: uploadedUrl ? [uploadedUrl] : []
+        })
+        .select('*, author:users!author_id(id, full_name)')
+        .single()
+
+      if (dbErr) throw dbErr
+
+      if (data) {
+        setComments(prev => [...prev, data as any])
+        setCommentText('')
+        deleteAttachment()
+        addToast('Комментарий отправлен', '', 'ok')
+
+        // Update comments count on main page
+        const updatedComments = [...(idea.comments ?? []), { id: data.id }]
+        onUpdate({ ...idea, comments: updatedComments })
+      }
+    } catch (err: any) {
+      addToast('Ошибка', err.message || 'Не удалось опубликовать комментарий', 'err')
+    } finally {
+      setSendingComment(false)
+    }
+  }
+
+  // Update Status Handler
+  const handleStatusChange = async (newStatus: 'new' | 'planned' | 'rejected' | 'implemented') => {
+    setUpdatingStatus(true)
+    try {
+      const { error } = await supabase
+        .from('ideas')
+        .update({ status: newStatus })
+        .eq('id', idea.id)
+
+      if (error) throw error
+
+      onUpdate({ ...idea, status: newStatus })
+      addToast('Статус обновлен', `Новый статус: ${CATEGORY_META[newStatus].label}`, 'ok')
+    } catch (err: any) {
+      addToast('Ошибка', err.message || 'Не удалось обновить статус', 'err')
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
+
+  // Delete Idea Handler
+  const handleDeleteIdea = async () => {
+    if (!confirm('Вы действительно хотите удалить эту идею навсегда?')) return
+
+    try {
+      const { error } = await supabase
+        .from('ideas')
+        .delete()
+        .eq('id', idea.id)
+
+      if (error) throw error
+
+      onDelete(idea.id)
+      addToast('Успешно', 'Идея удалена', 'ok')
+      onClose()
+    } catch (err: any) {
+      addToast('Ошибка', err.message || 'Не удалось удалить идею', 'err')
+    }
+  }
+
+  const statusMeta = CATEGORY_META[idea.status]
+  const StatusIcon = statusMeta?.icon || ThumbsUp
+
+  const fmtDate = (iso: string) => {
+    return new Date(iso).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-md animate-fade-in" onClick={onClose} />
+
+      {/* Modal Dialog */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative bg-[#111322] border border-white/[0.06] rounded-2xl w-full max-w-[720px] max-h-[90vh] shadow-[0_10px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col animate-modal-in text-white"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
+          <div className="flex items-center gap-2">
+            <span
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+              style={{ backgroundColor: `${statusMeta.color}15`, color: statusMeta.color }}
+            >
+              <StatusIcon size={12} />
+              {statusMeta.label}
+            </span>
+            <span className="text-[12px] text-slate-500 flex items-center gap-1 font-mono">
+              <Eye size={12} />
+              {idea.views ?? 0}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] transition-all inline-flex items-center justify-center"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+          {/* Main Info */}
+          <div>
+            <h1 className="text-[20px] font-extrabold tracking-tight leading-snug text-white font-sans">
+              {idea.title}
+            </h1>
+            
+            {/* Author details */}
+            {idea.author && (
+              <div className="flex items-center gap-2 mt-3 text-[12px] text-slate-400">
+                <Avatar
+                  initials={getInitials(idea.author.full_name)}
+                  color={colorFor(idea.author.full_name)}
+                  size={22}
+                />
+                <span className="font-semibold text-slate-200">{idea.author.full_name}</span>
+                <span>·</span>
+                <span>{fmtDate(idea.created_at)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Description Container */}
+          <div className="bg-[#181a2b] border border-white/[0.05] rounded-xl p-5 space-y-4 shadow-sm">
+            <div className="text-[14px] text-slate-200/90 leading-relaxed whitespace-pre-wrap">
+              {idea.description}
+            </div>
+
+            {/* Attachments List */}
+            {idea.attachments?.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <span className="text-[11px] uppercase tracking-[0.08em] text-slate-500 font-semibold block">Вложения</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {idea.attachments.map((url, idx) => (
+                    <a
+                      key={idx}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative aspect-video rounded-lg overflow-hidden border border-white/[0.08] bg-black/40 hover:border-violet-500/50 transition-all group cursor-zoom-in"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="Вложение идеи" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Links List */}
+            {idea.links?.length > 0 && (
+              <div className="space-y-1.5 pt-2">
+                <span className="text-[11px] uppercase tracking-[0.08em] text-slate-500 font-semibold block">Ссылки</span>
+                <div className="space-y-1">
+                  {idea.links.map((link, idx) => (
+                    <a
+                      key={idx}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-[12.5px] text-indigo-400 hover:text-indigo-300 font-medium font-mono hover:underline truncate"
+                    >
+                      <LinkIcon size={13} className="shrink-0" />
+                      {link}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Voting block inside card */}
+            <div className="flex items-center justify-between pt-4 border-t border-white/[0.04] mt-4">
+              <span className="text-[13px] text-slate-400">Оцените идею:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onVote('up')}
+                  className={`flex items-center gap-1.5 px-3 h-8.5 rounded-xl border text-[12.5px] font-semibold transition-all ${
+                    userVote === 1
+                      ? 'bg-violet-600/20 border-violet-500/40 text-violet-400'
+                      : 'bg-white/[0.02] border-white/[0.05] text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <ThumbsUp size={13} />
+                  Поддержать
+                </button>
+                <button
+                  onClick={() => onVote('down')}
+                  className={`flex items-center justify-center w-8.5 h-8.5 rounded-xl border transition-all ${
+                    userVote === -1
+                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-500'
+                      : 'bg-white/[0.02] border-white/[0.05] text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                  title="Не поддерживаю"
+                >
+                  <ThumbsDown size={13} />
+                </button>
+                <span className="text-[14px] font-bold text-white ml-2 font-mono">{score}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* CEO status management & Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-white/[0.04] bg-white/[0.01]">
+            <div className="flex items-center gap-3">
+              {isCeoOrCoowner && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 shrink-0">
+                    Управление:
+                  </span>
+                  <select
+                    value={idea.status}
+                    onChange={e => handleStatusChange(e.target.value as any)}
+                    disabled={updatingStatus}
+                    className="h-8.5 px-2.5 rounded-lg bg-[#1c1e2e] border border-white/[0.08] text-[12px] font-medium focus:border-indigo-500 cursor-pointer outline-none"
+                  >
+                    <option value="new">Новая идея</option>
+                    <option value="planned">Запланировано</option>
+                    <option value="rejected">Отклонено</option>
+                    <option value="implemented">Реализовано</option>
+                  </select>
+                  {updatingStatus && <Loader2 size={13} className="animate-spin text-slate-400" />}
+                </div>
+              )}
+            </div>
+
+            {/* Delete button (owner or CEO) */}
+            {(isAuthor || isCeoOrCoowner) && (
+              <button
+                onClick={handleDeleteIdea}
+                className="flex items-center gap-1.5 px-3 h-8.5 rounded-lg hover:bg-red-500/10 hover:text-red-400 text-slate-500 text-[12.5px] font-medium transition-all ml-auto"
+              >
+                <Trash2 size={13} />
+                Удалить идею
+              </button>
+            )}
+          </div>
+
+          {/* Comments section */}
+          <div className="space-y-4">
+            <h3 className="text-[14px] font-bold text-white tracking-tight flex items-center gap-2">
+              <MessageSquare size={16} />
+              Обсуждение · {comments.length}
+            </h3>
+
+            {/* Comment input block */}
+            <div className="bg-[#181a2b] border border-white/[0.05] rounded-xl p-3.5 space-y-3 relative">
+              <textarea
+                id="comment-textarea"
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                placeholder="Напишите ваш комментарий… Поддерживается вставка скриншота из буфера (Ctrl+V)"
+                rows={2}
+                className="w-full bg-transparent border-0 outline-none text-[13.5px] placeholder-slate-500 text-white resize-none"
+                disabled={sendingComment}
+              />
+
+              {/* Preview attached screenshot */}
+              {previewUrl && (
+                <div className="relative group w-24 aspect-video rounded-lg border border-white/[0.08] overflow-hidden bg-black/40">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewUrl} alt="Вложение" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={deleteAttachment}
+                    className="absolute top-1 right-1 w-5 h-5 rounded bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+              )}
+
+              {/* Action Buttons inside comment block */}
+              <div className="flex items-center justify-between border-t border-white/[0.04] pt-3">
+                <div className="flex items-center">
+                  <input
+                    type="file"
+                    ref={commentFileRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => commentFileRef.current?.click()}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                      previewUrl ? 'text-violet-400 bg-violet-600/10' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                    }`}
+                    title="Прикрепить изображение"
+                    disabled={sendingComment}
+                  >
+                    <Paperclip size={14} />
+                  </button>
+                </div>
+                <button
+                  onClick={postComment}
+                  disabled={sendingComment || (!commentText.trim() && !attachedFile)}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[12px] px-3.5 h-8.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {sendingComment ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Send size={12} />
+                  )}
+                  Отправить
+                </button>
+              </div>
+            </div>
+
+            {/* Comments List */}
+            {loadingComments ? (
+              <div className="flex items-center justify-center py-6 text-[13px] text-slate-500">
+                <Loader2 size={16} className="animate-spin mr-1.5" />
+                Загрузка комментариев…
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="text-center py-8 border border-dashed border-white/[0.04] rounded-xl text-slate-500 text-[12.5px]">
+                Комментариев пока нет. Будьте первыми!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {comments.map(c => {
+                  const initials = getInitials(c.author?.full_name ?? '')
+                  const color = colorFor(c.author?.full_name ?? '')
+
+                  return (
+                    <div key={c.id} className="flex gap-3 items-start">
+                      <Avatar initials={initials} color={color} size={28} className="shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0 bg-white/[0.01] border border-white/[0.03] rounded-xl p-3.5">
+                        <div className="flex items-baseline justify-between mb-1.5">
+                          <span className="text-[13px] font-bold text-slate-200">
+                            {c.author?.full_name ?? 'Пользователь'}
+                          </span>
+                          <span className="text-[10.5px] text-slate-500 font-mono">
+                            {timeAgo(c.created_at)}
+                          </span>
+                        </div>
+                        <p className="text-[13px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                          {c.content}
+                        </p>
+
+                        {/* Comment Attachment */}
+                        {c.attachments?.length > 0 && (
+                          <div className="mt-3 max-w-[200px] rounded-lg overflow-hidden border border-white/[0.08] bg-black/20">
+                            <a href={c.attachments[0]} target="_blank" rel="noopener noreferrer" className="cursor-zoom-in block aspect-video">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={c.attachments[0]} alt="Скриншот в комментарии" className="w-full h-full object-cover hover:scale-105 transition-all duration-200" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

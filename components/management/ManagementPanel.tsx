@@ -29,7 +29,7 @@ import { colorFor, getInitials } from '@/lib/utils'
 import type { UserRole } from '@/types'
 
 /** Dashboard sections that appear in the permissions matrix. */
-const SECTIONS = ['Дашборд', 'Задачи', 'Проекты', 'База знаний', 'CRM', 'Заказы', 'Финансы', 'Чаты', 'Сервисы']
+const SECTIONS = ['Дашборд', 'Задачи', 'Проекты', 'База знаний', 'Идеи', 'CRM', 'Заказы', 'Финансы', 'Чаты', 'Сервисы']
 
 /** Column headers — role display names used as DB keys. */
 const ROLES_SHORT = ['Дизайн', 'Разработка', 'Продажи', 'Чат/SEO']
@@ -39,10 +39,10 @@ const PERM_TONE: Record<number, 'mute' | 'accent' | 'ok'> = { 0: 'mute', 1: 'acc
 
 /** Default permissions — shown while DB loads and used as seed values in migration 0006. */
 const DEFAULT_PERMS: Record<string, number[]> = {
-  'Дизайн':     [2, 2, 2, 2, 0, 1, 0, 2, 1],
-  'Разработка': [2, 2, 2, 2, 0, 1, 0, 2, 2],
-  'Продажи':    [2, 2, 1, 1, 2, 2, 1, 2, 1],
-  'Чат/SEO':    [2, 2, 1, 2, 1, 1, 0, 2, 2],
+  'Дизайн':     [2, 2, 2, 2, 2, 0, 1, 0, 2, 1],
+  'Разработка': [2, 2, 2, 2, 2, 0, 1, 0, 2, 2],
+  'Продажи':    [2, 2, 1, 1, 2, 2, 2, 1, 2, 1],
+  'Чат/SEO':    [2, 2, 1, 2, 2, 1, 1, 0, 2, 2],
 }
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
