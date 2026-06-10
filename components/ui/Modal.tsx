@@ -69,10 +69,10 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} shadow-2xl overflow-hidden animate-modal-in`}
+        className={`relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-modal-in`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-[16px] font-bold tracking-tight">{title}</h2>
           <button
             onClick={onClose}
@@ -84,11 +84,11 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'max-w-[480
         </div>
 
         {/* Body */}
-        <div className="px-6 py-5">{children}</div>
+        <div className="px-6 py-5 overflow-y-auto min-h-0">{children}</div>
 
         {/* Footer — only rendered when provided */}
         {footer && (
-          <div className="flex gap-3 px-6 py-4 border-t border-line">{footer}</div>
+          <div className="shrink-0 flex gap-3 px-6 py-4 border-t border-line">{footer}</div>
         )}
       </div>
     </div>
