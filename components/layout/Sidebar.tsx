@@ -210,6 +210,11 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
                             CEO
                           </span>
                         )}
+                        {item.key === 'ideas' && (
+                          <span className="px-1.5 py-0.5 rounded border border-[#BFF128]/40 bg-[#BFF128]/10 text-[#BFF128] text-[8.5px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(191,241,40,0.2)]">
+                            Новое
+                          </span>
+                        )}
                         {badge ? (
                           <span
                             className={`min-w-[20px] h-5 px-1.5 rounded-md inline-flex items-center justify-center text-[10.5px] font-bold

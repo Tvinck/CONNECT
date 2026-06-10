@@ -379,7 +379,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
                   handleAddLink()
                 }
               }}
-              className="flex-1 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[12.5px]"
+              className="flex-1 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[12.5px] text-white"
               disabled={saving}
             />
             <button
@@ -444,7 +444,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
                   handleAddTag(tagInput)
                 }
               }}
-              className="flex-1 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[12.5px]"
+              className="flex-1 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[12.5px] text-white"
               disabled={saving}
             />
             <button
