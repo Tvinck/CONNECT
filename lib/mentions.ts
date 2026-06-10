@@ -13,7 +13,7 @@ export async function processMentions(text: string, senderId: string, link: stri
   // Extract all mentions starting with @ followed by word characters or dots
   // e.g. @art.koshelev, @b.boss
   const mentionRegex = /@([a-zA-Z0-9_.]+)/g
-  const matches = [...text.matchAll(mentionRegex)]
+  const matches = Array.from(text.matchAll(mentionRegex))
   
   if (matches.length === 0) return
 
