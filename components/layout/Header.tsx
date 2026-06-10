@@ -184,9 +184,13 @@ export function Header({ title, subtitle }: HeaderProps) {
     setShowNotifs(v => !v)
   }
 
-  const markRead = async (id: string) => {
+  const markRead = async (id: string, link?: string) => {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
     await supabase.from('notifications').update({ is_read: true }).eq('id', id)
+    if (link) {
+      router.push(link)
+      setShowNotifs(false)
+    }
   }
 
   const markAllRead = async () => {
@@ -349,7 +353,7 @@ export function Header({ title, subtitle }: HeaderProps) {
                 )}
                 {!loadingNotifs && notifs.filter(n => n.title).map(n => (
                   <div key={n.id}
-                    onClick={() => markRead(n.id)}
+                    onClick={() => markRead(n.id, n.link)}
                     className={`flex gap-3 px-4 py-3.5 border-b border-line/40 last:border-0 cursor-pointer hover:bg-white/[0.03] transition-all ${n.is_read ? 'opacity-55' : ''}`}
                   >
                     <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-line shrink-0 inline-flex items-center justify-center text-lg mt-0.5">

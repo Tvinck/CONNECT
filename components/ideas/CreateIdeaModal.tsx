@@ -259,7 +259,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
     <Modal
       title="Предложить идею"
       onClose={onClose}
-      maxWidth="max-w-[520px]"
+      maxWidth="w-[95vw] max-w-4xl"
       footer={
         <>
           <Button variant="ghost" className="flex-1" onClick={onClose} disabled={saving}>

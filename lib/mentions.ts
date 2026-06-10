@@ -27,9 +27,8 @@ export async function processMentions(text: string, senderId: string, link: stri
 
   if (usersErr || !users) return
 
-  // Create notifications for each matched user (except the sender themselves)
+  // Create notifications for each matched user
   const notifications = users
-    .filter(u => u.id !== senderId)
     .map(u => ({
       user_id: u.id,
       type: 'info',
@@ -39,7 +38,7 @@ export async function processMentions(text: string, senderId: string, link: stri
     }))
 
   if (notifications.length > 0) {
-    // Note: We use insert. The RLS policy allows authenticated users to insert.
-    await supabase.from('notifications').insert(notifications)
+    const { error } = await supabase.from('notifications').insert(notifications)
+    if (error) console.error('Error inserting mentions:', error)
   }
 }

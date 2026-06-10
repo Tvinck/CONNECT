@@ -159,7 +159,7 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
       <Modal
         title="Детали задачи"
         onClose={onClose}
-        maxWidth="max-w-[700px]"
+        maxWidth="w-[95vw] max-w-5xl"
         footer={
           <div className="flex items-center justify-between w-full">
             {confirmDelete ? (

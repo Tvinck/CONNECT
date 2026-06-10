@@ -331,7 +331,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
     <Modal
       title={isEditingImage ? 'Редактирование скриншота' : 'Новая задача'}
       onClose={onClose}
-      maxWidth={isEditingImage ? 'max-w-[620px]' : 'max-w-[480px]'}
+      maxWidth={isEditingImage ? 'w-[95vw] max-w-5xl' : 'w-[95vw] max-w-4xl'}
       footer={
         isEditingImage ? (
           <div className="flex items-center justify-between w-full">
