@@ -6,8 +6,9 @@ import { createClient } from '@/lib/supabase/client'
  * @param text The text to scan for mentions (e.g. "Hello @art.koshelev")
  * @param senderId The user ID of the person who sent the message/comment
  * @param link The link to the resource where the mention occurred (e.g. "/tasks?task=uuid")
+ * @param context Optional context text, e.g. "в новости" or "в комментарии"
  */
-export async function processMentions(text: string, senderId: string, link: string) {
+export async function processMentions(text: string, senderId: string, link: string, context?: string) {
   const supabase = createClient()
   
   // Extract all mentions starting with @ followed by word characters or dots
@@ -33,7 +34,7 @@ export async function processMentions(text: string, senderId: string, link: stri
       user_id: u.id,
       type: 'info',
       title: `Новое упоминание`,
-      body: `Вас упомянули в комментарии к задаче`,
+      body: `Вас упомянули ${context || 'в комментарии к задаче'}`,
       link: link
     }))
 

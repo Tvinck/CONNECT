@@ -164,3 +164,23 @@ export interface NavItem {
   /** If true, the item is only shown to users with the 'ceo' role. */
   ceo?: boolean
 }
+
+/** Row from the `news` table. */
+export interface News {
+  id: string
+  title: string
+  content: string
+  tags: string[]
+  author_id: string
+  created_at: string
+  updated_at: string
+}
+
+/** Row from the `news_comments` table. */
+export interface NewsComment {
+  id: string
+  news_id: string
+  user_id: string
+  content: string
+  created_at: string
+}

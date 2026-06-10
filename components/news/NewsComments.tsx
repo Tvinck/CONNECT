@@ -25,7 +25,7 @@ interface MentionUser {
   full_name: string
 }
 
-export function TaskComments({ taskId }: { taskId: string }) {
+export function NewsComments({ newsId }: { newsId: string }) {
   const supabase = createClient()
   const { user } = useAuthStore()
   
@@ -50,9 +50,9 @@ export function TaskComments({ taskId }: { taskId: string }) {
     let active = true
     const fetchComments = async () => {
       const { data } = await supabase
-        .from('task_comments')
+        .from('news_comments')
         .select('id, content, created_at, user:users!user_id(id, full_name)')
-        .eq('task_id', taskId)
+        .eq('news_id', newsId)
         .order('created_at', { ascending: true })
       
       if (active && data) {
@@ -62,7 +62,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
     }
     fetchComments()
     return () => { active = false }
-  }, [taskId, supabase])
+  }, [newsId, supabase])
 
   const sendComment = async () => {
     if (!text.trim() || !user) return
@@ -70,9 +70,9 @@ export function TaskComments({ taskId }: { taskId: string }) {
     
     try {
       const { data, error } = await supabase
-        .from('task_comments')
+        .from('news_comments')
         .insert({
-          task_id: taskId,
+          news_id: newsId,
           user_id: user.id,
           content: text.trim()
         })
@@ -84,7 +84,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
         setComments(prev => [...prev, data as unknown as Comment])
         setText('')
         // Process mentions asynchronously
-        processMentions(text.trim(), user.id, `/tasks?task=${taskId}`)
+        processMentions(text.trim(), user.id, `/news/${newsId}`, 'в новости')
       }
     } catch (err) {
       console.error('Failed to send comment', err)
@@ -115,7 +115,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
   }
 
   const insertMention = (tag: string) => {
-    const textarea = document.getElementById('comment-textarea') as HTMLTextAreaElement
+    const textarea = document.getElementById('news-comment-textarea') as HTMLTextAreaElement
     if (!textarea) return
     const cursor = textarea.selectionStart
     const textBefore = text.slice(0, cursor)
@@ -141,22 +141,22 @@ export function TaskComments({ taskId }: { taskId: string }) {
   ).slice(0, 5)
 
   return (
-    <div className="mt-6 border-t border-line pt-5">
-      <h3 className="text-[12.5px] font-bold tracking-tight mb-4">Комментарии</h3>
+    <div className="mt-8 border-t border-line pt-8 max-w-3xl mx-auto">
+      <h3 className="text-lg font-bold tracking-tight mb-6">Комментарии</h3>
       
-      <div className="space-y-4 mb-4 max-h-[240px] overflow-y-auto pr-1">
+      <div className="space-y-5 mb-8">
         {comments.length === 0 ? (
-          <div className="text-[12px] text-mute2 text-center py-2">Нет комментариев. Напишите первым!</div>
+          <div className="text-sm text-mute text-center py-6 bg-card border border-line rounded-2xl">Нет комментариев. Напишите первым!</div>
         ) : (
           comments.map(c => (
-            <div key={c.id} className="flex gap-3">
-              <Avatar initials={getInitials(c.user?.full_name)} color={colorFor(c.user?.full_name || '')} size={32} />
-              <div className="flex-1 min-w-0 bg-bg border border-line rounded-xl px-3.5 py-2.5">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[12px] font-semibold">{c.user?.full_name || 'Пользователь'}</span>
-                  <span className="text-[10px] text-mute">{new Date(c.created_at).toLocaleDateString()} {new Date(c.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            <div key={c.id} className="flex gap-4">
+              <Avatar initials={getInitials(c.user?.full_name)} color={colorFor(c.user?.full_name || '')} size={40} />
+              <div className="flex-1 min-w-0 bg-card border border-line rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-text">{c.user?.full_name || 'Пользователь'}</span>
+                  <span className="text-[11px] font-medium text-mute">{new Date(c.created_at).toLocaleDateString()} {new Date(c.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>
-                <div className="text-[13px] text-slate-700 break-words">
+                <div className="text-sm text-slate-700 break-words">
                   <FormattedText text={c.content} />
                 </div>
               </div>
@@ -165,7 +165,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
         )}
       </div>
 
-      <div className="relative flex gap-2">
+      <div className="relative flex gap-3">
         {showMentions && filteredUsers.length > 0 && (
           <div className="absolute bottom-full left-0 mb-2 w-[240px] bg-card border border-line rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
             {filteredUsers.map((u, i) => (
@@ -181,7 +181,7 @@ export function TaskComments({ taskId }: { taskId: string }) {
           </div>
         )}
         <textarea
-          id="comment-textarea"
+          id="news-comment-textarea"
           value={text}
           onChange={handleTextChange}
           onKeyDown={e => {
@@ -211,12 +211,12 @@ export function TaskComments({ taskId }: { taskId: string }) {
             }
           }}
           placeholder="Написать комментарий (используйте @ для упоминания)..."
-          rows={1}
-          className="field flex-1 resize-none py-2.5"
+          rows={2}
+          className="field flex-1 resize-none py-3 px-4 text-sm bg-card rounded-2xl shadow-sm"
           disabled={sending}
         />
-        <Button onClick={sendComment} disabled={!text.trim() || sending} className="px-4 h-auto shrink-0">
-          {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+        <Button onClick={sendComment} disabled={!text.trim() || sending} className="px-5 h-auto shrink-0 shadow-sm rounded-2xl">
+          {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
         </Button>
       </div>
     </div>

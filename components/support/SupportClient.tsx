@@ -43,11 +43,14 @@ export function SupportClient() {
     // Supabase standard doesn't support GROUP BY easily in JS client, 
     // so we'll fetch all messages sorted by desc and manually group.
     // In production, an RPC or view is better.
-    const { data: msgs, error } = await supabase
+    const msgsResponse = await supabase
       .from('support_messages')
       .select('*, profiles(id, username, telegram_username, telegram_chat_id)')
       .order('created_at', { ascending: false })
       .limit(500)
+    
+    const msgs: any[] = msgsResponse.data || []
+    const error = msgsResponse.error
 
     if (error) {
       console.error('SupportClient fetchChats error:', error)
@@ -99,13 +102,20 @@ export function SupportClient() {
     if (!selectedUser) return
     
     const fetchMsgs = async () => {
+      const { error } = await supabase
+        .from('support_messages')
+        .update({ is_read: true } as any)
+        .eq('user_id', selectedUser.userId)
+        .eq('is_from_user', true)
+        .eq('is_read', false)
+      
       const { data } = await supabase
         .from('support_messages')
         .select('*')
         .eq('user_id', selectedUser.userId)
         .order('created_at', { ascending: true })
       
-      if (data) setMessages(data)
+      if (data) setMessages(data as any[])
     }
     fetchMsgs()
 
@@ -115,9 +125,6 @@ export function SupportClient() {
         setMessages(prev => [...prev, payload.new])
       })
       .subscribe()
-
-    // Mark as read
-    supabase.from('support_messages').update({ is_read: true }).eq('user_id', selectedUser.userId).eq('is_from_user', true).then()
 
     return () => {
       supabase.removeChannel(channel)
@@ -158,13 +165,18 @@ export function SupportClient() {
   const handleSend = async () => {
     if (!text.trim() || !selectedUser) return
     setSending(true)
-    try {
-      await supabase.from('support_messages').insert({
+    const { data, error } = await supabase
+      .from('support_messages')
+      .insert({
         user_id: selectedUser.userId,
         message: text.trim(),
         is_from_user: false,
-        project: selectedUser.project
-      })
+        is_read: true,
+        project: selectedUser.project || 'Veil VPN'
+      } as any)
+      .select()
+      .single()
+    try {
       setText('')
     } finally {
       setSending(false)
