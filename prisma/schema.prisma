@@ -55,6 +55,7 @@ model Task {
   priority    Int
   dueDate     DateTime?
   project     Project @relation(fields: [projectId], references: [id])
+  comments    TaskComment[]
 }
 
 // ---------- Veil VPN models ----------
@@ -99,6 +100,7 @@ model User {
   full_name   String?
   role        String?
   status      String?
+  mention_tag String?  @unique
   created_at  DateTime @default(now())
   // relations
   projects    Project[]
@@ -108,6 +110,8 @@ model User {
   ideas        Idea[]
   ideaVotes    IdeaVote[]
   ideaComments IdeaComment[]
+  taskComments TaskComment[]
+  notifications Notification[]
 }
 
 // ---------- Enums ----------
@@ -168,5 +172,28 @@ model Tag {
   id    String @id @default(uuid())
   name  String @unique
   ideas Idea[] @relation("IdeaToTag")
+}
+
+// ---------- Tasks Comments & Notifications ----------
+model TaskComment {
+  id         String   @id @default(uuid())
+  taskId     String   @map("task_id")
+  userId     String   @map("user_id")
+  content    String
+  created_at DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  type       String
+  title      String
+  body       String?
+  link       String?
+  isRead     Boolean  @map("is_read") @default(false)
+  created_at DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

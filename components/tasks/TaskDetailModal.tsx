@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Tag } from '@/components/ui/Tag'
 import { Avatar } from '@/components/ui/Avatar'
+import { TaskComments } from './TaskComments'
 import { useUIStore } from '@/store/ui'
 import type { TaskRow } from './TasksBoard'
 import type { TaskPriority, TaskStatus } from '@/types'
@@ -46,8 +47,8 @@ const STATUSES: { value: TaskStatus; label: string }[] = [
   { value: 'done',        label: 'Готово'   },
 ]
 
-const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all'
-const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent outline-none text-[13px] transition-all'
+const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const SELECT = 'w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13px] transition-all'
 const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
 export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onDeleted }: Props) {
@@ -219,7 +220,7 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Добавьте описание этой задачи..."
                   rows={4}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none min-h-[120px]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none min-h-[120px]"
                 />
               </div>
 
@@ -227,12 +228,12 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
               {imageUrl && (
                 <div>
                   <label className={LABEL}>Прикрепленный скриншот</label>
-                  <div className="relative group rounded-xl border border-line overflow-hidden bg-black/40 max-h-[200px] flex items-center justify-center">
+                  <div className="relative group rounded-xl border border-line overflow-hidden bg-bg max-h-[160px] flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imageUrl}
                       alt="Вложение к задаче"
-                      className="max-h-[200px] w-full object-contain"
+                      className="max-h-[160px] w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button
@@ -307,7 +308,7 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
                         setNoDueDate(e.target.checked)
                         if (e.target.checked) setDueDate('')
                       }}
-                      className="rounded border-line bg-white/[0.03] text-accent focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
+                      className="rounded border-line bg-bg text-accent focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
                     />
                     Без срока
                   </label>
@@ -321,6 +322,11 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
                   />
                 )}
               </div>
+            </div>
+
+            {/* Bottom: Comments */}
+            <div className="md:col-span-3">
+              <TaskComments taskId={task.id} />
             </div>
 
           </div>

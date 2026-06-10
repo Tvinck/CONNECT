@@ -39,8 +39,8 @@ const PRIORITIES: { value: TaskPriority; label: string }[] = [
   { value: 'urgent', label: 'Срочно'  },
 ]
 
-const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all'
-const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent outline-none text-[13px] transition-all'
+const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const SELECT = 'w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13px] transition-all'
 const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
 export function CreateTaskModal({ projects, users, onClose, onCreated, initialProjectId }: Props) {
@@ -340,7 +340,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                 type="button"
                 onClick={undo}
                 disabled={historyIndex <= 0}
-                className="w-8 h-8 rounded-lg bg-white/[0.04] border border-line flex items-center justify-center hover:bg-white/[0.08] hover:text-white text-mute transition-all disabled:opacity-35 disabled:cursor-not-allowed"
+                className="w-8 h-8 rounded-lg bg-bg border border-line flex items-center justify-center hover:bg-line/60 hover:text-[#171821] text-mute transition-all disabled:opacity-35 disabled:cursor-not-allowed"
                 title="Шаг назад"
               >
                 <Undo size={14} />
@@ -348,7 +348,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
               <button
                 type="button"
                 onClick={clearCanvas}
-                className="px-2.5 h-8 rounded-lg bg-white/[0.04] border border-line text-[11.5px] font-semibold hover:bg-white/[0.08] hover:text-white text-mute transition-all"
+                className="px-2.5 h-8 rounded-lg bg-bg border border-line text-[11.5px] font-semibold hover:bg-line/60 hover:text-[#171821] text-mute transition-all"
               >
                 Очистить
               </button>
@@ -375,14 +375,14 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
       {isEditingImage ? (
         // ─── Paint Graphic Editor View ──────────────────────────────────
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between bg-white/[0.02] border border-line p-2 rounded-xl">
+          <div className="flex items-center justify-between bg-bg border border-line p-2 rounded-xl">
             {/* Draw Tools */}
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setTool('pen')}
                 className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                  tool === 'pen' ? 'bg-accent text-white' : 'text-mute hover:bg-white/[0.04]'
+                  tool === 'pen' ? 'bg-accent text-white' : 'text-mute hover:bg-line/60'
                 }`}
                 title="Рисовать кистью"
               >
@@ -392,7 +392,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                 type="button"
                 onClick={() => setTool('text')}
                 className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                  tool === 'text' ? 'bg-accent text-white' : 'text-mute hover:bg-white/[0.04]'
+                  tool === 'text' ? 'bg-accent text-white' : 'text-mute hover:bg-line/60'
                 }`}
                 title="Добавить текст (кликните на холст)"
               >
@@ -446,14 +446,14 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
             <label className={LABEL}>Описание</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)}
               placeholder="Подробности…" rows={3}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none" />
+              className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none" />
           </div>
 
           {/* Attachment Selector & Preview */}
           <div>
             <label className={LABEL}>Скриншот / Макет</label>
             {previewUrl ? (
-              <div className="flex items-center gap-3 p-3 rounded-xl border border-line bg-white/[0.02]">
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-line bg-bg">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={previewUrl} alt="Вложение" className="w-12 h-12 object-cover rounded-lg border border-line" />
                 <div className="flex-1 min-w-0">
@@ -463,7 +463,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                 <button
                   type="button"
                   onClick={() => setIsEditingImage(true)}
-                  className="px-2.5 h-7 rounded-lg border border-line text-[11.5px] font-semibold text-mute hover:text-white hover:bg-white/[0.04] transition-all"
+                  className="px-2.5 h-7 rounded-lg border border-line text-[11.5px] font-semibold text-mute hover:text-[#171821] hover:bg-line/60 transition-all"
                 >
                   Править
                 </button>
@@ -487,7 +487,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3.5 h-10 rounded-xl border border-line bg-white/[0.02] hover:bg-white/[0.04] text-[13px] text-mute hover:text-white transition-all w-full justify-center border-dashed"
+                  className="flex items-center gap-1.5 px-3.5 h-10 rounded-xl border border-line bg-bg hover:bg-line/60 text-[13px] text-mute hover:text-[#171821] transition-all w-full justify-center border-dashed"
                 >
                   <ImageIcon size={14} /> Прикрепить изображение или вставить (Ctrl+V)
                 </button>
@@ -513,7 +513,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                       setNoDueDate(e.target.checked)
                       if (e.target.checked) setDueDate('')
                     }}
-                    className="rounded border-line bg-white/[0.03] text-accent focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
+                    className="rounded border-line bg-bg text-accent focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5"
                   />
                   Без срока
                 </label>

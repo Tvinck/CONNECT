@@ -19,9 +19,9 @@ interface Props {
   onCreated: (idea: Idea) => void
 }
 
-const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[13.5px] text-white placeholder-slate-500 transition-all'
-const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[13.5px] text-white transition-all cursor-pointer'
-const LABEL = 'block text-[11px] uppercase tracking-[0.1em] text-slate-400 font-semibold mb-2'
+const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const SELECT = 'w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] transition-all cursor-pointer'
+const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
 export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCreated }: Props) {
   const supabase = createClient()
@@ -276,7 +276,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
         </>
       }
     >
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1 text-white">
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
         {/* Title */}
         <div>
           <label className={LABEL}>Заголовок идеи *</label>
@@ -298,7 +298,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
             onChange={e => setDescription(e.target.value)}
             placeholder="Подробно опишите суть идеи, какую проблему она решает и как она должна работать…"
             rows={4}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[13.5px] placeholder:text-slate-500 transition-all resize-none text-white"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[13.5px] placeholder:text-mute2 transition-all resize-none"
             disabled={saving}
           />
         </div>
@@ -379,13 +379,13 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
                   handleAddLink()
                 }
               }}
-              className="flex-1 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[12.5px] text-white"
+              className="flex-1 h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[12.5px]"
               disabled={saving}
             />
             <button
               type="button"
               onClick={handleAddLink}
-              className="px-3 h-9 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] text-[12px] flex items-center justify-center"
+              className="px-3 h-9 rounded-xl border border-line bg-bg hover:bg-line/50 text-[12px] flex items-center justify-center font-medium"
             >
               Добавить
             </button>
@@ -444,13 +444,13 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
                   handleAddTag(tagInput)
                 }
               }}
-              className="flex-1 h-9 px-3 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-indigo-500 outline-none text-[12.5px] text-white"
+              className="flex-1 h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent outline-none text-[12.5px]"
               disabled={saving}
             />
             <button
               type="button"
               onClick={() => handleAddTag(tagInput)}
-              className="px-3 h-9 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] text-[12px]"
+              className="px-3 h-9 rounded-xl border border-line bg-bg hover:bg-line/50 text-[12px] text-mute hover:text-[#171821] transition-colors"
             >
               <Plus size={14} />
             </button>
