@@ -42,11 +42,18 @@ export function SupportClient() {
     // Supabase standard doesn't support GROUP BY easily in JS client, 
     // so we'll fetch all messages sorted by desc and manually group.
     // In production, an RPC or view is better.
-    const { data: msgs } = await supabase
+    const { data: msgs, error } = await supabase
       .from('support_messages')
       .select('*, profiles(id, username, telegram_username, telegram_chat_id)')
       .order('created_at', { ascending: false })
       .limit(500)
+
+    if (error) {
+      console.error('SupportClient fetchChats error:', error)
+      setDebugText(`Error: ${error.message}`)
+    } else {
+      setDebugText(`Msgs fetched: ${msgs?.length || 0}`)
+    }
 
     if (msgs) {
       const map = new Map()
@@ -188,7 +195,10 @@ export function SupportClient() {
           {loading ? (
             <div className="flex items-center justify-center h-full text-[#5A5D7F]"><Loader2 className="animate-spin" size={20} /></div>
           ) : chats.length === 0 ? (
-            <div className="p-4 text-center text-[12px] text-[#5A5D7F]">Нет сообщений</div>
+            <div className="p-4 text-center text-[12px] text-[#5A5D7F]">
+              Нет сообщений <br/>
+              <span className="text-[10px] text-red-500">{debugText}</span>
+            </div>
           ) : (
             chats.map(chat => {
               const isActive = selectedUser?.userId === chat.userId

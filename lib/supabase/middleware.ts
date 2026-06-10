@@ -3,6 +3,17 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/forgot-password']
 
+/**
+ * Обновляет и проверяет сессию пользователя (Supabase Auth).
+ * 
+ * Если пользователь не авторизован и пытается получить доступ к закрытой странице,
+ * он будет перенаправлен на страницу входа (/login).
+ * Если авторизованный пользователь пытается зайти на страницу входа,
+ * он будет перенаправлен в панель управления (/dashboard).
+ * 
+ * @param {NextRequest} request - Входящий HTTP-запрос.
+ * @returns {Promise<NextResponse>} HTTP-ответ с обновленными cookie или редирект.
+ */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } })
 

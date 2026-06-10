@@ -5,6 +5,16 @@ import { AuthProvider } from '@/components/providers/AuthProvider'
 import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow'
 import { getCurrentProfile } from '@/lib/auth'
 
+/**
+ * DashboardLayout
+ * 
+ * Главный макет (layout) для защищенной части приложения (dashboard).
+ * Выполняет проверку авторизации на стороне сервера.
+ * 
+ * @param {object} props - Свойства компонента.
+ * @param {React.ReactNode} props.children - Дочерние элементы (содержимое страницы).
+ * @returns {JSX.Element} Обертка приложения с боковым меню, тостами и проверкой онбординга.
+ */
 export default async function DashboardLayout({
   children,
 }: {
