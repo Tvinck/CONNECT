@@ -52,29 +52,29 @@ export function ToastHost() {
             key={t.id}
             role={t.tone === 'err' ? 'alert' : 'status'}
             aria-live={t.tone === 'err' ? 'assertive' : 'polite'}
-            className={`pointer-events-auto animate-toast-in relative flex items-start gap-3 pl-5 pr-4 py-3.5 rounded-2xl bg-card/95 backdrop-blur-xl border ${cfg.border} shadow-[0_12px_36px_rgba(0,0,0,0.08)] min-w-[320px] max-w-[420px] overflow-hidden`}
+            className={`pointer-events-auto animate-toast-in relative flex items-start gap-3 pl-5 pr-4 py-3.5 rounded-2xl bg-white border border-[#E8E9F3] shadow-[0_8px_30px_rgba(0,0,0,0.12)] min-w-[320px] max-w-[420px] overflow-hidden`}
           >
             {/* Left accent bar */}
-            <div className={`absolute left-0 top-0 bottom-0 w-1 ${cfg.accentBar}`} />
+            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${cfg.accentBar}`} />
 
             {/* Tone icon container */}
-            <div className={`w-7 h-7 rounded-lg ${cfg.bg} ${cfg.text} inline-flex items-center justify-center shrink-0`}>
-              <Icon size={15} />
+            <div className={`w-8 h-8 rounded-full ${cfg.bg} ${cfg.text} inline-flex items-center justify-center shrink-0`}>
+              <Icon size={16} />
             </div>
 
             {/* Text content */}
-            <div className="flex-1 min-w-0 pr-2">
-              <div className="text-[13px] font-bold tracking-tight text-text">{t.title}</div>
-              {t.desc && <div className="text-[11.5px] text-mute mt-0.5 leading-snug">{t.desc}</div>}
+            <div className="flex-1 min-w-0 pr-2 pt-0.5">
+              <div className="text-[14px] font-bold tracking-tight text-[#171821]">{t.title}</div>
+              {t.desc && <div className="text-[12.5px] text-[#6b7280] mt-0.5 leading-snug">{t.desc}</div>}
             </div>
 
             {/* Manual dismiss button */}
             <button
               onClick={() => removeToast(t.id)}
-              className="text-mute hover:text-text w-5 h-5 rounded-lg hover:bg-white/[0.04] inline-flex items-center justify-center shrink-0 transition-colors"
-              aria-label="Dismiss"
+              className="text-[#9ca3af] hover:text-[#171821] w-6 h-6 rounded-lg hover:bg-gray-100 inline-flex items-center justify-center shrink-0 transition-colors mt-0.5"
+              aria-label="Закрыть"
             >
-              <X size={13} />
+              <X size={14} />
             </button>
           </div>
         )

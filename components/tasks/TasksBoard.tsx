@@ -13,7 +13,8 @@
 
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Plus, Calendar, User2 } from 'lucide-react'
 import {
   DndContext,
@@ -117,6 +118,36 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
   const [selectedTask,  setSelectedTask]  = useState<TaskRow | null>(null)
   const supabase  = createClient()
   const addToast  = useUIStore(s => s.addToast)
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  useEffect(() => {
+    const taskId = searchParams.get('task')
+    if (taskId && !selectedTask) {
+      const task = tasks.find(t => t.id === taskId)
+      if (task) {
+        setSelectedTask(task)
+        const url = new URL(window.location.href)
+        url.searchParams.delete('task')
+        window.history.replaceState({}, '', url)
+      } else {
+        supabase
+          .from('tasks')
+          .select('id, title, priority, status, due_date, project:projects(id, name, color, emoji), assignee:users!assignee_id(id, full_name)')
+          .eq('id', taskId)
+          .single()
+          .then(({ data }) => {
+            if (data) {
+              setSelectedTask(data as unknown as TaskRow)
+              const url = new URL(window.location.href)
+              url.searchParams.delete('task')
+              window.history.replaceState({}, '', url)
+            }
+          })
+      }
+    }
+  }, [searchParams, tasks, selectedTask, supabase])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
