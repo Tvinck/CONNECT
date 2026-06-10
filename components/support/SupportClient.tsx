@@ -44,7 +44,7 @@ export function SupportClient() {
     // In production, an RPC or view is better.
     const { data: msgs } = await supabase
       .from('support_messages')
-      .select('*, profiles(id, full_name, telegram_username, telegram_chat_id)')
+      .select('*, profiles(id, username, telegram_username, telegram_chat_id)')
       .order('created_at', { ascending: false })
       .limit(500)
 
@@ -192,7 +192,7 @@ export function SupportClient() {
           ) : (
             chats.map(chat => {
               const isActive = selectedUser?.userId === chat.userId
-              const name = chat.profile?.full_name || chat.profile?.telegram_username || 'Неизвестный'
+              const name = chat.profile?.username || chat.profile?.telegram_username || 'Неизвестный'
               return (
                 <div 
                   key={chat.userId} 
@@ -238,12 +238,12 @@ export function SupportClient() {
             <div className="h-[60px] border-b border-white/[0.04] flex items-center px-6 justify-between bg-white/[0.01]">
               <div className="flex items-center gap-3">
                 <Avatar 
-                  initials={getInitials(selectedUser.profile?.full_name || selectedUser.profile?.telegram_username)} 
-                  color={colorFor(selectedUser.profile?.full_name || selectedUser.profile?.telegram_username)} 
+                  initials={getInitials(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
+                  color={colorFor(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
                   size={32} 
                 />
                 <div>
-                  <h3 className="text-[14px] font-bold">{selectedUser.profile?.full_name || selectedUser.profile?.telegram_username || 'Неизвестный'}</h3>
+                  <h3 className="text-[14px] font-bold">{selectedUser.profile?.username || selectedUser.profile?.telegram_username || 'Неизвестный'}</h3>
                   <p className="text-[11px] text-[#5A5D7F]">Проект: <span className="text-white">{selectedUser.project}</span></p>
                 </div>
               </div>
@@ -305,13 +305,13 @@ export function SupportClient() {
             {/* Header */}
             <div className="text-center">
               <Avatar 
-                initials={getInitials(selectedUser.profile?.full_name || selectedUser.profile?.telegram_username)} 
-                color={colorFor(selectedUser.profile?.full_name || selectedUser.profile?.telegram_username)} 
+                initials={getInitials(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
+                color={colorFor(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
                 size={80} 
                 className="mx-auto mb-3"
               />
               <h2 className="text-[16px] font-bold text-white mb-1">
-                {selectedUser.profile?.full_name || selectedUser.profile?.telegram_username || 'Неизвестный'}
+                {selectedUser.profile?.username || selectedUser.profile?.telegram_username || 'Неизвестный'}
               </h2>
               {selectedUser.profile?.telegram_username && (
                 <p className="text-[13px] text-[#BFF128] font-medium">@{selectedUser.profile.telegram_username}</p>
