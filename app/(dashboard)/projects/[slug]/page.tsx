@@ -8,7 +8,6 @@ import {
 } from '@/components/projects/ProjectDetail'
 import { getCurrentProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createVeilClient } from '@supabase/supabase-js'
 import type { TaskRow } from '@/components/tasks/TasksBoard'
 import type { TxRow } from '@/components/finance/FinancesClient'
 
@@ -87,22 +86,14 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   let vpnReferrals = null
 
   if (params.slug === 'veil' || params.slug === 'veil-vpn') {
-    // Инициализация внешнего клиента базы данных Veil VPN
-    const veilSupabase = createVeilClient(
-      process.env.NEXT_PUBLIC_VEIL_SUPABASE_URL || 'https://hvsexqyieibkspnnvigd.supabase.co',
-      process.env.NEXT_PUBLIC_VEIL_SUPABASE_ANON_KEY || ''
-    )
-
     const [
       { data: servers },
       { data: subs },
-      { data: ords },
-      { data: refs }
+      { data: ords }
     ] = await Promise.all([
-      veilSupabase.from('vpn_servers').select('*').order('name'),
-      veilSupabase.from('subscriptions').select('*, profiles:user_id(*)').order('created_at', { ascending: false }),
-      veilSupabase.from('orders').select('*, profiles:user_id(*)').order('created_at', { ascending: false }),
-      veilSupabase.from('referrals').select('*, referrer:profiles!referrer_id(username), referred:profiles!referred_id(username)').order('created_at', { ascending: false })
+      supabase.from('vpn_servers').select('*').order('name'),
+      supabase.from('vpn_subscriptions').select('*').order('created_at', { ascending: false }),
+      supabase.from('vpn_orders').select('*').order('created_at', { ascending: false })
     ])
     
     vpnServers = servers
@@ -110,23 +101,23 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     // Форматирование и сопоставление сущностей пользователей и подписок из внешней базы
     vpnSubscriptions = (subs ?? []).map((s: any) => ({
       id: s.id,
-      user_id: s.user_id,
-      username: s.profiles?.username || 'Без имени',
-      telegram_username: s.profiles?.telegram_username || '',
+      user_id: s.id, // Fallback since user_id no longer exists
+      username: s.username || 'Без имени',
+      telegram_username: s.telegram_username || '',
       status: s.status,
       expires_at: s.expires_at,
-      traffic_used: Number(s.traffic_used),
+      traffic_used: Number(s.traffic_used || 0),
       traffic_limit: s.traffic_limit,
       subscription_key: s.subscription_key,
       token: s.token,
-      tg_bot_linked: s.profiles?.tg_bot_linked || false,
-      tg_channel_subscribed: s.profiles?.tg_channel_subscribed || false
+      tg_bot_linked: false, // Not in schema currently
+      tg_channel_subscribed: false // Not in schema currently
     }))
     
     // Форматирование финансовых транзакций клиентов
     vpnOrders = (ords ?? []).map((o: any) => ({
       id: o.id,
-      username: o.profiles?.username || 'Без имени',
+      username: o.username || 'Без имени',
       amount: o.amount,
       currency: o.currency,
       status: o.status,
@@ -134,15 +125,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       created_at: o.created_at
     }))
 
-    // Сопоставление участников реферальной сети
-    vpnReferrals = (refs ?? []).map((r: any) => ({
-      id: r.id,
-      referrer_username: r.referrer?.username || 'Аноним',
-      referred_username: r.referred?.username || 'Аноним',
-      status: r.status,
-      bonus_days: r.bonus_days,
-      created_at: r.created_at
-    }))
+    // Сопоставление участников реферальной сети (отключено, так как нет в новой БД)
+    vpnReferrals = []
   }
 
   return (
