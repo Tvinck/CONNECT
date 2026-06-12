@@ -44,7 +44,7 @@ export function SupportClient() {
     // In production, an RPC or view is better.
     const msgsResponse = await supabase
       .from('support_messages')
-      .select('*, profiles(id, username, telegram_username, telegram_chat_id)')
+      .select('*, vpn_subscriptions(id, username, telegram_username)')
       .order('created_at', { ascending: false })
       .limit(500)
     
@@ -64,7 +64,7 @@ export function SupportClient() {
         if (!map.has(m.user_id)) {
           map.set(m.user_id, {
             userId: m.user_id,
-            profile: m.profiles,
+            profile: m.vpn_subscriptions,
             lastMessage: m.message,
             time: m.created_at,
             isRead: m.is_read || m.is_from_user === false,
@@ -90,6 +90,7 @@ export function SupportClient() {
     return () => {
       supabase.removeChannel(channel)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   /**
@@ -128,6 +129,7 @@ export function SupportClient() {
     return () => {
       supabase.removeChannel(channel)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUser])
 
   /**

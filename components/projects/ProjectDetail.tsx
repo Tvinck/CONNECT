@@ -234,6 +234,7 @@ export function ProjectDetail({
       isMounted = false
       clearInterval(interval)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   /**
