@@ -18,7 +18,7 @@
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
-  ArrowLeft, Pencil, Plus, Trash2, ExternalLink, Link2, Loader2, User2,
+  ArrowLeft, Pencil, Plus, Trash2, ExternalLink, Link2, Loader2, User2, Settings,
   Server, Activity, Users, CreditCard, Globe, Search, Copy, Check, Info, Calendar, Key, AlertCircle, Gift
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -158,6 +158,7 @@ import { EditProjectModal } from './EditProjectModal';
 import { AddMemberModal } from './AddMemberModal';
 import { AddLinkModal } from './AddLinkModal';
 import { CreateVpnSubModal } from './CreateVpnSubModal';
+import { ManageVpnSubModal } from './ManageVpnSubModal';
 
 // ─── main component ───────────────────────────────────────────────────────────
 
@@ -194,6 +195,7 @@ export function ProjectDetail({
   const [vpnOrders, setVpnOrders] = useState<any[]>(initialVpnOrders ?? [])
   const [vpnReferrals, setVpnReferrals] = useState<any[]>(initialVpnReferrals ?? [])
   const [showCreateVpnSub, setShowCreateVpnSub] = useState(false)
+  const [managingSub, setManagingSub] = useState<any | null>(null)
 
   const [showAddTx,      setShowAddTx]      = useState(false)
   const [showEdit,       setShowEdit]       = useState(false)
@@ -352,6 +354,17 @@ export function ProjectDetail({
           onClose={() => setShowCreateVpnSub(false)}
           onSuccess={(newSub) => {
             setVpnSubs([newSub, ...vpnSubs])
+          }}
+        />
+      )}
+      {managingSub && (
+        <ManageVpnSubModal
+          sub={managingSub}
+          allSubs={vpnSubs}
+          allOrders={vpnOrders}
+          onClose={() => setManagingSub(null)}
+          onUpdate={(updated) => {
+            setVpnSubs(prev => prev.map(s => s.id === updated.id ? updated : s))
           }}
         />
       )}
@@ -748,6 +761,9 @@ export function ProjectDetail({
                               +30д
                             </Button>
                           )}
+                          <button onClick={() => setManagingSub(s)} className="w-7 h-7 rounded-lg hover:bg-white/[0.05] text-mute hover:text-white transition-all inline-flex items-center justify-center">
+                            <Settings size={14} />
+                          </button>
                           <button onClick={() => deleteVpnSub(s)} className="w-7 h-7 rounded-lg hover:bg-err/10 text-mute hover:text-err transition-all inline-flex items-center justify-center">
                             <Trash2 size={13} />
                           </button>
