@@ -1,14 +1,9 @@
 import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { createClient as createVeilClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
 import { v4 as uuidv4 } from 'uuid'
-
-const veilSupabase = createVeilClient(
-  process.env.NEXT_PUBLIC_VEIL_SUPABASE_URL || 'https://hvsexqyieibkspnnvigd.supabase.co',
-  process.env.NEXT_PUBLIC_VEIL_SUPABASE_ANON_KEY || ''
-)
 
 interface Props {
   onClose: () => void
@@ -20,6 +15,7 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
   const [telegram, setTelegram] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const addToast = useUIStore(s => s.addToast)
+  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,7 +28,7 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
     setIsSubmitting(true)
     try {
       // 1. Создаем профиль
-      const { data: profile, error: profileErr } = await veilSupabase
+      const { data: profile, error: profileErr } = await supabase
         .from('profiles')
         .insert({
           id: uuidv4(),
@@ -51,8 +47,8 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
       const expires = new Date()
       expires.setMonth(expires.getMonth() + 1)
 
-      const { data: sub, error: subErr } = await veilSupabase
-        .from('subscriptions')
+      const { data: sub, error: subErr } = await supabase
+        .from('vpn_subscriptions')
         .insert({
           user_id: profile.id,
           token: token,

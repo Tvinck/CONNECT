@@ -29,17 +29,11 @@ import { Progress } from '@/components/ui/Progress'
 import { CreateTaskModal } from '@/components/tasks/CreateTaskModal'
 import { TaskDetailModal } from '@/components/tasks/TaskDetailModal'
 import { createClient } from '@/lib/supabase/client'
-import { createClient as createVeilClient } from '@supabase/supabase-js'
 import { useUIStore } from '@/store/ui'
 import { getInitials, colorFor, dueLabel, PRIORITY_COLOR } from '@/lib/utils'
 import { Finances } from './ProjectDetail/Finances'
 import { Links } from './ProjectDetail/Links'
 import { Team } from './ProjectDetail/Team'
-
-const veilSupabase = createVeilClient(
-  process.env.NEXT_PUBLIC_VEIL_SUPABASE_URL || 'https://hvsexqyieibkspnnvigd.supabase.co',
-  process.env.NEXT_PUBLIC_VEIL_SUPABASE_ANON_KEY || ''
-)
 import type { TaskRow } from '@/components/tasks/TasksBoard'
 import { AddTransactionModal, TX_CATEGORIES, type TxRow } from '@/components/finance/FinancesClient'
 import type { ProjectStatus, TaskStatus } from '@/types'
@@ -225,8 +219,7 @@ export function ProjectDetail({
     const mockPing = Math.floor(Math.random() * 80) + 5
     const mockLoad = Math.floor(Math.random() * 60) + 10
     
-    const client = isVpn ? veilSupabase : supabase
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('vpn_servers')
       .insert({ name: srvName.trim(), country_code: srvCountry, ip_address: srvIp.trim() || '127.0.0.1', ping_ms: mockPing, load_percentage: mockLoad })
       .select()
@@ -248,8 +241,7 @@ export function ProjectDetail({
    * @param id Уникальный ID сервера в базе данных
    */
   const deleteVpnServer = async (id: string) => {
-    const client = isVpn ? veilSupabase : supabase
-    const { error } = await client.from('vpn_servers').delete().eq('id', id)
+    const { error } = await supabase.from('vpn_servers').delete().eq('id', id)
     if (error) { addToast('Ошибка', 'Не удалось удалить сервер', 'err'); return }
     setVpnServers(prev => prev.filter(s => s.id !== id))
     addToast('Успешно', 'Сервер удален из базы данных', 'ok')
@@ -263,7 +255,7 @@ export function ProjectDetail({
   const deleteVpnSub = async (sub: any) => {
     if (isVpn) {
       // Каскадное удаление со стороны profiles
-      const { error } = await veilSupabase.from('profiles').delete().eq('id', sub.user_id)
+      const { error } = await supabase.from('profiles').delete().eq('id', sub.user_id)
       if (error) { addToast('Ошибка', 'Не удалось удалить пользователя', 'err'); return }
       setVpnSubs(prev => prev.filter(s => s.id !== sub.id))
       addToast('Успешно', 'Пользователь и его подписка удалены из базы данных', 'ok')
@@ -287,11 +279,8 @@ export function ProjectDetail({
       const baseDate = currentExpiry.getTime() > new Date().getTime() ? currentExpiry : new Date()
       const newExpiry = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-      const client = isVpn ? veilSupabase : supabase
-      const tableName = isVpn ? 'subscriptions' : 'vpn_subscriptions'
-
-      const { error } = await client
-        .from(tableName)
+      const { error } = await supabase
+        .from('vpn_subscriptions')
         .update({ 
           expires_at: newExpiry.toISOString(),
           status: 'active'
