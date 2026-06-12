@@ -47,7 +47,6 @@ const NAV_GROUPS = [
     label: 'Бизнес',
     items: [
       { key: 'finances', label: 'Финансы',      href: '/finances',  icon: Wallet },
-      { key: 'pm',       label: 'ПодариМомент', href: '/pm',        icon: Gift },
       { key: 'crm',      label: 'CRM',          href: '/crm',       icon: Users },
       { key: 'services', label: 'Сервисы',      href: '/services',  icon: LayoutGrid },
       { key: 'shop',     label: 'Магазин',      href: '/shop',      icon: ShoppingBag },
