@@ -16,6 +16,7 @@
 'use client'
 
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
@@ -224,28 +225,34 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
                         key={item.key}
                         href={item.href}
                         onClick={() => setSidebarOpen(false)}
-                        className={`nav-item w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13px] font-semibold tracking-tight transition-all duration-150
-                          ${isActive 
-                            ? 'bg-[#BFF128] text-black font-extrabold shadow-[0_2px_8px_rgba(191,241,40,0.12)]' 
-                            : 'text-[#8E92BC] hover:text-white hover:bg-white/[0.03]'}`}
+                        className="relative nav-item w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13px] font-semibold tracking-tight transition-all duration-150 group"
                       >
-                        <span className={isActive ? 'text-black' : isCeoOnly ? 'text-gold' : ''}>
+                        {isActive && (
+                          <motion.div
+                            layoutId="active-sidebar-nav"
+                            className="absolute inset-0 bg-[#BFF128] rounded-[12px] shadow-[0_2px_8px_rgba(191,241,40,0.12)]"
+                            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                          />
+                        )}
+                        <span className={`relative z-10 ${isActive ? 'text-black font-extrabold' : isCeoOnly ? 'text-gold' : 'text-[#8E92BC] group-hover:text-white'}`}>
                           <Icon size={17} />
                         </span>
-                        <span className="flex-1 text-left">{item.label}</span>
+                        <span className={`relative z-10 flex-1 text-left ${isActive ? 'text-black font-extrabold' : 'text-[#8E92BC] group-hover:text-white'}`}>
+                          {item.label}
+                        </span>
                         {isCeoOnly && !isActive && (
-                          <span className="text-[9px] text-gold/70 font-mono uppercase tracking-wider">
+                          <span className="relative z-10 text-[9px] text-gold/70 font-mono uppercase tracking-wider">
                             CEO
                           </span>
                         )}
                         {item.key === 'ideas' && (
-                          <span className="px-1.5 py-0.5 rounded border border-[#BFF128]/40 bg-[#BFF128]/10 text-[#BFF128] text-[8.5px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(191,241,40,0.2)]">
+                          <span className="relative z-10 px-1.5 py-0.5 rounded border border-[#BFF128]/40 bg-[#BFF128]/10 text-[#BFF128] text-[8.5px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(191,241,40,0.2)]">
                             Новое
                           </span>
                         )}
                         {badge ? (
                           <span
-                            className={`min-w-[20px] h-5 px-1.5 rounded-md inline-flex items-center justify-center text-[10.5px] font-bold
+                            className={`relative z-10 min-w-[20px] h-5 px-1.5 rounded-md inline-flex items-center justify-center text-[10.5px] font-bold
                                ${isActive ? 'bg-black/10 text-black' : 'bg-white/[0.06] text-[#8E92BC]'}`}
                           >
                             {badge}
@@ -323,33 +330,41 @@ function RoleSwitcher({
         </span>
         <ChevronDown size={12} className="ml-auto text-[#8E92BC]" />
       </button>
-      {open && (
-        <div className="absolute z-50 top-full left-0 right-0 mt-1.5 py-1.5 rounded-lg bg-[#1C1D2A] border border-white/[0.08] shadow-2xl">
-          {ROLES.map((r) => (
-            <button
-              key={r.id}
-              onClick={() => {
-                onRoleChange(r.id as UserRole)
-                setOpen(false)
-              }}
-              className={`w-full flex items-center gap-2 px-3 h-8 text-[12.5px] text-left hover:bg-white/[0.04] transition-colors
-                ${role === r.id ? 'text-white' : 'text-[#8E92BC]'}`}
-            >
-              <span>{r.emoji}</span>
-              <span
-                className="flex-1 font-medium"
-                style={{ color: role === r.id ? r.color : undefined }}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute z-50 top-full left-0 right-0 mt-1.5 py-1.5 rounded-lg bg-[#1C1D2A] border border-white/[0.08] shadow-2xl origin-top"
+          >
+            {ROLES.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => {
+                  onRoleChange(r.id as UserRole)
+                  setOpen(false)
+                }}
+                className={`w-full flex items-center gap-2 px-3 h-8 text-[12.5px] text-left hover:bg-white/[0.04] transition-colors
+                  ${role === r.id ? 'text-white' : 'text-[#8E92BC]'}`}
               >
-                {r.label}
-              </span>
-              {role === r.id && <Check size={12} className="text-[#BFF128]" />}
-            </button>
-          ))}
-          <div className="border-t border-white/[0.04] mt-1.5 pt-1.5 px-3 text-[10.5px] text-[#5A5D7F]">
-            Для демонстрации UI разных ролей
-          </div>
-        </div>
-      )}
+                <span>{r.emoji}</span>
+                <span
+                  className="flex-1 font-medium"
+                  style={{ color: role === r.id ? r.color : undefined }}
+                >
+                  {r.label}
+                </span>
+                {role === r.id && <Check size={12} className="text-[#BFF128]" />}
+              </button>
+            ))}
+            <div className="border-t border-white/[0.04] mt-1.5 pt-1.5 px-3 text-[10.5px] text-[#5A5D7F]">
+              Для демонстрации UI разных ролей
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

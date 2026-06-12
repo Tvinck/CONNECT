@@ -5,12 +5,30 @@ import Link from 'next/link'
 import { Logomark } from '@/components/ui/Logomark'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, ArrowLeft } from 'lucide-react'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 
 export default function ForgotPasswordPage() {
   const [supabase] = useState(() => createClient())
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  // Mouse coordinates tracking for parallax background blobs
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const springX = useSpring(x, { stiffness: 60, damping: 22 })
+  const springY = useSpring(y, { stiffness: 60, damping: 22 })
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (typeof window === 'undefined') return
+    const moveX = (e.clientX - window.innerWidth / 2) / 30
+    const moveY = (e.clientY - window.innerHeight / 2) / 30
+    x.set(moveX)
+    y.set(moveY)
+  }
+
+  const reverseSpringX = useTransform(springX, (val) => -val)
+  const reverseSpringY = useTransform(springY, (val) => -val)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,14 +43,26 @@ export default function ForgotPasswordPage() {
 
   return (
     <div
+      onMouseMove={handleMouseMove}
       className="min-h-screen w-full flex items-center justify-center p-8 relative overflow-hidden text-white"
       style={{ background: 'radial-gradient(1200px 600px at 50% 50%, #1A2148 0%, #0A0E27 60%, #060926 100%)' }}
     >
-      <div className="blob" style={{ width: 480, height: 480, background: '#1472F5', top: -100, right: -100, opacity: 0.45 }} />
-      <div className="blob" style={{ width: 380, height: 380, background: '#00C2FF', bottom: -100, left: -100, opacity: 0.3 }} />
+      <motion.div 
+        className="blob pointer-events-none" 
+        style={{ x: springX, y: springY, width: 480, height: 480, background: '#1472F5', top: -100, right: -100, opacity: 0.45 }} 
+      />
+      <motion.div 
+        className="blob pointer-events-none" 
+        style={{ x: reverseSpringX, y: reverseSpringY, width: 380, height: 380, background: '#00C2FF', bottom: -100, left: -100, opacity: 0.3 }} 
+      />
 
       <div className="w-full max-w-[420px] relative z-10">
-        <div className="glass rounded-2xl p-8">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+          className="glass rounded-2xl p-8"
+        >
           <div className="mb-6">
             <Logomark />
           </div>
@@ -87,7 +117,7 @@ export default function ForgotPasswordPage() {
               <ArrowLeft size={14} /> Вернуться ко входу
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

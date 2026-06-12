@@ -5,6 +5,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
 import { NotificationsWidget } from '@/components/dashboard/NotificationsWidget'
+import { StatCardInteractive } from '@/components/dashboard/StatCardInteractive'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentProfile } from '@/lib/auth'
 import {
@@ -415,7 +416,7 @@ function StatCard({
   children?: React.ReactNode
 }) {
   return (
-    <div className="card p-5">
+    <StatCardInteractive>
       <div className="flex items-start justify-between">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconTone}`}>
           {icon}
@@ -431,6 +432,6 @@ function StatCard({
         )}
       </div>
       {children && <div className="mt-4">{children}</div>}
-    </div>
+    </StatCardInteractive>
   )
 }

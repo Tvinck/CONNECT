@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Logomark } from '@/components/ui/Logomark'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,6 +19,24 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState('')
   const [pwdError, setPwdError] = useState('')
   const [generalError, setGeneralError] = useState('')
+
+  // Mouse coordinates tracking for parallax background glow blobs
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const springX = useSpring(x, { stiffness: 60, damping: 22 })
+  const springY = useSpring(y, { stiffness: 60, damping: 22 })
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (typeof window === 'undefined') return
+    const moveX = (e.clientX - window.innerWidth / 2) / 30
+    const moveY = (e.clientY - window.innerHeight / 2) / 30
+    x.set(moveX)
+    y.set(moveY)
+  }
+
+  // Reverse transform for the second blob
+  const reverseSpringX = useTransform(springX, (val) => -val)
+  const reverseSpringY = useTransform(springY, (val) => -val)
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -75,15 +94,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-between py-12 px-4 bg-[#0F1017] text-white relative overflow-hidden">
-      {/* Background ambient glows (Eduplex purple + lime green) */}
-      <div 
-        className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-[0.12]" 
-        style={{ background: '#BFF128' }} 
+    <div 
+      onMouseMove={handleMouseMove}
+      className="min-h-screen w-full flex flex-col items-center justify-between py-12 px-4 bg-[#0F1017] text-white relative overflow-hidden"
+    >
+      {/* Background ambient glows (purple + lime green) with moderate parallax mouse movement */}
+      <motion.div 
+        className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[150px] opacity-[0.12] pointer-events-none" 
+        style={{ x: springX, y: springY, background: '#BFF128' }} 
       />
-      <div 
-        className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.08]" 
-        style={{ background: '#8E92BC' }} 
+      <motion.div 
+        className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full blur-[130px] opacity-[0.08] pointer-events-none" 
+        style={{ x: reverseSpringX, y: reverseSpringY, background: '#8E92BC' }} 
       />
 
       {/* Top Brand Logo */}
@@ -97,7 +119,12 @@ export default function LoginPage() {
       </div>
 
       {/* Login Card */}
-      <div className="relative z-10 w-full max-w-[460px] bg-[#171821] rounded-[32px] p-9 border border-white/[0.04] shadow-[0_24px_64px_rgba(0,0,0,0.4)]">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+        className="relative z-10 w-full max-w-[460px] bg-[#171821] rounded-[32px] p-9 border border-white/[0.04] shadow-[0_24px_64px_rgba(0,0,0,0.4)]"
+      >
         <h2 className="text-[28px] font-extrabold tracking-tight text-white mb-6">
           Вход
         </h2>
@@ -203,10 +230,11 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-      </div>
+      </motion.div>
 
       {/* Empty Footer Spacer */}
       <div className="pb-4" />
     </div>
   )
 }
+

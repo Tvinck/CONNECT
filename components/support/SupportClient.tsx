@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
 import { getInitials, colorFor } from '@/lib/utils'
@@ -245,39 +246,56 @@ export function SupportClient() {
               <span className="text-[10px] text-red-500">{debugText}</span>
             </div>
           ) : (
-            chats.map(chat => {
-              const isActive = selectedUser?.userId === chat.userId
-              const name = chat.profile?.username || chat.profile?.telegram_username || 'Неизвестный'
-              return (
-                <div 
-                  key={chat.userId} 
-                  onClick={() => setSelectedUser(chat)}
-                  className={clsx(
-                    "px-4 py-3 cursor-pointer border-b border-white/[0.02] transition-colors flex gap-3",
-                    isActive ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
-                  )}
-                >
-                  <Avatar initials={getInitials(name)} color={colorFor(name)} size={40} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <h4 className="text-[13px] font-semibold truncate text-white">{name}</h4>
-                      <span className="text-[10px] text-[#8E92BC]">
-                        {format(new Date(chat.time), 'HH:mm')}
-                      </span>
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.04 }
+                }
+              }}
+            >
+              {chats.map(chat => {
+                const isActive = selectedUser?.userId === chat.userId
+                const name = chat.profile?.username || chat.profile?.telegram_username || 'Неизвестный'
+                return (
+                  <motion.div 
+                    key={chat.userId} 
+                    variants={{
+                      hidden: { opacity: 0, y: 8 },
+                      show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 200, damping: 20 } }
+                    }}
+                    whileHover={{ scale: 1.01, x: 2 }}
+                    onClick={() => setSelectedUser(chat)}
+                    className={clsx(
+                      "px-4 py-3 cursor-pointer border-b border-white/[0.02] transition-colors flex gap-3",
+                      isActive ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                    )}
+                  >
+                    <Avatar initials={getInitials(name)} color={colorFor(name)} size={40} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h4 className="text-[13px] font-semibold truncate text-white">{name}</h4>
+                        <span className="text-[10px] text-[#8E92BC]">
+                          {format(new Date(chat.time), 'HH:mm')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        <p className={clsx("text-[12px] truncate flex-1", !chat.isRead ? "text-white font-medium" : "text-[#8E92BC]")}>
+                          {chat.lastMessage}
+                        </p>
+                        {!chat.isRead && (
+                          <div className="w-2 h-2 rounded-full bg-[#e63950]"></div>
+                        )}
+                      </div>
+                      <span className="text-[9px] uppercase font-bold text-[#BFF128] mt-1 block tracking-wider">{chat.project}</span>
                     </div>
-                    <div className="flex justify-between items-center gap-2">
-                      <p className={clsx("text-[12px] truncate flex-1", !chat.isRead ? "text-white font-medium" : "text-[#8E92BC]")}>
-                        {chat.lastMessage}
-                      </p>
-                      {!chat.isRead && (
-                        <div className="w-2 h-2 rounded-full bg-[#e63950]"></div>
-                      )}
-                    </div>
-                    <span className="text-[9px] uppercase font-bold text-[#BFF128] mt-1 block tracking-wider">{chat.project}</span>
-                  </div>
-                </div>
-              )
-            })
+                  </motion.div>
+                )
+              })}
+            </motion.div>
           )}
         </div>
       </div>
@@ -305,23 +323,31 @@ export function SupportClient() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {messages.map(msg => {
-                const isMine = !msg.is_from_user
-                return (
-                  <div key={msg.id} className={clsx("flex flex-col max-w-[70%]", isMine ? "ml-auto items-end" : "mr-auto items-start")}>
-                    <div className={clsx(
-                      "px-4 py-2.5 rounded-2xl text-[13.5px] leading-[1.4] shadow-sm",
-                      isMine ? "bg-[#BFF128] text-black rounded-tr-none" : "bg-[#252736] text-white rounded-tl-none border border-white/[0.02]"
-                    )}>
-                      {msg.message}
-                    </div>
-                    <span className="text-[10px] text-[#8E92BC] mt-1.5 flex items-center gap-1">
-                      {format(new Date(msg.created_at), 'HH:mm')}
-                      {isMine && <CheckCheck size={12} className="text-[#BFF128]" />}
-                    </span>
-                  </div>
-                )
-              })}
+              <AnimatePresence initial={false}>
+                {messages.map(msg => {
+                  const isMine = !msg.is_from_user
+                  return (
+                    <motion.div 
+                      key={msg.id} 
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 220, damping: 20 }}
+                      className={clsx("flex flex-col max-w-[70%]", isMine ? "ml-auto items-end" : "mr-auto items-start")}
+                    >
+                      <div className={clsx(
+                        "px-4 py-2.5 rounded-2xl text-[13.5px] leading-[1.4] shadow-sm",
+                        isMine ? "bg-[#BFF128] text-black rounded-tr-none" : "bg-[#252736] text-white rounded-tl-none border border-white/[0.02]"
+                      )}>
+                        {msg.message}
+                      </div>
+                      <span className="text-[10px] text-[#8E92BC] mt-1.5 flex items-center gap-1">
+                        {format(new Date(msg.created_at), 'HH:mm')}
+                        {isMine && <CheckCheck size={12} className="text-[#BFF128]" />}
+                      </span>
+                    </motion.div>
+                  )
+                })}
+              </AnimatePresence>
               <div ref={messagesEndRef} />
             </div>
 
