@@ -24,8 +24,8 @@ import { useEffect } from 'react'
 import { X } from 'lucide-react'
 
 interface ModalProps {
-  /** Title shown in the modal header. Also used as aria-label. */
-  title: string
+  /** Optional title shown in the modal header. Also used as aria-label. */
+  title?: string
   /** Called when the user closes the modal (backdrop click, Escape, or X). */
   onClose: () => void
   /** Main content of the modal body. */
@@ -34,12 +34,14 @@ interface ModalProps {
   footer?: React.ReactNode
   /** Tailwind max-width utility class, e.g. "max-w-[480px]". Default: "max-w-[480px]". */
   maxWidth?: string
+  /** Custom CSS classes for the main dialog wrapper. */
+  className?: string
 }
 
 /**
  * Renders a centred modal dialog with backdrop, keyboard support, and scroll lock.
  */
-export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] max-w-5xl' }: ModalProps) {
+export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] max-w-5xl', className }: ModalProps) {
   useEffect(() => {
     // Close on Escape key press.
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -68,23 +70,25 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] m
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={title}
-        className={`relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} flex flex-col shadow-2xl animate-modal-in my-auto`}
+        aria-label={title || 'Диалоговое окно'}
+        className={className || `relative bg-card text-[#171821] border border-line rounded-2xl w-full ${maxWidth} flex flex-col shadow-2xl animate-modal-in my-auto`}
       >
-        {/* Header */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-line">
-          <h2 className="text-[16px] font-bold tracking-tight">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label="Закрыть"
-            className="w-8 h-8 rounded-lg text-mute hover:text-[#171821] hover:bg-bg transition-all inline-flex items-center justify-center"
-          >
-            <X size={16} />
-          </button>
-        </div>
+        {/* Header — only rendered if title is provided */}
+        {title && (
+          <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-line">
+            <h2 className="text-[16px] font-bold tracking-tight">{title}</h2>
+            <button
+              onClick={onClose}
+              aria-label="Закрыть"
+              className="w-8 h-8 rounded-lg text-mute hover:text-[#171821] hover:bg-bg transition-all inline-flex items-center justify-center"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         {/* Body */}
-        <div className="px-6 py-5 overflow-y-auto min-h-0">{children}</div>
+        <div className={className ? '' : 'px-6 py-5 overflow-y-auto min-h-0'}>{children}</div>
 
         {/* Footer — only rendered when provided */}
         {footer && (
