@@ -95,6 +95,33 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   const router = useRouter()
   const { role, setRole, user, logout } = useAuthStore()
   const { sidebarOpen, setSidebarOpen, addToast } = useUIStore()
+  const [newsCount, setNewsCount] = useState(0)
+
+  useEffect(() => {
+    if (!user) return
+    const fetchNewsCount = async () => {
+      const supabase = createClient()
+      // Получаем общее количество новостей
+      const { count: totalNews } = await supabase.from('news').select('*', { count: 'exact', head: true })
+      
+      // Получаем количество прочитанных этим пользователем
+      const { count: readNews } = await supabase.from('news_reads').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
+      
+      if (totalNews !== null && readNews !== null) {
+        setNewsCount(Math.max(0, totalNews - readNews))
+      }
+    }
+    fetchNewsCount()
+
+    // Подписываемся на обновления
+    const supabase = createClient()
+    const channel = supabase.channel('news_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, fetchNewsCount)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'news_reads', filter: `user_id=eq.${user.id}` }, fetchNewsCount)
+      .subscribe()
+      
+    return () => { supabase.removeChannel(channel) }
+  }, [user])
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -112,6 +139,7 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   const badges: Record<string, number> = {
     tasks: taskCount,
     chats: chatCount,
+    news: newsCount,
   }
 
   return (

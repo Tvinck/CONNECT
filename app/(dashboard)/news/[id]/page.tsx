@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { getInitials, colorFor } from '@/lib/utils'
 import { FormattedText } from '@/components/ui/FormattedText'
 import { NewsComments } from '@/components/news/NewsComments'
+import { NewsReadTracker } from '@/components/news/NewsReadTracker'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
 
   return (
     <div className="flex-1 overflow-y-auto">
+      <NewsReadTracker newsId={news.id} />
       <div className="max-w-4xl mx-auto w-full py-8 px-4">
         
         <Link href="/news" className="inline-flex items-center gap-2 text-sm text-mute hover:text-blue-500 font-medium transition-colors mb-6">

@@ -184,3 +184,10 @@ export interface NewsComment {
   content: string
   created_at: string
 }
+
+/** Row from the `news_reads` table. */
+export interface NewsRead {
+  news_id: string
+  user_id: string
+  created_at: string
+}
