@@ -73,7 +73,7 @@ export function UserProfileModal({ userId, onClose }: { userId: string; onClose:
   const lvl = user ? levelInfo(user.points) : null
 
   // Расчет реального статуса
-  let currentStatus = 'offline'
+  let currentStatus: 'online' | 'offline' = 'offline'
   let statusText = 'Не в сети'
   
   if (user) {
