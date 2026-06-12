@@ -163,6 +163,7 @@ export const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 
 import { EditProjectModal } from './EditProjectModal';
 import { AddMemberModal } from './AddMemberModal';
 import { AddLinkModal } from './AddLinkModal';
+import { CreateVpnSubModal } from './CreateVpnSubModal';
 
 // ─── main component ───────────────────────────────────────────────────────────
 
@@ -365,6 +366,14 @@ export function ProjectDetail({
 
   return (
     <>
+      {showCreateVpnSub && (
+        <CreateVpnSubModal
+          onClose={() => setShowCreateVpnSub(false)}
+          onSuccess={(newSub) => {
+            setVpnSubs([newSub, ...vpnSubs])
+          }}
+        />
+      )}
       {/* Back navigation */}
       <Link href="/projects"
         className="inline-flex items-center gap-1.5 text-[12.5px] text-mute hover:text-white transition-all mb-5">
