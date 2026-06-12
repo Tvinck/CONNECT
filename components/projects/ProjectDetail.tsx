@@ -15,7 +15,7 @@
 
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, Pencil, Plus, Trash2, ExternalLink, Link2, Loader2, User2, Settings,
