@@ -211,6 +211,31 @@ export function ProjectDetail({
   const [srvCountry, setSrvCountry] = useState('DE')
   const [addingSrv, setAddingSrv] = useState(false)
 
+  // Sync VPN servers automatically
+  useEffect(() => {
+    if (activeTab !== 'servers') return
+    
+    let isMounted = true
+    const syncServers = async () => {
+      try {
+        await fetch('/api/servers/sync', { method: 'POST' })
+        const { data } = await supabase.from('vpn_servers').select('*').order('name')
+        if (isMounted && data) {
+          setVpnServers(data)
+        }
+      } catch (err) {
+        console.error('Failed to sync servers', err)
+      }
+    }
+
+    syncServers()
+    const interval = setInterval(syncServers, 30000)
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [activeTab])
+
   /**
    * Добавляет новый VPN-сервер во внешнюю базу данных.
    * Генерирует случайные первоначальные метрики пинга и нагрузки.

@@ -140,16 +140,11 @@ export function SupportClient() {
     
     const fetchDetails = async () => {
       const { data: subs } = await supabase
-        .from('subscriptions')
+        .from('vpn_subscriptions')
         .select('*')
         .eq('user_id', selectedUser.userId)
       
-      const { count: refCount } = await supabase
-        .from('referrals')
-        .select('*', { count: 'exact', head: true })
-        .eq('referrer_id', selectedUser.userId)
-
-      setUserDetails({ subs: subs || [], refCount: refCount || 0 })
+      setUserDetails({ subs: subs || [], refCount: 0 })
     }
     fetchDetails()
   }, [selectedUser])
