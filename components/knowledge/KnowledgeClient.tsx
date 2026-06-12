@@ -30,6 +30,7 @@ import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { getInitials, colorFor, timeAgo } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth'
+import { FormattedText } from '@/components/ui/FormattedText'
 
 /** Articles revealed per "load more" click. */
 const ARTICLES_PAGE = 9
@@ -99,8 +100,8 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
             <span className="inline-flex items-center gap-1"><Eye size={12} /> {article.views}</span>
             <span>{timeAgo(article.created_at)}</span>
           </div>
-          <div className="text-[14.5px] text-white/85 leading-relaxed whitespace-pre-wrap">
-            {article.content || 'Статья пока пустая.'}
+          <div className="text-[14.5px] text-white/90">
+            {article.content ? <FormattedText text={article.content} /> : 'Статья пока пустая.'}
           </div>
         </div>
       </div>
