@@ -253,18 +253,10 @@ export function ProjectDetail({
    * @param sub Объект подписки, содержащий id и user_id
    */
   const deleteVpnSub = async (sub: any) => {
-    if (isVpn) {
-      // Каскадное удаление со стороны profiles
-      const { error } = await supabase.from('profiles').delete().eq('id', sub.user_id)
-      if (error) { addToast('Ошибка', 'Не удалось удалить пользователя', 'err'); return }
-      setVpnSubs(prev => prev.filter(s => s.id !== sub.id))
-      addToast('Успешно', 'Пользователь и его подписка удалены из базы данных', 'ok')
-    } else {
-      const { error } = await supabase.from('vpn_subscriptions').delete().eq('id', sub.id)
-      if (error) { addToast('Ошибка', 'Не удалось удалить подписку', 'err'); return }
-      setVpnSubs(prev => prev.filter(s => s.id !== sub.id))
-      addToast('Успешно', 'Подписка удалена из базы данных', 'ok')
-    }
+    const { error } = await supabase.from('vpn_subscriptions').delete().eq('id', sub.id)
+    if (error) { addToast('Ошибка', 'Не удалось удалить подписку', 'err'); return }
+    setVpnSubs(prev => prev.filter(s => s.id !== sub.id))
+    addToast('Успешно', 'Подписка удалена из базы данных', 'ok')
   }
 
   /**
