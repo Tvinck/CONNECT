@@ -25,6 +25,7 @@ export function SupportClient() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null)
   const [messages, setMessages] = useState<any[]>([])
   const [userDetails, setUserDetails] = useState<any | null>(null)
+  const [activeSub, setActiveSub] = useState<any | null>(null)
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -137,15 +138,47 @@ export function SupportClient() {
    * при выборе чата. Используется для правой колонки.
    */
   useEffect(() => {
-    if (!selectedUser) return
+    if (!selectedUser) {
+      setActiveSub(null)
+      setUserDetails(null)
+      return
+    }
     
     const fetchDetails = async () => {
-      const { data: subs } = await supabase
+      // 1. Сначала пробуем получить основную подписку по UUID (userId)
+      const { data: mainSub } = await supabase
         .from('vpn_subscriptions')
         .select('*')
-        .eq('user_id', selectedUser.userId)
+        .eq('id', selectedUser.userId)
+        .maybeSingle()
       
-      setUserDetails({ subs: subs || [], refCount: 0 })
+      if (mainSub) {
+        setActiveSub(mainSub)
+        // 2. Ищем все подписки по имени этого пользователя
+        const { data: subs } = await supabase
+          .from('vpn_subscriptions')
+          .select('*')
+          .eq('username', mainSub.username)
+        
+        setUserDetails({ subs: subs || [mainSub], refCount: 0 })
+      } else {
+        // Fallback если selectedUser.profile имеет имя
+        const fallbackUsername = selectedUser.profile?.username
+        if (fallbackUsername) {
+          const { data: subs } = await supabase
+            .from('vpn_subscriptions')
+            .select('*')
+            .eq('username', fallbackUsername)
+          
+          if (subs && subs.length > 0) {
+            setActiveSub(subs[0])
+            setUserDetails({ subs, refCount: 0 })
+            return
+          }
+        }
+        setActiveSub(null)
+        setUserDetails({ subs: [], refCount: 0 })
+      }
     }
     fetchDetails()
   }, [selectedUser])
@@ -186,25 +219,28 @@ export function SupportClient() {
     }
   }
 
+  const displayName = selectedUser?.profile?.username || activeSub?.username || selectedUser?.profile?.telegram_username || activeSub?.telegram_username || 'Неизвестный'
+  const tgName = selectedUser?.profile?.telegram_username || activeSub?.telegram_username
+
   return (
     <div className="flex h-[calc(100vh-140px)] gap-4 overflow-hidden">
       {/* Left Column: Chats */}
       <div className="w-[300px] shrink-0 flex flex-col bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-hidden shadow-2xl">
         <div className="p-4 border-b border-white/[0.04]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5A5D7F]" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8E92BC]" size={16} />
             <input 
               type="text" 
               placeholder="Поиск..." 
-              className="w-full bg-[#13141C] border border-white/[0.04] rounded-xl pl-9 pr-3 py-2 text-[13px] outline-none focus:border-[#BFF128]/50 transition-colors"
+              className="w-full bg-[#13141C] border border-white/[0.04] rounded-xl pl-9 pr-3 py-2 text-[13px] outline-none placeholder:text-[#8E92BC]/60 focus:border-[#BFF128]/50 transition-colors"
             />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center h-full text-[#5A5D7F]"><Loader2 className="animate-spin" size={20} /></div>
+            <div className="flex items-center justify-center h-full text-[#8E92BC]"><Loader2 className="animate-spin" size={20} /></div>
           ) : chats.length === 0 ? (
-            <div className="p-4 text-center text-[12px] text-[#5A5D7F]">
+            <div className="p-4 text-center text-[12px] text-[#8E92BC]">
               Нет сообщений <br/>
               <span className="text-[10px] text-red-500">{debugText}</span>
             </div>
@@ -225,12 +261,12 @@ export function SupportClient() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-1">
                       <h4 className="text-[13px] font-semibold truncate text-white">{name}</h4>
-                      <span className="text-[10px] text-[#5A5D7F]">
+                      <span className="text-[10px] text-[#8E92BC]">
                         {format(new Date(chat.time), 'HH:mm')}
                       </span>
                     </div>
                     <div className="flex justify-between items-center gap-2">
-                      <p className={clsx("text-[12px] truncate flex-1", !chat.isRead ? "text-white font-medium" : "text-[#5A5D7F]")}>
+                      <p className={clsx("text-[12px] truncate flex-1", !chat.isRead ? "text-white font-medium" : "text-[#8E92BC]")}>
                         {chat.lastMessage}
                       </p>
                       {!chat.isRead && (
@@ -249,7 +285,7 @@ export function SupportClient() {
       {/* Middle Column: Chat */}
       <div className="flex-1 flex flex-col bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-hidden shadow-2xl relative">
         {!selectedUser ? (
-          <div className="flex-1 flex items-center justify-center text-[#5A5D7F] text-[13px]">
+          <div className="flex-1 flex items-center justify-center text-[#8E92BC] text-[13px]">
             Выберите чат слева
           </div>
         ) : (
@@ -257,13 +293,13 @@ export function SupportClient() {
             <div className="h-[60px] border-b border-white/[0.04] flex items-center px-6 justify-between bg-white/[0.01]">
               <div className="flex items-center gap-3">
                 <Avatar 
-                  initials={getInitials(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
-                  color={colorFor(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
+                  initials={getInitials(displayName)} 
+                  color={colorFor(displayName)} 
                   size={32} 
                 />
                 <div>
-                  <h3 className="text-[14px] font-bold">{selectedUser.profile?.username || selectedUser.profile?.telegram_username || 'Неизвестный'}</h3>
-                  <p className="text-[11px] text-[#5A5D7F]">Проект: <span className="text-white">{selectedUser.project}</span></p>
+                  <h3 className="text-[14px] font-bold text-white">{displayName}</h3>
+                  <p className="text-[11px] text-[#8E92BC]">Проект: <span className="text-white font-medium">{selectedUser.project}</span></p>
                 </div>
               </div>
             </div>
@@ -279,7 +315,7 @@ export function SupportClient() {
                     )}>
                       {msg.message}
                     </div>
-                    <span className="text-[10px] text-[#5A5D7F] mt-1.5 flex items-center gap-1">
+                    <span className="text-[10px] text-[#8E92BC] mt-1.5 flex items-center gap-1">
                       {format(new Date(msg.created_at), 'HH:mm')}
                       {isMine && <CheckCheck size={12} className="text-[#BFF128]" />}
                     </span>
@@ -296,7 +332,7 @@ export function SupportClient() {
                   onChange={e => setText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Напишите сообщение..." 
-                  className="w-full bg-[#13141C] border border-white/[0.06] rounded-xl pl-4 pr-12 py-3 text-[13px] outline-none focus:border-[#BFF128]/50 transition-colors resize-none max-h-[120px] min-h-[44px]"
+                  className="w-full bg-[#13141C] border border-white/[0.06] rounded-xl pl-4 pr-12 py-3 text-[13px] text-white placeholder-[#8E92BC]/60 outline-none focus:border-[#BFF128]/50 transition-colors resize-none max-h-[120px] min-h-[44px]"
                   rows={1}
                 />
                 <button 
@@ -307,7 +343,7 @@ export function SupportClient() {
                   {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
                 </button>
               </div>
-              <p className="text-[10px] text-[#5A5D7F] text-center mt-2">Enter для отправки, Shift+Enter для переноса</p>
+              <p className="text-[10px] text-[#8E92BC] text-center mt-2">Enter для отправки, Shift+Enter для переноса</p>
             </div>
           </>
         )}
@@ -316,7 +352,7 @@ export function SupportClient() {
       {/* Right Column: User Info */}
       <div className="w-[300px] shrink-0 bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-y-auto shadow-2xl p-5 space-y-6">
         {!selectedUser ? (
-          <div className="flex h-full items-center justify-center text-[#5A5D7F] text-[13px] text-center">
+          <div className="flex h-full items-center justify-center text-[#8E92BC] text-[13px] text-center">
             Выберите чат для просмотра деталей клиента
           </div>
         ) : (
@@ -324,38 +360,38 @@ export function SupportClient() {
             {/* Header */}
             <div className="text-center">
               <Avatar 
-                initials={getInitials(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
-                color={colorFor(selectedUser.profile?.username || selectedUser.profile?.telegram_username)} 
+                initials={getInitials(displayName)} 
+                color={colorFor(displayName)} 
                 size={80} 
                 className="mx-auto mb-3"
               />
               <h2 className="text-[16px] font-bold text-white mb-1">
-                {selectedUser.profile?.username || selectedUser.profile?.telegram_username || 'Неизвестный'}
+                {displayName}
               </h2>
-              {selectedUser.profile?.telegram_username && (
-                <p className="text-[13px] text-[#BFF128] font-medium">@{selectedUser.profile.telegram_username}</p>
+              {tgName && (
+                <p className="text-[13px] text-[#BFF128] font-medium">@{tgName}</p>
               )}
             </div>
 
             {/* Referrals */}
             <div className="bg-[#13141C] border border-white/[0.04] rounded-xl p-4">
-              <h3 className="text-[11px] uppercase tracking-wider text-[#5A5D7F] font-bold mb-3 flex items-center gap-2">
+              <h3 className="text-[11px] uppercase tracking-wider text-[#8E92BC] font-bold mb-3 flex items-center gap-2">
                 <Users size={14} /> Рефералы
               </h3>
-              <div className="text-[24px] font-black">{userDetails?.refCount || 0}</div>
-              <p className="text-[11px] text-[#5A5D7F] mt-1">Приглашенных друзей</p>
+              <div className="text-[24px] font-black text-white">{userDetails?.refCount || 0}</div>
+              <p className="text-[11px] text-[#8E92BC] mt-1">Приглашенных друзей</p>
             </div>
 
             {/* Subscriptions */}
             <div>
-              <h3 className="text-[11px] uppercase tracking-wider text-[#5A5D7F] font-bold mb-3 flex items-center gap-2">
+              <h3 className="text-[11px] uppercase tracking-wider text-[#8E92BC] font-bold mb-3 flex items-center gap-2">
                 <Shield size={14} /> Подписки
               </h3>
               
               {!userDetails ? (
-                <Loader2 size={16} className="animate-spin text-[#5A5D7F]" />
+                <Loader2 size={16} className="animate-spin text-[#8E92BC]" />
               ) : userDetails.subs?.length === 0 ? (
-                <p className="text-[12px] text-[#5A5D7F]">Нет активных подписок</p>
+                <p className="text-[12px] text-[#8E92BC]">Нет активных подписок</p>
               ) : (
                 <div className="space-y-3">
                   {userDetails.subs.map((sub: any, i: number) => {
@@ -368,7 +404,7 @@ export function SupportClient() {
                         )} />
                         <div className="pl-2">
                           <div className="flex justify-between items-start mb-2">
-                            <div className="text-[12.5px] font-semibold">Устройство {i + 1}</div>
+                            <div className="text-[12.5px] font-semibold text-white">Устройство {i + 1}</div>
                             <span className={clsx("text-[10px] px-1.5 py-0.5 rounded font-bold uppercase", isActive ? "bg-[#22c55e]/20 text-[#22c55e]" : "bg-[#e63950]/20 text-[#e63950]")}>
                               {isActive ? 'Active' : 'Expired'}
                             </span>

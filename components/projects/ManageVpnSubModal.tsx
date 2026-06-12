@@ -26,6 +26,9 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
   const [trafficLimitInput, setTrafficLimitInput] = useState<string>(
     sub.traffic_limit ? String(sub.traffic_limit / (1024 * 1024 * 1024)) : ''
   )
+  const [ipLimitInput, setIpLimitInput] = useState<string>(
+    sub.ip_limit ? String(sub.ip_limit) : '3'
+  )
 
   const relatedSubs = allSubs.filter(s => s.username === sub.username && s.id !== sub.id)
   const relatedOrders = allOrders.filter(o => o.username === sub.username)
@@ -79,6 +82,30 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
     onUpdate({ ...sub, traffic_limit: newLimit })
   }
 
+  const updateIpLimit = async () => {
+    setLoading(true)
+    const limit = Number(ipLimitInput)
+    if (isNaN(limit) || limit <= 0) {
+      setLoading(false)
+      addToast('Ошибка', 'Введите корректный лимит устройств', 'err')
+      return
+    }
+
+    const { error } = await supabase
+      .from('vpn_subscriptions')
+      .update({ ip_limit: limit })
+      .eq('id', sub.id)
+
+    setLoading(false)
+    if (error) {
+      addToast('Ошибка', 'Не удалось обновить лимит устройств', 'err')
+      return
+    }
+
+    addToast('Успешно', 'Лимит устройств обновлен', 'ok')
+    onUpdate({ ...sub, ip_limit: limit })
+  }
+
   const usedGb = (sub.traffic_used / (1024 * 1024 * 1024)).toFixed(2)
   const limitGb = sub.traffic_limit ? (sub.traffic_limit / (1024 * 1024 * 1024)).toFixed(2) : 'Безлимит'
   const progressPercent = sub.traffic_limit ? Math.min(100, (sub.traffic_used / sub.traffic_limit) * 100) : 0
@@ -117,6 +144,10 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
             {sub.tg_channel_subscribed ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
             TG Канал {sub.tg_channel_subscribed ? 'Подписан' : 'Не подписан'}
           </div>
+          <div className="px-3 py-1.5 rounded-lg border border-line bg-white/[0.02] text-mute text-[11px] font-bold inline-flex items-center gap-1.5">
+            <Activity size={13} />
+            Лимит: {sub.ip_limit || 3} устр.
+          </div>
         </div>
       </div>
 
@@ -151,6 +182,28 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
               />
               <Button size="sm" onClick={updateTrafficLimit} disabled={loading}>
                 {loading ? <Loader2 size={13} className="animate-spin" /> : 'Установить ГБ'}
+              </Button>
+            </div>
+          </div>
+
+          {/* IP Limit Management */}
+          <div className="card p-4 bg-white/[0.01]">
+            <h3 className="text-[13px] font-semibold flex items-center gap-2 mb-4">
+              <Users size={14} className="text-accent" />
+              Лимит устройств (IP)
+            </h3>
+            <div className="flex gap-2">
+              <input 
+                type="number"
+                min={1}
+                max={10}
+                placeholder="3"
+                value={ipLimitInput}
+                onChange={e => setIpLimitInput(e.target.value)}
+                className="flex-1 h-9 rounded-xl border border-line bg-bg px-3 text-[13px] outline-none"
+              />
+              <Button size="sm" onClick={updateIpLimit} disabled={loading}>
+                {loading ? <Loader2 size={13} className="animate-spin" /> : 'Установить лимит'}
               </Button>
             </div>
           </div>

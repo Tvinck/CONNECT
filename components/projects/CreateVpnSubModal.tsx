@@ -13,6 +13,7 @@ interface Props {
 export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
   const [username, setUsername] = useState('')
   const [telegram, setTelegram] = useState('')
+  const [ipLimit, setIpLimit] = useState(3)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const addToast = useUIStore(s => s.addToast)
   const supabase = createClient()
@@ -44,7 +45,8 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
           subscription_key: subKey,
           status: 'active',
           traffic_limit: 536870912000, // 500GB
-          expires_at: expires.toISOString()
+          expires_at: expires.toISOString(),
+          ip_limit: ipLimit
         })
         .select()
         .single()
@@ -57,7 +59,8 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
         telegram_username: telegram.trim() ? telegram.replace('@', '') : null,
         token: token,
         tg_bot_linked: false,
-        tg_channel_subscribed: false
+        tg_channel_subscribed: false,
+        ip_limit: ipLimit
       }
 
       onSuccess(formattedSub)
@@ -96,6 +99,22 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
             onChange={e => setTelegram(e.target.value)}
             className="w-full h-10 px-3.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all"
             placeholder="@username"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">
+            Лимит устройств (одновременных IP)
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={10}
+            value={ipLimit}
+            onChange={e => setIpLimit(Number(e.target.value))}
+            className="w-full h-10 px-3.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all"
+            placeholder="3"
+            required
           />
         </div>
 

@@ -208,7 +208,12 @@ export function ProjectDetail({
   // VPN admin fields states
   const [srvName, setSrvName] = useState('')
   const [srvIp, setSrvIp] = useState('')
+  const [srvPort, setSrvPort] = useState('443')
   const [srvCountry, setSrvCountry] = useState('DE')
+  const [srvPublicKey, setSrvPublicKey] = useState('')
+  const [srvShortId, setSrvShortId] = useState('')
+  const [srvSni, setSrvSni] = useState('yahoo.com')
+  const [srvFlow, setSrvFlow] = useState('xtls-rprx-vision')
   const [addingSrv, setAddingSrv] = useState(false)
 
   // Sync VPN servers automatically
@@ -249,7 +254,18 @@ export function ProjectDetail({
     
     const { data, error } = await supabase
       .from('vpn_servers')
-      .insert({ name: srvName.trim(), country_code: srvCountry, ip_address: srvIp.trim() || '127.0.0.1', ping_ms: mockPing, load_percentage: mockLoad })
+      .insert({ 
+        name: srvName.trim(), 
+        country_code: srvCountry, 
+        ip_address: srvIp.trim() || '127.0.0.1', 
+        ping_ms: mockPing, 
+        load_percentage: mockLoad,
+        port: Number(srvPort) || 443,
+        reality_public_key: srvPublicKey.trim() || null,
+        reality_short_id: srvShortId.trim() || null,
+        reality_sni: srvSni.trim() || 'yahoo.com',
+        reality_flow: srvFlow.trim() || 'xtls-rprx-vision'
+      })
       .select()
       .single()
       
@@ -259,6 +275,11 @@ export function ProjectDetail({
       setVpnServers(prev => [...prev, data])
       setSrvName('')
       setSrvIp('')
+      setSrvPort('443')
+      setSrvPublicKey('')
+      setSrvShortId('')
+      setSrvSni('yahoo.com')
+      setSrvFlow('xtls-rprx-vision')
       addToast('Успешно', 'Сервер добавлен в базу данных', 'ok')
     }
   }
@@ -625,20 +646,55 @@ export function ProjectDetail({
         </>
       ) : activeTab === 'servers' ? (
         <div className="card p-5">
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-            <h3 className="text-[16px] font-semibold">Управление серверами VPN</h3>
-            <div className="flex gap-2 flex-wrap items-center">
-              <input value={srvName} onChange={e => setSrvName(e.target.value)} placeholder="Название (например, Швеция)" className="h-8 px-2.5 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none px-3" />
-              <input value={srvIp} onChange={e => setSrvIp(e.target.value)} placeholder="IP адрес" className="h-8 px-2.5 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none px-3" />
-              <select value={srvCountry} onChange={e => setSrvCountry(e.target.value)} className="h-8 px-2 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none text-mute">
-                <option value="DE">Германия (DE)</option>
-                <option value="FI">Финляндия (FI)</option>
-                <option value="US">США (US)</option>
-                <option value="SE">Швеция (SE)</option>
-                <option value="NL">Нидерланды (NL)</option>
-              </select>
-              <Button size="sm" onClick={addVpnServer} disabled={addingSrv}>
-                {addingSrv ? <Loader2 size={12} className="animate-spin" /> : <Plus size={13} />} Сервер
+          <div className="flex flex-col gap-4 mb-6 border-b border-line pb-5">
+            <h3 className="text-[16px] font-semibold">Добавить новый VPN сервер</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Название сервера</label>
+                <input value={srvName} onChange={e => setSrvName(e.target.value)} placeholder="например, Швеция" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none" />
+              </div>
+              <div>
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">IP адрес</label>
+                <input value={srvIp} onChange={e => setSrvIp(e.target.value)} placeholder="127.0.0.1" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none" />
+              </div>
+              <div>
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Порт</label>
+                <input type="number" value={srvPort} onChange={e => setSrvPort(e.target.value)} placeholder="443" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none" />
+              </div>
+              <div>
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Страна</label>
+                <select value={srvCountry} onChange={e => setSrvCountry(e.target.value)} className="w-full h-8 px-2 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none text-mute">
+                  <option value="DE">Германия (DE)</option>
+                  <option value="FI">Финляндия (FI)</option>
+                  <option value="US">США (US)</option>
+                  <option value="SE">Швеция (SE)</option>
+                  <option value="NL">Нидерланды (NL)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="md:col-span-2">
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Reality Public Key</label>
+                <input value={srvPublicKey} onChange={e => setSrvPublicKey(e.target.value)} placeholder="Публичный ключ VLESS Reality" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none font-mono" />
+              </div>
+              <div>
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Reality Short ID</label>
+                <input value={srvShortId} onChange={e => setSrvShortId(e.target.value)} placeholder="Short ID (например, 6ba2562b)" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none font-mono" />
+              </div>
+              <div>
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Reality SNI</label>
+                <input value={srvSni} onChange={e => setSrvSni(e.target.value)} placeholder="yahoo.com" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none" />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center gap-3">
+              <div className="w-[200px]">
+                <label className="text-[10px] text-mute2 uppercase font-bold block mb-1">Reality Flow</label>
+                <input value={srvFlow} onChange={e => setSrvFlow(e.target.value)} placeholder="xtls-rprx-vision" className="w-full h-8 px-3 rounded-lg border border-line bg-bg/50 text-[12.5px] outline-none font-mono" />
+              </div>
+              <Button size="sm" onClick={addVpnServer} disabled={addingSrv} className="self-end h-8">
+                {addingSrv ? <Loader2 size={12} className="animate-spin" /> : <Plus size={13} />} Добавить сервер
               </Button>
             </div>
           </div>
@@ -654,8 +710,29 @@ export function ProjectDetail({
                       <Globe size={18} className="text-accent" />
                     </div>
                     <div>
-                      <div className="text-[13.5px] font-bold">{s.name} ({s.country_code})</div>
-                      <div className="text-[11.5px] text-mute2">{s.ip_address || 'Нет IP'}</div>
+                      <div className="text-[13.5px] font-bold flex items-center gap-2">
+                        {s.name} ({s.country_code})
+                        {s.reality_public_key && (
+                          <span className="inline-flex items-center text-[10px] bg-ok/10 text-ok border border-ok/25 px-1.5 py-0.5 rounded font-mono font-medium" title={s.reality_public_key}>
+                            Reality 🔑
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11.5px] text-mute2 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
+                        <span>{s.ip_address || 'Нет IP'}:{s.port || 443}</span>
+                        {s.reality_sni && (
+                          <>
+                            <span className="text-line">•</span>
+                            <span>SNI: <span className="font-mono text-white/70">{s.reality_sni}</span></span>
+                          </>
+                        )}
+                        {s.reality_flow && (
+                          <>
+                            <span className="text-line">•</span>
+                            <span>Flow: <span className="font-mono text-white/70">{s.reality_flow}</span></span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
@@ -710,6 +787,7 @@ export function ProjectDetail({
                   <th className="pb-3 px-4">Истекает</th>
                   {isVpn && <th className="pb-3 px-4">Токен кабинета</th>}
                   <th className="pb-3 px-4">Трафик (Использовано)</th>
+                  {isVpn && <th className="pb-3 px-4">Лимит IP</th>}
                   <th className="pb-3 px-4">VLESS Ключ подписки</th>
                   <th className="pb-3 pl-4 text-right">Действия</th>
                 </tr>
@@ -717,7 +795,7 @@ export function ProjectDetail({
               <tbody className="divide-y divide-line/30">
                 {vpnSubs.filter(s => s.username.toLowerCase().includes(searchQuery.toLowerCase()) || s.subscription_key.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
                   <tr>
-                    <td colSpan={isVpn ? 7 : 6} className="text-center py-6 text-mute">Подписок не найдено</td>
+                    <td colSpan={isVpn ? 8 : 6} className="text-center py-6 text-mute">Подписок не найдено</td>
                   </tr>
                 ) : (
                   vpnSubs.filter(s => s.username.toLowerCase().includes(searchQuery.toLowerCase()) || s.subscription_key.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
@@ -770,8 +848,13 @@ export function ProjectDetail({
                         </td>
                       )}
                       <td className="py-3.5 px-4 font-mono text-[12px] text-mute">
-                        {(s.traffic_used / (1024 * 1024 * 1024)).toFixed(2)} GiB / ♾
+                        {(s.traffic_used / (1024 * 1024 * 1024)).toFixed(2)} ГБ / {s.traffic_limit ? Math.round(s.traffic_limit / (1024 * 1024 * 1024)) + ' ГБ' : '♾'}
                       </td>
+                      {isVpn && (
+                        <td className="py-3.5 px-4 font-mono text-[12px] text-mute">
+                          {s.ip_limit || 3}
+                        </td>
+                      )}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-1.5 bg-white/[0.02] border border-line rounded-lg px-2 py-1 max-w-[180px] justify-between">
                           <span className="font-mono text-[11px] truncate text-mute2">{s.subscription_key}</span>

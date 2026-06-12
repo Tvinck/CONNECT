@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import https from 'https'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic' // Ensure it's not cached
 
@@ -32,15 +32,13 @@ function request(url: string, options: any, data?: any): Promise<{ data: any, he
 
 export async function POST() {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY // Actually we should use service_role if RLS blocks, but we enabled RLS for servers? Wait, we didn't enable RLS for vpn_servers here, but earlier I saw an RLS error on insert.
-    // Wait, let's use the service role key if it's available, otherwise anon key.
-    // Actually, in route.ts we can bypass RLS by using the service role key if we have it in .env.local, but for now let's just use what's there.
-    
-    // BUT wait! ProjectDetail.tsx uses standard client which uses ANON key.
-    // Since I inserted the server with service_role earlier, does the anon key have UPDATE access?
-    // Let's use the standard anon key for now, if it fails, the user needs to fix RLS for vpn_servers.
-    const supabase = createClient(supabaseUrl!, supabaseKey!)
+    const supabase = createClient()
+
+    // Secure the API route
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Fetch servers from our DB
     const { data: servers, error: srvErr } = await supabase.from('vpn_servers').select('*')
@@ -54,13 +52,22 @@ export async function POST() {
       return NextResponse.json({ error: 'X-UI credentials not configured in environment' }, { status: 500 })
     }
 
+    // Get CSRF token and initial cookie
+    const baseRes = await request(xuiUrl.endsWith('/') ? xuiUrl : `${xuiUrl}/`, { method: 'GET' })
+    const html = typeof baseRes.data === 'string' ? baseRes.data : ''
+    const csrfMatch = html.match(/name="csrf-token"\s+content="([^"]+)"/)
+    const csrfToken = csrfMatch ? csrfMatch[1] : ''
+    const initialCookie = baseRes.headers['set-cookie'] ? baseRes.headers['set-cookie'][0] : ''
+
     // Login to X-UI
     const loginData = JSON.stringify({ username: xuiUser, password: xuiPass })
     const loginRes = await request(`${xuiUrl}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(loginData)
+        'Content-Length': Buffer.byteLength(loginData),
+        ...(csrfToken ? { 'X-Csrf-Token': csrfToken } : {}),
+        ...(initialCookie ? { 'Cookie': initialCookie } : {})
       }
     }, loginData)
 
@@ -71,8 +78,9 @@ export async function POST() {
     const statusRes = await request(`${xuiUrl}/server/status`, {
       method: 'POST',
       headers: {
-        'Cookie': cookie,
-        'Content-Type': 'application/json'
+        'Cookie': cookie || initialCookie,
+        'Content-Type': 'application/json',
+        ...(csrfToken ? { 'X-Csrf-Token': csrfToken } : {})
       }
     })
     const endPing = Date.now()
@@ -91,11 +99,7 @@ export async function POST() {
       const serverToUpdate = servers?.find(s => s.ip_address === xuiIp || s.ip_address === '185.142.99.185')
       
       if (serverToUpdate) {
-        // We bypass RLS using the service role key to avoid issues. Since this is an API route, it's safe.
-        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-        const adminSupabase = createClient(supabaseUrl!, serviceRoleKey!)
-        
-        await adminSupabase.from('vpn_servers').update({
+        await supabase.from('vpn_servers').update({
           load_percentage: cpuLoad,
           ping_ms: pingMs,
           status: 'online'
