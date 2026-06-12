@@ -23,10 +23,11 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!username.trim()) {
-      addToast('Ошибка', 'Имя пользователя обязательно', 'err')
-      return
-    }
+    
+    // Auto-generate username if empty
+    const finalUsername = username.trim() 
+      ? username.trim() 
+      : `Client-${Math.floor(1000 + Math.random() * 9000)}`
 
     setIsSubmitting(true)
     try {
@@ -34,7 +35,7 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
       const { data: profile, error: profileErr } = await veilSupabase
         .from('profiles')
         .insert({
-          username: username.trim(),
+          username: finalUsername,
           telegram_username: telegram.trim() ? telegram.replace('@', '') : null
         })
         .select()
@@ -96,14 +97,14 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">
-            Имя клиента
+            Имя клиента (необязательно)
           </label>
           <input
             autoFocus
             value={username}
             onChange={e => setUsername(e.target.value)}
             className="w-full h-10 px-3.5 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all"
-            placeholder="Например: Иван Иванов"
+            placeholder="Сгенерируется автоматически, если оставить пустым"
           />
         </div>
 
