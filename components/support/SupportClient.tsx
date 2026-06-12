@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createVeilClient } from '@/lib/supabase/veil'
+import { createClient } from '@/lib/supabase/client'
 import { Avatar } from '@/components/ui/Avatar'
 import { getInitials, colorFor } from '@/lib/utils'
 import { Search, Send, Check, CheckCheck, User, Users, Shield, Info, Copy, Loader2 } from 'lucide-react'
@@ -30,8 +30,7 @@ export function SupportClient() {
   const [sending, setSending] = useState(false)
   const [debugText, setDebugText] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
-  const supabase = createVeilClient()
+  const supabase = createClient()
 
   /**
    * Загружает уникальные чаты (пользователей) из БД.
