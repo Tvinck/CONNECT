@@ -35,6 +35,7 @@ export function CreateVpnSubModal({ onClose, onSuccess }: Props) {
       const { data: profile, error: profileErr } = await veilSupabase
         .from('profiles')
         .insert({
+          id: uuidv4(),
           username: finalUsername,
           telegram_username: telegram.trim() ? telegram.replace('@', '') : null
         })
