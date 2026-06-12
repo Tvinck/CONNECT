@@ -720,7 +720,7 @@ export function ProjectDetail({
                             <span className="truncate text-mute2 text-[11px]">{s.token || 'нет'}</span>
                             {s.token && (
                               <button onClick={() => {
-                                const cabLink = `https://veil-vpn-eta.vercel.app/?token=${s.token}`
+                                const cabLink = `https://veil-vpn-eta.vercel.app/cabinet/${s.token}`
                                 navigator.clipboard.writeText(cabLink)
                                 addToast('Успешно', 'Ссылка на кабинет скопирована', 'ok')
                               }} className="text-mute hover:text-white transition-colors shrink-0">
