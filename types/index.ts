@@ -44,6 +44,7 @@ export interface User {
   /** False = deactivated/fired, filtered out of employee lists. */
   is_active: boolean
   status: UserStatus
+  last_seen?: string
   created_at: string
 }
 

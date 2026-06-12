@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/Progress'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
-import { colorFor, getInitials, levelInfo } from '@/lib/utils'
+import { colorFor, getInitials, levelInfo, timeAgo } from '@/lib/utils'
 import type { User } from '@/types'
 import { useRouter } from 'next/navigation'
 
@@ -48,10 +48,40 @@ export function UserProfileModal({ userId, onClose }: { userId: string; onClose:
       setAchs((earned ?? []).map((r: any) => r.achievement).filter(Boolean))
       setLoading(false)
     })()
-    return () => { active = false }
+
+    // Realtime subscription for presence updates
+    const channel = supabase.channel(`user_profile_${userId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${userId}` }, (payload) => {
+        if (active) {
+          setUser(prev => prev ? { ...prev, last_seen: payload.new.last_seen, status: payload.new.status } : null)
+        }
+      })
+      .subscribe()
+
+    // Force re-render every minute for timeAgo
+    const timer = setInterval(() => {
+      setUser(prev => prev ? { ...prev } : null)
+    }, 60000)
+
+    return () => { 
+      active = false 
+      supabase.removeChannel(channel)
+      clearInterval(timer)
+    }
   }, [userId, supabase])
 
   const lvl = user ? levelInfo(user.points) : null
+
+  // Расчет реального статуса
+  let currentStatus = 'offline'
+  let statusText = 'Не в сети'
+  
+  if (user) {
+    const lastSeenMs = user.last_seen ? new Date(user.last_seen).getTime() : 0
+    const isOnlineNow = user.last_seen && (Date.now() - lastSeenMs < 2 * 60 * 1000)
+    currentStatus = isOnlineNow ? 'online' : 'offline'
+    statusText = isOnlineNow ? 'Онлайн' : (user.last_seen ? `Был(а) ${timeAgo(user.last_seen)}` : 'Не в сети')
+  }
 
   return (
     <Modal title={loading ? 'Профиль' : (user?.full_name ?? 'Профиль')} onClose={onClose} maxWidth="max-w-[420px]">
@@ -64,15 +94,15 @@ export function UserProfileModal({ userId, onClose }: { userId: string; onClose:
           {/* Avatar + name */}
           <div className="text-center pb-5 border-b border-line mb-5">
             <div className="flex justify-center mb-3">
-              <Avatar initials={getInitials(user.full_name)} color={colorFor(user.full_name)} size={72} status={user.status} />
+              <Avatar initials={getInitials(user.full_name)} color={colorFor(user.full_name)} size={72} status={currentStatus} />
             </div>
             <h2 className="text-[19px] font-bold tracking-tight">{user.full_name}</h2>
             <p className="text-mute text-[13px] mt-1">
               {user.position ?? ROLE_LABEL[user.role] ?? user.role} · BAZZAR Group
             </p>
             <div className="flex items-center justify-center gap-1.5 mt-2 text-[12px] text-mute2">
-              <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLOR[user.status] }} />
-              {STATUS_LABEL[user.status]}
+              <span className="w-2 h-2 rounded-full" style={{ background: STATUS_COLOR[currentStatus] }} />
+              {statusText}
             </div>
           </div>
 
