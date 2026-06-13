@@ -133,11 +133,6 @@ await throttleRequest()
               prices,
               history: generateMockPrices(name).history, // History baseline
             }
-              market_hash_name: name,
-              icon_url: itemData.icon || '',
-              prices,
-              history: generateMockPrices(name).history, // History baseline
-            }
           }
         }
       }
@@ -173,11 +168,6 @@ await throttleRequest()
             p.priceRub = Math.round(p.priceUsd * rate * 100) / 100;
           });
           return {
-            market_hash_name: name,
-            icon_url: data.icon_url || '',
-            prices,
-            history: generateMockPrices(name).history,
-          }
             market_hash_name: name,
             icon_url: data.icon_url || '',
             prices,
