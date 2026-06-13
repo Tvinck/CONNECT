@@ -90,7 +90,7 @@ export async function fetchSkinPrices(name: string): Promise<SkinPricesResponse>
               prices.push({
                 source: src,
                 priceUsd: srcPrice.price / 100, // Pricempire prices are in cents
-                url: MARKET_META[src].url(name),
+                url: srcPrice.url || MARKET_META[src].url(name),
               })
             }
           }

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { SearchBar } from '@/components/skinscan/SearchBar'
 import { SkinCard } from '@/components/skinscan/SkinCard'
 import { SKIN_DATABASE } from '@/lib/skinscan/skinDatabase'
+import { getSteamCdnUrl } from '@/lib/skinscan/utils'
 import { Flame, Star, Sparkles, Trophy, ShieldAlert } from 'lucide-react'
 
 const CATEGORIES = [
