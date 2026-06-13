@@ -63,3 +63,68 @@ export function getSteamCdnUrl(iconUrl: string): string {
   const clean = iconUrl.replace('https://community.akamai.steamstatic.com/economy/image/', '')
   return `https://community.akamai.steamstatic.com/economy/image/${clean}/330x192`
 }
+
+export function getSkinBasePrice(name: string): number {
+  let basePrice = 15 // Default base price
+
+  // Knives & Gloves
+  if (name.includes('★')) {
+    basePrice = 200
+    if (name.includes('Fade')) basePrice = 950
+    else if (name.includes('Doppler')) basePrice = 800
+    else if (name.includes('Crimson Web')) basePrice = 550
+    else if (name.includes('Lore')) basePrice = 650
+    else if (name.includes('Tiger Tooth')) basePrice = 450
+    else if (name.includes('Autotronic')) basePrice = 380
+    else if (name.includes('Slaughter')) basePrice = 400
+    else if (name.includes('Marble Fade')) basePrice = 850
+    else if (name.includes('Vanilla')) basePrice = 300
+    else if (name.includes('Pandora')) basePrice = 1800
+    else if (name.includes('Kimono')) basePrice = 900
+    else if (name.includes('Plaid')) basePrice = 400
+  } 
+  // AWP & Snipers
+  else if (name.includes('AWP') || name.includes('SSG 08') || name.includes('SCAR-20') || name.includes('G3SG1')) {
+    basePrice = 12
+    if (name.includes('Dragon Lore')) basePrice = 9500
+    else if (name.includes('Gungnir')) basePrice = 8500
+    else if (name.includes('Desert Hydra')) basePrice = 1800
+    else if (name.includes('Lightning Strike')) basePrice = 220
+    else if (name.includes('Medusa')) basePrice = 1600
+    else if (name.includes('Asiimov')) basePrice = 120
+    else if (name.includes('Hyper Beast')) basePrice = 60
+    else if (name.includes('Oni Taiji')) basePrice = 280
+    else if (name.includes('Wildfire')) basePrice = 75
+  }
+  // Rifles
+  else if (name.includes('AK-47') || name.includes('M4A4') || name.includes('M4A1-S') || name.includes('Galil') || name.includes('FAMAS') || name.includes('SG 553') || name.includes('AUG')) {
+    basePrice = 15
+    if (name.includes('Howl')) basePrice = 3500
+    else if (name.includes('Lotus')) basePrice = 8000
+    else if (name.includes('Gold Arabesque')) basePrice = 1500
+    else if (name.includes('Fire Serpent')) basePrice = 650
+    else if (name.includes('Vulcan')) basePrice = 380
+    else if (name.includes('Case Hardened')) basePrice = 220
+    else if (name.includes('Printstream')) basePrice = 120
+    else if (name.includes('Asiimov')) basePrice = 60
+    else if (name.includes('Fuel Injector')) basePrice = 130
+    else if (name.includes('Bloodsport')) basePrice = 85
+    else if (name.includes('Empress')) basePrice = 55
+    else if (name.includes('Neon Rider')) basePrice = 45
+    else if (name.includes('Redline')) basePrice = 30
+    else if (name.includes('Searing Rage')) basePrice = 15
+  }
+  // Pistols
+  else if (name.includes('Glock-18') || name.includes('USP-S') || name.includes('Desert Eagle') || name.includes('P250') || name.includes('Five-SeveN') || name.includes('Tec-9') || name.includes('CZ75') || name.includes('Revolver')) {
+    basePrice = 6
+    if (name.includes('Blaze')) basePrice = 450
+    else if (name.includes('Fade')) basePrice = 950
+    else if (name.includes('Printstream')) basePrice = 60
+    else if (name.includes('Kill Confirmed')) basePrice = 50
+    else if (name.includes('Neo-Noir')) basePrice = 25
+  }
+
+  // Field-Tested baseline multiplier
+  return basePrice * 0.8
+}
+

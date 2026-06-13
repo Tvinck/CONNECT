@@ -2,7 +2,7 @@ export interface DbSkin {
   name: string
   nameRu: string
   iconUrl: string
-  category: 'rifles' | 'snipers' | 'pistols' | 'knives' | 'gloves'
+  category: 'rifles' | 'snipers' | 'pistols' | 'knives' | 'gloves' | 'smgs' | 'shotguns' | 'machineguns'
 }
 
 export const SKIN_DATABASE: DbSkin[] = [
@@ -847,6 +847,108 @@ export const SKIN_DATABASE: DbSkin[] = [
     "category": "rifles"
   },
   {
+    "name": "AUG | Death by Puppy",
+    "nameRu": "AUG | Death by Puppy",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_C9k7uepV6BoIeSbMWWJ_up5t-ZwcCW6khUz_W7RnNegdyqRPAcpDZdwQOAO5xW4w4C0ZemwtgHYjoNHniX6iSsd7Cx1o7FVmQFtzuc",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Midnight Lily",
+    "nameRu": "AUG | Midnight Lily",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_C9k7f6hZ6lSIvyGC1icyOl-pK8-FnDrlE8k62uAytipeSqRaFcoC8BwQbIM5xjtwdWzMr6ztAPd2YNA02yg2RS7P3lf",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Random Access",
+    "nameRu": "AUG | Random Access",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_C9k7Pu8a7FkNPKcD3WU_uFkse9uSha_nBovp3PcnImuIi2RbA8iD5B5FLYNtULqwdLuYbvg4w2Ng9hAziSvjnhBv31v_a9cBkz61Qws",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Flame Jörmungandr",
+    "nameRu": "AUG | Flame Jörmungandr",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_C9k5f28ZZtiMvGdCWKvzedxuPUnTn7glkly423Xy4yoJHOWaFR0A5YlQrNc5xXrm93hZejntQWN3YNCzzK-0H2szzSoFw",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Akihabara Accept",
+    "nameRu": "AUG | Akihabara Accept",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7vynZaFSIeWUMWuZxuZi_rZvSXDgzUV_tWWAydyqI3mQbVMiWJolTLQOtBS4w4a1MuznsVHa3YlbjXKpUc8HttI",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Chameleon",
+    "nameRu": "AUG | Chameleon",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV6dlIf2WAmKfz-9_ouRWQyC0nQlpt23VztercCjGbg90C8RyQOcMs0G5x93uZLm37wbe2owTz3j9iShI6TErvbi7ZmzWCw",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Momentum",
+    "nameRu": "AUG | Momentum",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV6liLfWdGnKd_uJ_t-l9ASi2zUp042SBno6sICrFbFMnCZR5EedftkPqk9ayMr_j71fXjo8XmXrgznQeFjVtTWM",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Torque",
+    "nameRu": "AUG | Torque",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV7R_L_eBC3SDyPhJvOhuRz39lxhxsm_WzN37Iy7CbAcmC8B2QuYPtRCwx9HvNr-xtQPaj95EmS__3TQJsHjrLu4xbg",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Fleet Flock",
+    "nameRu": "AUG | Fleet Flock",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV7d6IfyfAXCD_uJ_t-l9AXnmw0t252TVztercCmTZ1AmDMZ2RuBftRnsx4LhN-O0s1DYi9pEmCTgznQesuSvNik",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Arctic Wolf",
+    "nameRu": "AUG | Arctic Wolf",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk7uepV7NlKeSWCGaextF6ueZhW2frxxtxsGrTw46sI33BOAUiXMElFO4L50O9xNLvNOyz4lDd3olMzX6skGoXude_sLiC",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Eye of Zapems",
+    "nameRu": "AUG | Eye of Zapems",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf_jdk4OSrerRsM-OsCXWRx9F3peZWQyC0nQlp6m7WyNescHuQOlIiXMd3F7UMtxfuwdSxMunh5waMjdhAzSutj3hBvTErvbhjFS7Ncw",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Aristocrat",
+    "nameRu": "AUG | Aristocrat",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf-jFk7uepV6V_KeOHAWSCwPpJvOhuRz39w00j5WSDytyqI3_CPwAgXMd2E-Vc4US-koCxNOzq5AaMithNyij32DQJsHjdc8VZyg",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Sand Storm",
+    "nameRu": "AUG | Sand Storm",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf-jFk7uepV7dsLvSsHXOf0-NJvOhuRz39kxtzt2jcyNqsdy2TawElApolF7Zf50bsl9fvZuq05waMi44XyX3-2zQJsHjlDs_LaQ",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Stymphalian",
+    "nameRu": "AUG | Stymphalian",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf-jFk7uepV7d5Of2DBmacyO94j-NgXS2gqhEutDWR1Iz6cnqXOA8mD5shTOEPuhm-moHlZLnj4gLWjdhEzimr2n8bvC5q4e8cEf1yYjdCpmM",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Syd Mead",
+    "nameRu": "AUG | Syd Mead",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf-jFk7uepV7d0JM-eC2aU_uJ_t-l9AX_rkU9-5j_Ry42qcnuQbw5zCcMhQrINtRO-xIHvY-Ow4gPY2Y4UmSngznQeqqNNbYw",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Lil' Pig",
+    "nameRu": "AUG | Lil' Pig",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf-jFk4_uieK1qH_GGCVicyOl-pK84TXCwxRhx627SmNj6J3PFaQV2X5R1R7JctBixldfvY7u24ATY2owX02yg2cUR6r7A",
+    "category": "rifles"
+  },
+  {
+    "name": "AUG | Bengal Tiger",
+    "nameRu": "AUG | Bengal Tiger",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwi5Hf9Ttk-_upbbZSLPmUBnPeme1z5LU7F3_gxk9xtj6Em4yveCrDOgIiW5cjRrIL5hnuk9TkM-rr5hue1dxoTofnTA",
+    "category": "rifles"
+  },
+  {
     "name": "AWP | Fade",
     "nameRu": "AWP | Градиент",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLwiYbf_CNk7uW-V6JsJPWsAm6Xyfo45-c5GXDnwB534DuEwtuoIHOfaAYiAsYjF-QItUaxmoC0MO_h5ALcjJUFk3sEzfdk4w",
@@ -1309,6 +1411,132 @@ export const SKIN_DATABASE: DbSkin[] = [
     "category": "knives"
   },
   {
+    "name": "PP-Bizon | Osiris",
+    "nameRu": "ПП-19 Бизон | Osiris",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLr2cHW6CyP1JvOhuRz39xUxx6jiBz42rIHjBbAcnWZcjROcJsxjtmoXmNe_k5QHajtlNyC2r3zQJsHh050JUDA",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | High Roller",
+    "nameRu": "ПП-19 Бизон | High Roller",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-SAmuvyOBJvOhuRz39kEx1smnczomgJX2XbA4hC8BzRe9etxntldblMuyx5wfc2ooWni7_3DQJsHhZ08njvA",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | Antique",
+    "nameRu": "ПП-19 Бизон | Antique",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-SAHOZ0Ptzj-1gSCGn20sj4DnTyN2pdyjFOg4oXJV5Qu5c5xS9w4bjNL7q7gHd2INGxCn_iyxXrnE83Efvvd0",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | Judgement of Anubis",
+    "nameRu": "ПП-19 Бизон | Judgement of Anubis",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-QG3WDxNF6ueZhW2fkzU0isDvTnomsdS7BbwF0A8ElROJfshC8wN3jYu-2tQ3c2osTxCitkGoXuVioOA3_",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | Fuel Rod",
+    "nameRu": "ПП-19 Бизон | Fuel Rod",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-dAX-Zzvtlj-1gSCGn2xkhsW7Rzt3_c3OePQElW8R3F7IJt0Lrl9e0ZO_r4wHZiINEyij323lXrnE8VjeQjNs",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | Embargo",
+    "nameRu": "ПП-19 Бизон | Embargo",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-BAWaU_vl3ovNgQDuMmRQguynLnt37I3ifb1VyW8F4Te8D4UTrl4GxZru25FTZjI9GnCr5iC4YvSto4PFCD_TYHp-YNQ",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | Space Cat",
+    "nameRu": "ПП-19 Бизон | Space Cat",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1Y-s2sYb5iLs-AHmaTxO13pN5lRi67gVN04jvcmYv6IHnGbw51XsYmQO5ftBG9xoexNrix4gPYjIJEzX_2iX9I8G81tOIzQC5J",
+    "category": "smgs"
+  },
+  {
+    "name": "PP-Bizon | Blue Streak",
+    "nameRu": "ПП-19 Бизон | Blue Streak",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLzl4zv8x1T9s29eKhsNOSWHFicyOl-pK8-Hyzjx0t1sWjdy4v_dXyVaFcpC5ElTO4OsxSxkILjYu3k5wKM2dlG02yg2QMXfH6m",
+    "category": "smgs"
+  },
+  {
+    "name": "CZ75-Auto | Tread Plate",
+    "nameRu": "CZ75-Auto | Tread Plate",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2qYaVgL_6XMXecwPpzj-1gSCGn20l_62-Bzd39cH2QaAYoD8ckE-9csxmxx9biML_q4w3Wi4gTmSyvjShXrnE8FqKNMu4",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | The Fuschia Is Now",
+    "nameRu": "CZ75-Auto | The Fuschia Is Now",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s2ofbduKPmSMWuZxuZi_uM-Sn_hlhgi4D_RnImrJC3COFIoApB3FLUP4RS9mtSzYu_r7wHZjopbjXKpFZZFzGk",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Chalice",
+    "nameRu": "CZ75-Auto | Chalice",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a4s28Z71sLM-fB2CY1aBzsrQ5HnyyzBh25jzcyI3_dyqXaFcmC8ByReBZuxi-lYXlMei05FSPlcsbmsOlfuvI",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Victoria",
+    "nameRu": "CZ75-Auto | Victoria",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1a_s2rfKdlJfSsDX3HlNF6ueZhW2fkk04i5WrXmY2sc3qfPFAlWZd3EOdY4Bi6loCxPu7h51fZjNlGzST5kGoXuTXAF0gA",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Slalom",
+    "nameRu": "CZ75-Auto | Slalom",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2vard5MvGQGliHyeditd5qVRa_nBovp3Pdzt3_eSqUOA4hDpB1EbQPshXqkdPmPrm04APXjdhExXis2C1N7io9_a9cBtMaUZjs",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Tigris",
+    "nameRu": "CZ75-Auto | Tigris",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tP_FsbeSaCWKC_uJ_t-l9ASvil0R15WjUmYmqc33CaQ91W5QlRbVetETtwNC1P-u34g2L2dpEmS_gznQebcVQ6rs",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Eco",
+    "nameRu": "CZ75-Auto | Eco",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tcvM4H_WQAVicyOl-pK87HivqxR5xt2_Qnt6qI3-fPFciWJBzRuFZ5Ba_moG0Mrm04lfajYwQ02yg2Q7xomN1",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Pole Position",
+    "nameRu": "CZ75-Auto | Pole Position",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tcvM4H-CBC2SZ0ud5vt5lRi67gVNy4mTdzdmgc33COg90DcB2FuMPtxLpldSxZeLn4w2K34NCzXj9hnsY8G81tCL36RK-",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Yellow Jacket",
+    "nameRu": "CZ75-Auto | Yellow Jacket",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1Y-s2tcvM4Ic-QBmaD1edstfNWQyC0nQlptjjRn9z8cHjBbgB2WccmFOAPukbux9zlP77nsQXf3YxFzSX9iy9AvDErvbgg0Q8tFg",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Tacticat",
+    "nameRu": "CZ75-Auto | Tacticat",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1c_M2tcvM4H-SSDXOZwu9ij-1gSCGn2x4k5zvVm9z8IH7FZwFyCJckR7NfshSwwNGyMLzn41fejINHn3r6jy5XrnE8D8_CCNo",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Red Astor",
+    "nameRu": "CZ75-Auto | Red Astor",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1c_M2tcvM4Ic-BC2OR0vp5ot5lRi67gVMh5D_cwor7cy7GZ1UpA8F0QrQP5BjuwdHiZr7r5FeNjIpAmyT8hnlI8G81tORsc2LX",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Xiangliu",
+    "nameRu": "CZ75-Auto | Xiangliu",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1c_M2tcpt-LvGYC3Sv0ftkoO1scCW6khUz_WTcw9r7JH7BOgApApojQuBb5kO5lNO1ZO_h4VaM2o5Gm36s3HgbvH51o7FVgkdxNDg",
+    "category": "pistols"
+  },
+  {
+    "name": "CZ75-Auto | Syndicate",
+    "nameRu": "CZ75-Auto | Syndicate",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLyhMG1_B1c_M26eqVkLs-QFDDF_uJ_t-l9ASjglxhw52rQy974IirCa1UiC5R4RbJbsxjrk9SxMb7k4lfZ2o9AzirgznQeG7VwMmI",
+    "category": "pistols"
+  },
+  {
     "name": "Desert Eagle | Blaze",
     "nameRu": "Desert Eagle | Пламя",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL1m5fn8Sdk7vORbqhsLfWAMWuZxuZi_uI_TX6wxxkjsGXXnImsJ37COlUoWcByEOMOtxa5kdXmNu3htVPZjN1bjXKpkHLRfQU",
@@ -1471,6 +1699,96 @@ export const SKIN_DATABASE: DbSkin[] = [
     "category": "pistols"
   },
   {
+    "name": "Dual Berettas | Cobalt Quartz",
+    "nameRu": "Dual Berettas | Cobalt Quartz",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a4s2ter1-NPGfAm6KxOpJsu18Sha_nBovp3OGm92vdXyWOgN2Dcd2E7Zfsxa7kNe2Zbm2slSN2N1HnCmqi39MuCc6_a9cBtlhe-EA",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Hemoglobin",
+    "nameRu": "Dual Berettas | Hemoglobin",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1a4s2he7dkJumsHGKU_uJ_t-l9ASjjxEgm4mWHzYuhdi-RPVByD5pxF-ULshS6xofjMrzgs1eIiIxHnnrgznQe0T5dj0k",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Flora Carnivora",
+    "nameRu": "Dual Berettas | Flora Carnivora",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s2qfaVhH_WfB3OV0tFzpuhlcC-_mg8mjDGMnYftbynGOA4lDZd4FOZYuxi6kdPvZuLrsgTW2IIQxXn7iSNJ6ic96-YCB_I7uvqA4cV5qzc",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Twin Turbo",
+    "nameRu": "Dual Berettas | Twin Turbo",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s2qfaVhH_WfB3OV0tFkse1lVha_nBovp3OHytv8JCnBbAF1X5MjR7UPsBfrmoHuNr7nsgbfjdlAxSr63CIfuChr_a9cBiuNovOB",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Melondrama",
+    "nameRu": "Dual Berettas | Melondrama",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s2rZK15JeOsDGKHwPxzj-1gSCGn20t_5TiBmdf9Jy-QaQIiW5F1E-BesxG9lIaxNuLj41He340Ryi79ii5XrnE8Xl7Qhlk",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Urban Shock",
+    "nameRu": "Dual Berettas | Urban Shock",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s2rZK15JeOsG3WSwOBlpO57Qha_nBovp3PQzI6pc3iRZ1cjC5dzQe4CsxPtwdHjMevq41CLjIpMm3_5jypN7Cxp_a9cBoxgoAoS",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Sweet Little Angels",
+    "nameRu": "Dual Berettas | Sweet Little Angels",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1Y-s2hfqF_MPGAHViSwOxvj-V8TiW6kA4YvzSCkpu3dHrEag8oCMd2EeMCtRa5xIbkZuuxtVbb2IhHz3_7hywavH1s6-lTB71lpPNncouquQ",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Angel Eyes",
+    "nameRu": "Dual Berettas | Angel Eyes",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1f-vOiV6FhKeSWMWWZw-J_s-BlcCi9khgrjDGMnYftb32WZlN1W8B5R7UN50brwYDlPrm3s1CPjYoXmCn3hnlJuCpi574EAqA7uvqAcmHsw_M",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Hydro Strike",
+    "nameRu": "Dual Berettas | Hydro Strike",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1f-vOiV6FhKeSWMW-Jxfx5j_J9XSC4kCIrujqNjsGgeHrGa1B2W5t1Q7NetkOwk4C2Ybzq4FDWjI0TzS6viilLv3tp6rwLT-N7rWtjCU_P",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Royal Consorts",
+    "nameRu": "Dual Berettas | Royal Consorts",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1c_M2qfaVhH_KWHGKE1e9lj-ZmQy22myIxtjOMmYrGLSLANkI-C5AjFOcM5EaxxtTmPrnl4Q2Ki91Eyyz32y1Luyk44u4LUqEjr_ff3BaBb-MmOWu8Lw",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Dezastre",
+    "nameRu": "Dual Berettas | Dezastre",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1c_M2qfaVhH_WfB3OV0tFytftoXD2hkCIrujqNjsH4c3qeOgR2XpJzFOcD4BK_m4HmN7mx5wGIjthDxHn23yhLv31u6u4HT-N7rWmjRO8T",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Cobra Strike",
+    "nameRu": "Dual Berettas | Cobra Strike",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1c_M2qfaVhIvWBC3OEwP1Js-5rXSiMmRQguynLydn9JXmUOwMgCsN1EbMPsRHtxoDuZrzm4VTait4Tzn_-jn4f7ipu4fFCD_Qo-zseRg",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Duelist",
+    "nameRu": "Dual Berettas | Duelist",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1c_M2jZ7BlJeKsAWGv0et3ou1WSiW6gRgYvzSCkpu3dn-RaFdzDZV4F-RZtxW7w9fgM--x5geNjooUyH3-iS5K53pq47wLUr1lpPNOmOBZwg",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Marina",
+    "nameRu": "Dual Berettas | Marina",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1T9s2jabZkLvGsHXKe0-dltd5lRi67gVN34DuDyoytIH3EPwYnDMYjROde4RC9lIDnZO_i51TejdoRxSWrhn9B8G81tGB0zZHS",
+    "category": "pistols"
+  },
+  {
+    "name": "Dual Berettas | Demolition",
+    "nameRu": "Dual Berettas | Demolition",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL0kp_0-B1I4M26aapqJeKaAGKvzOtyufRkASrhkEV-sWXRy4qudH-XbAJ1WZF1E7EDt0G8k4e2M-_q5FOLi4NHzX7gznQeYfmGzpI",
+    "category": "pistols"
+  },
+  {
     "name": "FAMAS | Neural Net",
     "nameRu": "FAMAS | Neural Net",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1a4s2oaalsM8-XAXOD_uJ_t-l9AX_lzB8ltmXcnoqvInjEPQEoC5AjELRY4Rm_lIDmM7zlsQ2L3YsQxHngznQe8yNao04",
@@ -1577,6 +1895,144 @@ export const SKIN_DATABASE: DbSkin[] = [
     "nameRu": "FAMAS | Spitfire",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3n5vh7h1I_829eK15JvmBC1iWwON3o95rXSilmiIrujqNjsGhI3ueZwJ1CMZ5ROYLthjqm9TuMeq2tgXWiYlDmy_733wd6S5isOcKT-N7rQ0Sk12j",
     "category": "rifles"
+  },
+  {
+    "name": "Five-SeveN | Berries And Cherries",
+    "nameRu": "Five-SeveN | Berries And Cherries",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRaaVSJvGXC1iCxOpJsu18Sha_nBovp3OEmY2vIi_FagEoDMMjQuMKthDqm9TjP-O3sVSLio0Qnnr22i0f7C9t_a9cBnO-dw69",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Copper Galaxy",
+    "nameRu": "Five-SeveN | Copper Galaxy",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRaalSI_-DHmKC_uh6teJiXBa_nBovp3OAnN_6cXvEOwFzDcFzQ7Vc4BPuwNy0M7jk5gWL39pCnC35jShN6S1p_a9cBt8cUyQh",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Fowl Play",
+    "nameRu": "Five-SeveN | Fowl Play",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRabVSdaesCGKR1eZzovJWQyC0nQlptm_Vw9ercnOUaA8lA5skFuIPsxPqmtXkNu205lfYiN8XnCyvj3hNvDErvbiIo1idJQ",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Heat Treated",
+    "nameRu": "Five-SeveN | Heat Treated",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRabVSI_GAC1iYwPxyte9sSxa1nAsioDiTn4HGLSLANkI-D5pxEbIDu0btkoXlNuO24wDZ2YhDmH7923tI7ClrsblWAqMj-KPRiBaBb-NawNZy0w",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Case Hardened",
+    "nameRu": "Five-SeveN | Поверхностная закалка",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRabVSL_mfC2OvzedxuPUnH3C1kRsi4jiAw4qtdXjCO1V2WcZxF-EO5xLsxtHmMeKw5g3fit4TnDK-0H1W4XC76Q",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Angry Mob",
+    "nameRu": "Five-SeveN | Angry Mob",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC1iDxPhzvt5oQS6hjCIrujqNjsH_cy2RagUjA8BwR-de5hjskNflNrnqsgaLiYgRyyythitM7Hw-sekKT-N7rXEld5dH",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Fairy Tale",
+    "nameRu": "Five-SeveN | Fairy Tale",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC1iDxPhzvt5tRiihjCIrujqNjsGtdi-UbVUgXJAlRrFfuxi-lNbuPr7ltA3cjtkRzyit2H8c7H1t4O9TT-N7rZbBTJfn",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Triumvirate",
+    "nameRu": "Five-SeveN | Triumvirate",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j-B8SCS2mwkitwKJk4jxNWWXPAZzD5pwTeBetUPtw4C1N7jh5A3bj48RxSyqiiwc7Sg6tr0ABaAk5OSJ2O3yTJMF",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Monkey Business",
+    "nameRu": "Five-SeveN | Monkey Business",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j-NoQSi9lCIrujqNjsGheXmXPQcoWMFzEO5ZtUOwkILjY7yzsg3ci91DySiohn4buCht4eYET-N7rZVO80Su",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Buddy",
+    "nameRu": "Five-SeveN | Buddy",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j-Z6SHCMmRQguynLw4r9IHiRbFdzA8FzELYL4xntw9e1Mu7q5laMjN5AzXiqinxI6iw_t_FCD_TZbg2oLg",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Hyper Beast",
+    "nameRu": "Five-SeveN | Скоростной зверь",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j-lwXyyhlxgmoCm6lob-KT-JO1QgWZVyELEPu0W4l9KzYbzn5Fbf3YkTzn_8hihIvXxtsOoFUKYirLqX0V_f6-eqCw",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Retrobution",
+    "nameRu": "Five-SeveN | Retrobution",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSJvmFC3SV1-t4j_NsWzu8lwgzujKLpYPwJiPTcAByWJB4TOULsxS5wNfmPuzjtQHciYpHmCuqhypJvSlr4LsGBaEmr_bJz1aWW-JyGhc",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Fall Hazard",
+    "nameRu": "Five-SeveN | Fall Hazard",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRa7FSNvWBGm6XztFwufdsXCylkBMYvzSCkpu3Ii-QbQ51XJpzQ-8PsUOwmoLvZLm3sQfb3tkTxHj-hytBv35jt7wFBL1lpPNwauo7lw",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Hybrid",
+    "nameRu": "Five-SeveN | Hybrid",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRbq17JeOWGGKe_uZvsvNgSxa_nBovp3OBmd6oJXyeaQ9yCsZxEOICsUO7kdK0Y-qxtFCN2YsQnCv7i39N7ixp_a9cBsh2vVQD",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Boost Protocol",
+    "nameRu": "Five-SeveN | Boost Protocol",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRb7dSJvmFC1iDxPhzvt5sSTygnBIpjDGMnYftby7FalV1D5QhE-EDthW8xtCyPu63tFPciYhBynn_jykfuCttte4CA6E7uvqAn_5lxU8",
+    "category": "pistols"
+  },
+  {
+    "name": "Five-SeveN | Neon Kimono",
+    "nameRu": "Five-SeveN | Neon Kimono",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL3l4Dl7idN6vyRYL1SK_meAWmf_up_sexmQS2gqhEutDWR1In4di-TagIkXMMiF-Vcthm5kNbvML604Ffdgt4WzCj22ikau35q4OwcEf1ySWJgvKc",
+    "category": "pistols"
+  },
+  {
+    "name": "G3SG1 | Chronos",
+    "nameRu": "G3SG1 | Chronos",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1Y-s2tYLZiLv-AMWDD0uknj-1gSCGn20R1sG3dyt2qdyiWbwB2A8R0QeJcska6x9znNurrsgWNjooWxX37iyhXrnE8dtReaHc",
+    "category": "snipers"
+  },
+  {
+    "name": "G3SG1 | The Executioner",
+    "nameRu": "G3SG1 | The Executioner",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1Y-s2pO7dqcc-WFmKT1Pp_v-9sXRa_nBovp3PXmdyseC3DOFN1DJZ1TeIOtEKxmoG2PuKwsgOPgoxGzyr7jnhPvXlq_a9cBnGZIRC4",
+    "category": "snipers"
+  },
+  {
+    "name": "G3SG1 | Dream Glade",
+    "nameRu": "G3SG1 | Dream Glade",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1Y-s2pO7dqcc-UAmaUxNF6ueZhW2e3wkl162TVmdqvd3mUPw9yDJZ4FOYJ4UKxkNfiNrvn4QCMjdlHmHj6kGoXub9gXKkW",
+    "category": "snipers"
+  },
+  {
+    "name": "G3SG1 | High Seas",
+    "nameRu": "G3SG1 | High Seas",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1c_M2pO7dqcc-RG2STwOBztfNWQyC0nQlp4j7Syt-rdHPEOAIjCpV5TLQK40K5wdLjY-_r7wfeio1AySiriCIf6DErvbj1Mwus0A",
+    "category": "snipers"
+  },
+  {
+    "name": "G3SG1 | Flux",
+    "nameRu": "G3SG1 | Flux",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1c_M2pO7dqcc-VAnKI_v5jovFlSha_nBovp3ODz9uoc3vGOgMmApp3QrFe5xftm9bjNOm24Afb3YlBn3mqjS8dvy1p_a9cBmtTF-_C",
+    "category": "snipers"
+  },
+  {
+    "name": "G3SG1 | Scavenger",
+    "nameRu": "G3SG1 | Scavenger",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1c_M2pO7dqcc-AD3GRxutJvOhuRz39xkl2tziGmNf9JX-WPQcpAsEiQOUNsBixx4bmN7nj5FHb3Y9Cyiz-hzQJsHglCU9Y5w",
+    "category": "snipers"
+  },
+  {
+    "name": "G3SG1 | Stinger",
+    "nameRu": "G3SG1 | Stinger",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL2zYXnrB1c_M2pO7dqcc-FB3eV09Fvte1lQD6MmRQguynLyo6rdH-RPAZ0D8chQeIL50TukdK2P-_rtFPejN8WmH34jylJvHtq5fFCD_TvHmnxYA",
+    "category": "snipers"
   },
   {
     "name": "Galil AR | Rainbow Spoon",
@@ -5011,6 +5467,30 @@ export const SKIN_DATABASE: DbSkin[] = [
     "category": "knives"
   },
   {
+    "name": "M249 | Aztec",
+    "nameRu": "M249 | Aztec",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wiNK0P_8PP1SIeqHC2SvzedxuPUnTirnwEslsT6Gzd2sJHLCOlUpWJohE-MMsxW6l9GxPuy24AyL398QnjK-0H18Ww4Zdw",
+    "category": "machineguns"
+  },
+  {
+    "name": "M249 | Downtown",
+    "nameRu": "M249 | Downtown",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wiFO0P_8PP1SJP-EAHGf1etJvOhuRz39wUh-5GuGz4mrJHuSbg4jWJp1FLINsRCxwdDuZezm7leK3d5GmSr_jTQJsHj3YwoNRA",
+    "category": "machineguns"
+  },
+  {
+    "name": "M249 | Nebula Crusader",
+    "nameRu": "M249 | Nebula Crusader",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wiVI0P_8PP1SLvWRG2uR_u1kpfJoSyyhqhEutDWR1Ir_JSiXOgciDJN4RucCsRW8w4KyZu_q5FeLjN4RnCmt33lP7nxv5-wcEf1yLX15hXE",
+    "category": "machineguns"
+  },
+  {
+    "name": "M249 | Emerald Poison Dart",
+    "nameRu": "M249 | Emerald Poison Dart",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8zMK5wjFL0P_8PP1SJuKcCVif0-dxue9oQxa_nBovp3PRzNb8JX2VO1IpDsclRrEPtxXtxNSxYuuw4QHai9gWyCT2j3gYuHlt_a9cBlcR8wa2",
+    "category": "machineguns"
+  },
+  {
     "name": "M4A4 | Daybreak",
     "nameRu": "M4A4 | Daybreak",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8ypexwiNW0PmnZatjL8-AG2mCyP1zj-1gSCGn2xgl5mjRzd2qeXmeO1coDZpxEeUJsxnrwYaxY7-w4wTb2NpGz3762yxXrnE8iKAzA8Q",
@@ -5419,6 +5899,528 @@ export const SKIN_DATABASE: DbSkin[] = [
     "category": "rifles"
   },
   {
+    "name": "MAC-10 | Last Dive",
+    "nameRu": "MAC-10 | Last Dive",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a7s2jaac8cM-HBmKvze9lpN5tRj-2qhEutDWR1N76Iy_BblUnCZd5QLFesEXrmtWzMui05wPc3o4TnnqojS8au3094ekcEf1ydsF2boo",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Gold Brick",
+    "nameRu": "MAC-10 | Gold Brick",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a4s2pZ6hpH_KBB2Sb_uJ_t-l9AX2wwhl35jzRw4yodymWO1R0X5V0FrRc4Bi-m4DuY-2xsgzY39oRmSTgznQe6Q1Q_KE",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Malachite",
+    "nameRu": "MAC-10 | Malachite",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a4s2jaac8cM-eD2uRwuZ_pORWQyC0nQlpt27Uw4yrJy_FOlQpCJp2Te5Y5hPqw9HuYePksVaKjt0TmS_2hihJuDErvbgNFzWT1Q",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Red Filigree",
+    "nameRu": "MAC-10 | Red Filigree",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a4s28bapSMvWXMWuZxuZi_rk6F3DixUt_5W3Vn96odS-fO1N0D8MkQu4NukG4kdbiN7yw5gyLjdpbjXKp1e3DB44",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Graven",
+    "nameRu": "MAC-10 | Graven",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a_s2rfKdlJfSsA2aTkL5JsvNoWSaMmRQguynLztytdHieOA92W8N5Re4D4ELtk9O2Nbnq5FfWjIkRn333hn9O731j4_FCD_RXlm8jng",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Case Hardened",
+    "nameRu": "MAC-10 | Поверхностная закалка",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1a_s2hYahoJM-fB2CY1aAituJtTnvjkUx3tziGmd6hJy-VZlAoWZtwFLRZ5EbpwNLvYb-zsgOKlcsbmn9_3b1O",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Tatter",
+    "nameRu": "MAC-10 | Tatter",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2lZ7Z4MOSsAm6Xyfo4tbY7H3q1xRt152TWyt6tc3ifaVcmDppxReVethawlYHmNO6ztQbciJUFk3uxmhdQIQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Curse",
+    "nameRu": "MAC-10 | Curse",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XuWbwcuyMESA4Fdl-4nnpU7iQA3-kKnt_CEKv7yrP_I4dvXLWDLBk7Yis7ZqTHHrwktwtz7Sz4mtdHyUPAQpDpV5F-cLrFDmxRuwA7jf",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Allure",
+    "nameRu": "MAC-10 | Allure",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-aHWifz-B3j-1gSCGn209w626GnNuucC2SaFMiC8B3FuUJ5kW7wdPnZe7g7gyP2Y4Ry3_5hnlXrnE8RS4Y9Xw",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Disco Tech",
+    "nameRu": "MAC-10 | Disco Tech",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-dD2SCxNF6ueZhW2frkR5z4m_SyY37cnKRblIpW5smQOcO4EW7lYa1ZOjgtFCLg4wXnn72kGoXuTa4h8QB",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Neon Rider",
+    "nameRu": "MAC-10 | Неоновый гонщик",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-dC2ie0-dytfNWQyC0nQlp5DzTntmgdC7COABxX5NxQrUOtUS5w4LgMu6zsVCK2IJCmyisjitM6DErvbicsEA0SQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Button Masher",
+    "nameRu": "MAC-10 | Button Masher",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-DAXWEwOx6td5lRi67gVN04GjXnIr7JyiSbQJ2W8Z4QuEItBS_kdyxZurnsVfcjYgTzH6r2ClN8G81tG_8yXMP",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Propaganda",
+    "nameRu": "MAC-10 | Propaganda",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-DHGiAwOl3vuVocCW6khUz_T_WzN6hcHOQaQIgCZIlFrEPtUS7wdW0Ne6wtFTYj9pAzyr-3SxP6n11o7FVcf1yckU",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Heat",
+    "nameRu": "MAC-10 | Heat",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-BC2OYzvpJvOhuRz39xR5w4GzUyo6pdnuUawMpWJokTLUL50K6l9XiNO7i4lGKiYsRxCv6jTQJsHim4lDW8g",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Sakkaku",
+    "nameRu": "MAC-10 | Sakkaku",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-AD2ybwOVjj-xsSyCmmFMk5mnRzdeqdSnCPVN2DpV3QeELtELrlIbiPrzqsVOMjdlBnySvjH5O8G81tOTP5a5f",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Toybox",
+    "nameRu": "MAC-10 | Toybox",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1Y-s2jaac8cM-HAX6SzvZJvOhuRz39zRkismnVy9uveXqfZgYpW8R0TLRbshHtx9HvN77g5Qzbi4wTyniojTQJsHhO4vjwuQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Pipe Down",
+    "nameRu": "MAC-10 | Pipe Down",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1c_M2jaac8cM-WFmiv0edmtfJWQyC0nQlpt2rRwtqhdHjFa1N1A5ZxEO4MukW4lNayNrnhsVDc3YxGzir9iXkc7DErvbgEiQoeZQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Hot Snakes",
+    "nameRu": "MAC-10 | Hot Snakes",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1c_M2jaac8cM-AAGabxNF6ueZhW2fhlEwk4DmDzYr9dnvGbgFzDJojFrYMsBS7m9PhMLjh5APZ2IlCnC2qkGoXufthzYDr",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Stalker",
+    "nameRu": "MAC-10 | Stalker",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1c_M2jaac8cM-AGmacyutkj-1gSCGn20V0t27Tw974Jy-WOg9yW8N3QOQDsxG4x9O0ZOPqtgHZ399HzST8ji9XrnE8CxAHwFY",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Cat Fight",
+    "nameRu": "MAC-10 | Cat Fight",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1W7vH_OJtmIf2aDWaE2-tJvOhuRz39l0lx42_Qz9v_cC2SagNyX8RwEbZbskHpltKzYriw4QPeioIWxXqv3DQJsHgCTO4phQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Saibā Oni",
+    "nameRu": "MAC-10 | Saibā Oni",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1W7vH_OJtiOvGYB1icyOl-pK89HXuxkRt2627Syt2udn6TZlJyW5R0QuMKsRm6lNflNO3g7lfbi49H02yg2Yk7YeQ4",
+    "category": "smgs"
+  },
+  {
+    "name": "MAC-10 | Derailment",
+    "nameRu": "MAC-10 | Derailment",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5WxrR1W7vH_OJt5MvGaAFiT0-9luN5lRi67gVN14j6Gy9_7cSqQZw4hW5BzEeICthW6kYe1ZO_ntQ3e2olGnn-vhygY8G81tHTA36iF",
+    "category": "smgs"
+  },
+  {
+    "name": "MAG-7 | SWAG-7",
+    "nameRu": "MAG-7 | SWAG-7",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiNK0P-vb_NSM-eSCTCvzedxuPUnHirhkxhxtzvRzI38dnLEOlQnW5N1F-FZtRG6kYLvPu205ADaj40RnDK-0H0F4y2tgg",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Monster Call",
+    "nameRu": "MAG-7 | Monster Call",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiFO0P-vb_NSLf-dHXOV09F1se1lcCW6khUz_WncmIz8JHmTa1JyApd5FLEMsES-kNDhM-3i5QKM2Y5AzSr9jngY6Cp1o7FV7cAHRyI",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Heat",
+    "nameRu": "MAG-7 | Heat",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiFO0P-vb_NSMvWXBmiE_uJ_t-l9AX7nzBsk623dm46odHmUbFd1Dcd2RbINtBXtkNDjMbzj5AGKjt4UyijgznQe8JftFTE",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Petroglyph",
+    "nameRu": "MAG-7 | Petroglyph",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiFO0P-vb_NSNOKaDGac_uJ_t-l9AXm1kUQl4TzcytqpeSjFagMkW5AiQbZYsEG_mtTnN-jq4AWLidpNnC3gznQeOK4te4s",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | BI83 Spectrum",
+    "nameRu": "MAG-7 | BI83 Spectrum",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiVI0P-vb_NSIvmAA3KEydF6ueZhW2fml0Vw4mWGnN2udHmSOgAoCJMjQOJY4xK8k9XvPu-x5Qba2N5HzH73kGoXuQbKMJGE",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Cinquedea",
+    "nameRu": "MAG-7 | Cinquedea",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiVI0P-vb_NSJ_ySHXSvzedxuPUnSijmlh9x4D-BnNyuJ3LCbAVzAsdxFuRe5EPpw9XiMbvh5lHYiYwQyjK-0H3Th2Gpiw",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Justice",
+    "nameRu": "MAG-7 | Justice",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiVI0P-vb_NSKuWAGm6TxNF6ueZhW2fikUt36znWyNz_dn2ROgMhD5EiR7EO5BKxl4DlMLyx7gyNi4hAniz5kGoXuQ9OXJLa",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Praetorian",
+    "nameRu": "MAG-7 | Praetorian",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wiVI0P-vb_NSMOKSC3Of0-d3vt5lRi67gVMl5j_VzIr_eSnBbw4iXsR2FLZfsRi6x9LvNOqw4FePid4UmCX2iC1J8G81tOf1qE-m",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Prism Terrace",
+    "nameRu": "MAG-7 | Prism Terrace",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wipC0PWrZ6loNOKaDViD1etmo955SiihmSIrujqNjsGrcX3GbAB2AsdyQLMOsESxktPgMOKw7wOMgt4WmSv5jS1M63lpsedRT-N7rVBJ5qCN",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Core Breach",
+    "nameRu": "MAG-7 | Core Breach",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wipC0Py7a6hoIeKsBmiEzvx3vuZscCW6khUz_WzdnoyvIHvGPFJzD8B0QrINshPtw9fmYunrsw2PiNlEnC_5iy5L5y11o7FVg__4LKQ",
+    "category": "shotguns"
+  },
+  {
+    "name": "MAG-7 | Bulldozer",
+    "nameRu": "MAG-7 | Bulldozer",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8n5G3wjFU0OurZKhiN8-fB2CY1aAn4bMxFijqzB5z4WjdnI2vc3nFbFcpCpomR-8NtxK_x9W2MO_k5VDYlcsbmtRYf5JR",
+    "category": "shotguns"
+  },
+  {
+    "name": "MP5-SD | Agent",
+    "nameRu": "MP5-SD | Agent",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1c_M2jePFSJvKaMWuZxuZi_uU6Gn7glhxytWSAy4uqI3yTbA90WcQkRu4K5BG6x921Nb_q4w3f3YlbjXKpj8G4GlA",
+    "category": "smgs"
+  },
+  {
+    "name": "MP5-SD | Phosphor",
+    "nameRu": "MP5-SD | Phosphor",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1c_M2jePFSJvWAGm6GwOJJtPNgXxa_nBovp3PRzd-vdCqQOgYgCMYkRrECskLuwdfkZeqz5QKMjYwUnHj33SlI630__a9cBl0Wy4S-",
+    "category": "smgs"
+  },
+  {
+    "name": "MP5-SD | Oxide Oasis",
+    "nameRu": "MP5-SD | Oxide Oasis",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1c_M2jePFSLvWcAFiWzet9pOB7QRa_nBovp3OAmYr_cnLFOlN0A5d4Qu4KtRi6lYG2Mr7n4QCLg48Tm3_-3yxOvSdj_a9cBsgSaNGx",
+    "category": "smgs"
+  },
+  {
+    "name": "MP5-SD | Gauss",
+    "nameRu": "MP5-SD | Gauss",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1c_M2jePF-JM-SHXOCzuN3pOhqcCW6khUz_WzTzYmhJXuSaANzW8EkQ7JZ4BjsxtSzYezr5lbfidlEzC-vjnxK7ih1o7FVYPX5q0o",
+    "category": "smgs"
+  },
+  {
+    "name": "MP5-SD | Kitbash",
+    "nameRu": "MP5-SD | Kitbash",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1c_M2jePF-JM-ED3SExOJ3vuVWQyy0lB4-jDGMnYftb32XZ1NyX5B5QuJcthi7k9K0Ye6zsQeP2IMRyiX4iSJLvC5q6-4HUaY7uvqAsG-atjE",
+    "category": "smgs"
+  },
+  {
+    "name": "MP5-SD | Lab Rats",
+    "nameRu": "MP5-SD | Lab Rats",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1T9s2iaaZ_IeSsA3fF_uJ_t-l9AXrhxh4l5G_Um9eoJX6WaAVyXMN1RbYM5Bi4wN21Yuq0swTdidhMzSTgznQed7nbwhE",
+    "category": "smgs"
+  },
+  {
+    "name": "MP5-SD | Autumn Twilly",
+    "nameRu": "MP5-SD | Autumn Twilly",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsPz-R1T9s26eqVkLvGBDW-Z1et1pN5lRi67gVMj5DiAw9avcn-XOlQoDMEjFrYOsETpkIfuYb-x7gaNj9pMzX74inwb8G81tAuAxr4i",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Fade",
+    "nameRu": "MP7 | Градиент",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_CNk6fOqbZtgMKesAm6Xyfo45LQ7Fy3rzR536j6HyYn6J3zFaAcjA5RwQ-9fs0O5m93nMe2x5QHfjZUFk3sMNd5yQw",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Ocean Foam",
+    "nameRu": "MP7 | Ocean Foam",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_C9k4OG9YaJ0H_KfG2KvzedxuPUnGX6xlEl2tWmEzdyrd32RbQ5yXpB5RuIK4xaxxIGzY7zl5gza2YITnzK-0H3lsKvKCA",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Special Delivery",
+    "nameRu": "MP7 | Special Delivery",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5V6dhIeOAB2GZxOpJvOhuRz39xRhytjuBm9n4d3yXbQF1XJAhQLID4BTskobhZb-35wXZ2toTySz2jTQJsHhDRFQUDw",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Abyssal Apparition",
+    "nameRu": "MP7 | Abyssal Apparition",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5V6JoIeKsAm6Xyfo45uc9GnnnzBh-5zzTw9n9I3mQPAEgD5YlFuIOthC6wNK1MeKwsgHeiZUFk3vcOiyhPQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Nemesis",
+    "nameRu": "MP7 | Nemesis",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5V6poLeOaHVicyOl-pK87Hyu1kR5_5j_WntigcXmXOlBzCZUjQeMLtBG6x9HuNrvl4gCP2I1B02yg2TXalB0S",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Neon Ply",
+    "nameRu": "MP7 | Neon Ply",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf_jdk4uL5V7ZoMPyaDWavzedxuPUnGS2wzBglsm6AnNyqJHLBOAdyCZV0ELIN5xC6kNThY-jqslbbid4WyjK-0H0WWbSZ_g",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Bloodsport",
+    "nameRu": "MP7 | Кровавый спорт",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf-jFk4uL5V6ZhL_-XHXef0_pJvOhuRz39lxsk4W3Ry96pIHrFOgElDZN2Q-9etUSwk4LnYu3h5wLejYwWxSr43zQJsHiIGMoJQA",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Powercore",
+    "nameRu": "MP7 | Powercore",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf-jFk__25bbZuL-KWMWqAltF6ueZhW2fjkE114W7Vzduqdn2XOAYhXpMlEeQI4BW9kofiZOzq4VHXg9hGzi78kGoXuRPPGxs7",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Amberline",
+    "nameRu": "MP7 | Amberline",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf8DIM0POjaqF_LPmdC1icyOl-pK9rTCzlzBx14m-AyNupdXqfaQElXsN0QLICsxSxw4HjZuzm4gePjY5C02yg2Z3LgsMw",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Just Smile",
+    "nameRu": "MP7 | Just Smile",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf8DIM0Pi7e7BSM_2aAmKvzedxuPUnHXrkzU4i4z-Dno6sci3BaQApDpN4R-cCthnqx4W2MunhtgCI3d0QmzK-0H0MYFOvtA",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Smoking Kills",
+    "nameRu": "MP7 | Smoking Kills",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf8DIM0OGjZ69kLvesBW6czf1JprNWQyC0nQlp4z7QmI2pdyjEP1ByD5BwTLQDsRXrktXjP-ri5FHYjIpExCX73CJJ6zErvbgKbpbVdg",
+    "category": "smgs"
+  },
+  {
+    "name": "MP7 | Impire",
+    "nameRu": "MP7 | Impire",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8jsHf7jJk4uL5V61gMPmBC1icyOl-pK8xGiq2kUV24j6Gn9b4eXmWPwIoApJxRbRbtRW5wdfjYbi0sVfW2tkQ02yg2fafAb5i",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Mount Fuji",
+    "nameRu": "MP9 | Mount Fuji",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_CNk4uL3V6J4KvmsHm6eytF6ueZhW2fgkUoh5m7dnt78eC7FPFQgXJByE-AL5Bixld20MO2x51DX2o1NxCyokGoXudOiZ_SY",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Hypnotic",
+    "nameRu": "MP9 | Hypnotic",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_CNk-fe8fK1qL8-fB2CY1aAutbY-TXm2wkRz5zjdzNytIi3GbVQhW8ElRu8L5hK7mtfvNbu04lGMlcsbmn-Uk_5D",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Ruby Poison Dart",
+    "nameRu": "MP9 | Ruby Poison Dart",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_C9k4uL3V6pkNOKcCWKe_uJ_t-l9AXzhkEsm527Xy9r_JynEP1IiWJZ3FOYP4xTqmtznNO-34VCKiYJExSjgznQeVzj6siQ",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Stained Glass",
+    "nameRu": "MP9 | Stained Glass",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_C9k_OavYapoJM-UAmaD0tF6ueZhW2ewkUxysDjUz42hdS6XagQjXMZxELQC5BS4koGxYevm4QKLgt8Wzy36kGoXuTMoqxid",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Rose Iron",
+    "nameRu": "MP9 | Rose Iron",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_C9k-_qheqp0H-KcHWKvzP4vj-1gSCGn20h0423Wn9qoJH6QOwNxXpRxQOQLtEHumtTvP-i05wyMjN5Hz3qtiy1XrnE8Sl7QOgI",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Food Chain",
+    "nameRu": "MP9 | Food Chain",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6JiL_SsDW-RyOBJvOhuRz39xB5-sGrTnt2tdymVOFApD8dxQLUCuxWxldLkNezjtVDd2t8Uyy_7izQJsHisCKzN8w",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Goo",
+    "nameRu": "MP9 | Goo",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6NiL8-fB2CY1aAv5LYwSn23xE4l5GrXn9aqIH-SZlMiD8MjEbYK4UW_x9TmM-Lh4FHYlcsbmqGCM0DC",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Hydra",
+    "nameRu": "MP9 | Hydra",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6x0JOKSMWuZxuZi_rQ9H363xU5_4GrWnIr8IHqfbwBxA5R2QuZZshm6kdO2Mum35Q3ajoJbjXKp1xQlWoY",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Wild Lily",
+    "nameRu": "MP9 | Wild Lily",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V61-LPGdCliWzeFkse1WQyC0nQlp4WuHz4mpcCrDZ1QhCcR5FrUJtkK9lNPuYezh4gDf2ItNxCr8iypJujErvbjAJv0dlg",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Latte Rush",
+    "nameRu": "MP9 | Latte Rush",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6hsNOSWMWuZxuZi_rdrGCyxxER252ncw9arJC-QOAcmXsF2ROAP4RbrlNOzNbzq5VDb2YJbjXKpzLFi2t8",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Airlock",
+    "nameRu": "MP9 | Airlock",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f_jdk4uL3V6psMvOaHVicyOl-pK8xGXq2xE536m7dnI2vdS6WagZ2CMFyFrNcsBjuw4G1Ne23tQGN3olH02yg2ZxyeudA",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Arctic Tri-Tone",
+    "nameRu": "MP9 | Arctic Tri-Tone",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f-jFk7uCtfK1uH_2DV1icyOl-pK86HHrrwE5ztWSGydv_eCifOAF2DMB5Fu5etEK9lt3hMuLh5gWPitgX02yg2dKG9WA-",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Starlight Protector",
+    "nameRu": "MP9 | Starlight Protector",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f-jFk4uL3V7d5IeKfB2CY1dF6ueZhW2flkUtztz_SzYypJSqRalUhDJNwQO4PsBXtx9HkN-K37w3bgohGmHn3kGoXuZ3lRdvF",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Urban Sovereign",
+    "nameRu": "MP9 | Urban Sovereign",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f8DIC0Oe8aqVjH-OcGGKCxOdxvt5lRi67gVMi4m6DmY2hcXLFPAMiA8NxQ-9cshK_m9yyYem04ACLg9hAzH6q239I8G81tD9Ib4M_",
+    "category": "smgs"
+  },
+  {
+    "name": "MP9 | Bulldozer",
+    "nameRu": "MP9 | Bulldozer",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL8js_f7i1k9veiZKt6H_yaCW-Ej-tztbQ5Hy2wxklw5TiDnt_4eC_GOFR1XJdzQ-AMskXswNbvNuvq4wPAy9USwXKj73o",
+    "category": "smgs"
+  },
+  {
+    "name": "Negev | Loudmouth",
+    "nameRu": "Negev | Loudmouth",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1Y-s2gbaNoNs-SAGmZyed6sfVmXRa_nBovp3PXzousdnrBbgEiX5QjTbICsEa7ktTnNOPrsQLW3YoQyS33jygbuHts_a9cBgJfeVOc",
+    "category": "machineguns"
+  },
+  {
+    "name": "Negev | dev_texture",
+    "nameRu": "Negev | dev_texture",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1Y-s2gbaNoNs-XC3GExPZipfNscCW6khUz_W_QzdmhJy7EOFAkWMdzF-dbtEK9moGyZbi37gTZi4xMxH36iipK73p1o7FVNCisfvA",
+    "category": "machineguns"
+  },
+  {
+    "name": "Negev | Power Loader",
+    "nameRu": "Negev | Power Loader",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1Y-s2gbaNoNs-aA3eRwvpJvOhuRz39lE914j-HyYmscHLBZ1J1X5NyEbYI5Be8k4DmYuzh4AGIgo0QzSqs3TQJsHgPf9N5RQ",
+    "category": "machineguns"
+  },
+  {
+    "name": "Negev | Mjölnir",
+    "nameRu": "Negev | Mjölnir",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1c_M2gbaNoNs-HBmiC_uJ_t-l9AXDhxRsi62yEmYqrdSmSbQMhWcN3EO8KshHpw4LmP-Oz51bcjNgXn3ngznQe6IKqifc",
+    "category": "machineguns"
+  },
+  {
+    "name": "Negev | Lionfish",
+    "nameRu": "Negev | Lionfish",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_m5Hl6x1I_82gbaNoNs-fB2iex-dluN5lRi67gVNx62XXzI74InPGbQMpDpMiRLMOsRG4lNXvPuritFeN3YpMzSSo2yhN8G81tOHyHega",
+    "category": "machineguns"
+  },
+  {
+    "name": "Nova | Graphite",
+    "nameRu": "Nova | Графит",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiNW0PG8fal9LPWsAm6Xyfo4teA5TSjnx05ztjnRz4v6dX2UZg8hW5B1EbMLtxW-k9XhMLjjslHbiZUFk3velnlINA",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Red Quartz",
+    "nameRu": "Nova | Red Quartz",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiNW0PG8cbd5IfyfB32VxdF6ueZhW2ewxEVy4j6GzI6rIHLFZlMlCZZ3RLZe50O4kNPmYuvgtVfd3o5CxSn6kGoXuWu5UcUF",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Gila",
+    "nameRu": "Nova | Gila",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiNW0PyhfqVSM_GdClicyOl-pK8wHnrrwU8hsW2DyoqgeSieblIkDJZwQu8Cs0TultLgP76051SPid9N02yg2S7-0Sao",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Baroque Orange",
+    "nameRu": "Nova | Baroque Orange",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiNW0OSrZqF5L6KsAm6Xyfo4tbI6F3zhkB9ztj7XmYmocXjGagJ1XMEiE-FctBe8k9K1N7zmtgyNiJUFk3sHO4PBUg",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Antique",
+    "nameRu": "Nova | Antique",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSIf6HB3aFxNF6ueZhW2fmwRwl6jyHw96vIn2UbVVzXMdyRuYLt0O7ltPjZbu0tQTejo9Hyn2skGoXucYtjcOH",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Hyper Beast",
+    "nameRu": "Nova | Скоростной зверь",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSKOmDC3WSxO9lpN5lRi67gVMhsGrTmd2seH6XbA4pDZR1EbMCtES8m4fiNenl4FDcid1Az32ri3tM8G81tMCTwFwB",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Koi",
+    "nameRu": "Nova | Koi",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSK_-aMWuZxuZi_rBqGCu3xEoksm_SzomhcHiQP1QjD8BxQuAN50TtlIK1Yri05lDeiY5bjXKpu6W3YF0",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Clear Polymer",
+    "nameRu": "Nova | Clear Polymer",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSMP-fF2qV09F6ueZhW2exxkR-tmWEmIyoJXyWZw4iDsclROVftxm7wIe1NbizswPe2YlHmCuvkGoXuVU3K7Ec",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Toy Soldier",
+    "nameRu": "Nova | Toy Soldier",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0PyhfqVSNP-KMXSfzep_tfNWQyC0nQlp42zVytutcCmTZgchW5omTbNc5ka8l9XvM77jtACL34lBm3__iShI6TErvbjr52W2-A",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Rising Skull",
+    "nameRu": "Nova | Rising Skull",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0OGlfahhH_6cGGavzedxuPUnSSy3wEV-4miHyt__eHKSOA4pA5JxE7UJ5kO9l4HmZuixtgHZgoMTyDK-0H1FVu2S0A",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Bloomstick",
+    "nameRu": "Nova | Bloomstick",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiFO0OG-eq1jJ8-dAXGR_uJ_t-l9AXDrxU4msD_UzN2qIy6Va1chXJJxFu8OtBO5l9fjZLnh4wXd3olBmCzgznQeBg5SBVo",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Wild Six",
+    "nameRu": "Nova | Wild Six",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiVI0PyhfqVSIf6QBmiCyPpzj-1gSCGn20t-4jnUzI7_IHifblIpDJJzF7UP5kPpxtHgMu62tAPZjY4Ryn72hnlXrnE8sT3rGLc",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Sobek's Bite",
+    "nameRu": "Nova | Sobek's Bite",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwiVI0PyhfqVSM_-RC2yvzedxuPUnGX22wR9y5jvQz436IH_BPQ4nW8FwFuUDskO_lt3gMu_i71GNiNkWyjK-0H21VCFkHA",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Ocular",
+    "nameRu": "Nova | Ocular",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwixU-fORZ6d4LPGBMWuZxuZi_uU6GHixlk13sjzRwo2oeS_DOwQhCpMhQuRc5EHumoezNe3htgLX3YJbjXKpiWHwHrY",
+    "category": "shotguns"
+  },
+  {
+    "name": "Nova | Rising Sun",
+    "nameRu": "Nova | Rising Sun",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyL_kYDhwixU-fOReq1-Kf6UMXSFz9F6ueZhW2eyzB9z4WjTzt77JXKVaQcnC5sjTLEMthDpwdzkMr_lsVbW34lGmyj5kGoXuV-iSbwM",
+    "category": "shotguns"
+  },
+  {
     "name": "P250 | Nevermore",
     "nameRu": "P250 | Nevermore",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhzMOwwiNa0OL8PfRSJ-KSGGKUyOlxtfN6cCW6khUz_TjdmdeqdymfbVQlXpp0QuVYtBSwk9zmN-634gXd2tpCyH_2hipKunl1o7FVDpyoDiY",
@@ -5551,6 +6553,348 @@ export const SKIN_DATABASE: DbSkin[] = [
     "category": "pistols"
   },
   {
+    "name": "P90 | Astral Jörmungandr",
+    "nameRu": "P90 | Astral Jörmungandr",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_C9k5f28ZZtvLOWWMWuZxuZi_rJtFiziwkom4GXTyNqrIC-TPVMgApAkE-EMtUS-xoCzNry35Fff3t5bjXKprRMe7_8",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Cold Blooded",
+    "nameRu": "P90 | Cold Blooded",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_C9k_P6nfKxoMs-DVzevzedxuPUnSivqkBt_5m7Rw9v8cXmTZ1UjX5Z5EOEIuhK8koHuNe7r51fYjt4XyDK-0H2E4aJrDg",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Death by Kitty",
+    "nameRu": "P90 | Death by Kitty",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk7PO6e694LPyAMXfJkdF6ueZhW2fgkUh042jUnN2geSqTaFN2CcQmQuRfsBXtxtfkN7mztASIg91Bniv8kGoXucYQxgOQ",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Emerald Dragon",
+    "nameRu": "P90 | Emerald Dragon",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk6-Cvb6tjH-DKXliS0-9gv95lRi67gVMm4m3Vzdmqci-SO1clX8Z1QeYO5xi5mtTuPu7l4FDc2o4TmH32jC1P8G81tLxM49od",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Run and Hide",
+    "nameRu": "P90 | Run and Hide",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk5fOpfaV_H-DKXlicyOl-pK85H36xlEsmtT_SmN2geSqVOAMkCJpwQOQP5BOxlNHiYruwtgXajI0X02yg2YhNEJOA",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Asiimov",
+    "nameRu": "P90 | Азимов",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-JaV-KfmeAXGvzedxuPUnTSjikRgksjuBzoz4dXLFb1QoC8QlTLQD4EPqk4LvN-Pns1aMioNBzTK-0H3gQVv65g",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Nostalgia",
+    "nameRu": "P90 | Nostalgia",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V6piM-SSAmCZwNF6ueZhW2fgxBh25mmAyY6reS2WaAElCpZ2RrMOuxO6k4LnNuy2tgLejoIWyXj3kGoXuTP4YgZa",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | ScaraB Rush",
+    "nameRu": "P90 | ScaraB Rush",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V7duIeKSDFifx9FhufJtQCSMmRQguynLmYmrdCnGPAUkD5BxQuYC5hO8wdK0Y-_nsgbciNhMyn6v238cuy1jsPFCD_S-VwnSrw",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Shapewood",
+    "nameRu": "P90 | Shapewood",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V7dlIeCWGWifxdF6ueZhW2fglEtz6zjWyo2uJXKeaAF1ApZ2F7YN5BC_w9TjYbzg5VCNg9pEnHiskGoXuQsJgcHb",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Trigon",
+    "nameRu": "P90 | Trigon",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk_6v-V7B_KfecAFicyOl-pK9vGi3nlEt24GnSwoypc3rFbQ52XsN0EOFcshfuwYa1NbzktVTZ3ohN02yg2RSFidN_",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Attack Vector",
+    "nameRu": "P90 | Attack Vector",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf_jdk__2icZt7Kf-fC3Ov0bcmj-1gSCGn20QhtW_Vm9r8InmVbFJyDJMkE-IJsEOwm9G1Mu3jswSP2t1Hyy-s3yJXrnE8K5R_WCY",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Chopper",
+    "nameRu": "P90 | Chopper",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf-jFk_6v-V6J4LPysGm-CzvpivORWQyC0nQlptWTXzt-tIyrFPQMjCpImQbED5xm5kIDhZePitlbdjotBnH783H9L7jErvbjpMmMyTQ",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Neoqueen",
+    "nameRu": "P90 | Neoqueen",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf-jFk_6v-V6poL-GGC2Ke_uJ_t-l9ASyyxhl04zuDn4muInOXPAF2W5shQOAMs0G7xNfkZOuwswbej4JDnyvgznQe6S6_YqA",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Shallow Grave",
+    "nameRu": "P90 | Shallow Grave",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf-jFk_6v-V7dlIfyfAXCvxvx3puRWQyC0nQlpsWzUyIqvcCiVPFQnW8YmEO4P5xi6xNS2Num35FbX34lCzX7_hytK5zErvbi02RizsA",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Vent Rush",
+    "nameRu": "P90 | Vent Rush",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf-jFk_6v-V7BsLvefC2OvzedxuPUnTXywwElz52XXzIz4dn2RalcoC8FzQrJfsRe-moG0YeK2sQPZ3YpEmzK-0H18Z6zceQ",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Blind Spot",
+    "nameRu": "P90 | Blind Spot",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf9Ttk4v2qe7RiNOOsAm6Xyfo4seVsTn3ikU0jt2nQnIqqJ3KeOA4jDJV0EOMPt0S7xNLjM76w7gLd2ZUFk3vvaUMV8A",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Death Grip",
+    "nameRu": "P90 | Death Grip",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf9Ttk_6v-V6ZsMvWRAWmV0tF0vPRscCW6khUz_WqAy4z6cX2Tbg8hWJN2RLQMsRPplNDmYr63sVPciIkTyij3iX5M7yt1o7FVUmFnInA",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Virus",
+    "nameRu": "P90 | Virus",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf9Ttk9f2jaq1oH_yaCW-Ej7l0tLY8Fn3jk0h342jRwtz9In6TOg4kDZImQ-4Nshi4w9LmNOnh4wHAy9USHtJ8vvM",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Wave Breaker",
+    "nameRu": "P90 | Wave Breaker",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf7XsL0PChZ7d5H_KfG2KvzedxuPUnTHrlzU9xt2qHzd-rJ3yQb1cmXJNzF-Vc5BS6wdLjMe60tAyP3dhNzTK-0H3NvEQllg",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Deathgaze",
+    "nameRu": "P90 | Deathgaze",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf7XsL0ParabBlJ_GJC1icyOl-pK85GHy1kEh3627Tntn6dC-SOgFyXJR3RO8Jt0a7lIG1M-PksgLZjNoT02yg2XMB6aCz",
+    "category": "smgs"
+  },
+  {
+    "name": "P90 | Randy Rush",
+    "nameRu": "P90 | Randy Rush",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLhx8bf7XsL0OCvZqB0H-KGHW-vzedxuPUnGCy3lhsj6zmAyYn6eXyQbwMhApAmFu8C5xTpktHjMejl71aPjtkQnjK-0H3AcMEIag",
+    "category": "smgs"
+  },
+  {
+    "name": "R8 Revolver | Amber Fade",
+    "nameRu": "Револьвер R8 | Amber Fade",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2vaZtrIfSWMWqV1e96vOhqcDu2gxIrpTiXpYPwJiPTcAIpDJckF-9cuhfqltDuZujgs1DZj4hDy338jnhM73xusOcKVaos-qPJz1aW9R0yRq8",
+    "category": "pistols"
+  },
+  {
+    "name": "R8 Revolver | Fade",
+    "nameRu": "Револьвер R8 | Градиент",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2vaZtrIfSWMXWV1-F6puR7cCW6khUz_W2EnIuheSiVZgIgX8F3Ee9YthLuw9LjMePqswCL34kQzHj6iypPu351o7FV6jjqgC8",
+    "category": "pistols"
+  },
+  {
+    "name": "R8 Revolver | Reboot",
+    "nameRu": "Револьвер R8 | Reboot",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2tfZt_eM-QF2WV0_1mv_N9cCW6khUz_WjRyouseHqUPwQoXMNyQbMM4ETulNSxNuq3s1DZi95CzH_-2Cgf7Hp1o7FVySZFkkA",
+    "category": "pistols"
+  },
+  {
+    "name": "R8 Revolver | Skull Crusher",
+    "nameRu": "Револьвер R8 | Skull Crusher",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2tfZt_JeacAnGV09F5oPF7Sjqgmg8YvjiBk5r0b3uSaQUiCsZ2E-EI5EKwldW2NOzqslffgopHxHj-jHxLvH4_tbwHWaQ7uvqApie1xz8",
+    "category": "pistols"
+  },
+  {
+    "name": "R8 Revolver | Banana Cannon",
+    "nameRu": "Револьвер R8 | Banana Cannon",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2pe5t_eM-RD2mRz-9JvOhuRz39kU4msjzdmd6peXKTOFd2DcchEOEP40btlt3lN7iz5FbeiNpFzi_83zQJsHgWY2btRg",
+    "category": "pistols"
+  },
+  {
+    "name": "R8 Revolver | Llama Cannon",
+    "nameRu": "Револьвер R8 | Llama Cannon",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2pe5t_eM-fAmadwO13vu9mQRa_nBovp3OEz9n7JH-UPwEoA5t2TLFYtBmxlNzhYuOztgHZjo9Mzyqq3C9O63o5_a9cBr5nn1G8",
+    "category": "pistols"
+  },
+  {
+    "name": "R8 Revolver | Crazy 8",
+    "nameRu": "Револьвер R8 | Crazy 8",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLjm4Dv8TRe_c2pe5t_JeacAnGV09FmpfN5QyyMkBEupzi6lob-KT-JZlJ0X5MhEOFcthO9wIHuZrng5A3XgotFmSv82ClAuHo46-wHU6p38rqX0V9gOeDH5A",
+    "category": "pistols"
+  },
+  {
+    "name": "Sawed-Off | Highwayman",
+    "nameRu": "Обрез | Highwayman",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2veZt-IeeWCmiWx9F0vOBqRC68mRkYvzSCkpu3dXuVaQchCMRwQeJYsxaxl9W0N-nrtVeMid4XyHn53XtN5n5st-xRU71lpPM2tqJ-2A",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Limelight",
+    "nameRu": "Обрез | Limelight",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWClifx-hJvOhkSha_nBovp3ODz4utJHrBZ1MjD5YkFO8NtBjqwdXvP-nn4QLZjIJNnHio2Hwd5npq_a9cBh09Jdi8",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Apocalypto",
+    "nameRu": "Обрез | Apocalypto",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F3oO5qTiWqhQkojDGMnYftb3vFbVcmDsRwEOdbtkW4lIbiMOrh4FaIiYMQxXmoiXkd7n1o5b4AWKM7uvqARUQpSmk",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Serenity",
+    "nameRu": "Обрез | Serenity",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9FytfdocCW6khUz_W2Dwtv6cXLFZgUnD5VzQrMPtxjrx9K0Ye637wzYj4gXzimqiH9KuC91o7FV9mPR2UI",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Devourer",
+    "nameRu": "Обрез | Devourer",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9FytfdmWju2hyIrujqNjsH8JSnBPQdxDcEiF-FZshS7kdG1NOyz4wKKiYNDmXn3jHkd5n055ulTT-N7rdPAUyyq",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Kiss♥Love",
+    "nameRu": "Обрез | Kiss♥Love",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F9ufJ6QyalkCIrujqNjsGoI3-QZwZzD5F5TbUDsBi_xtW1NuqwsVaPjoxFmST93ClI6S1osuYDT-N7rb6xkGzX",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | The Kraken",
+    "nameRu": "Обрез | The Kraken",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt-IeeWCmiWx9F5s_VmXzy-hSIrujqNjsH_eXmWaVRyXpF3EOZe5Bm8w93gMbzn4waPg98Tzir8jHwbuC5p4uZUT-N7rZ8ILI16",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Wasteland Princess",
+    "nameRu": "Обрез | Wasteland Princess",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2tfZt6MM-AD3CVxeFwtt5lRi67gVMksWuEmduuIH2fPwUkWJojQuMP5xi8lNzlY-234lDag4xFnin_jihN8G81tH9UxALW",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Orange DDPAT",
+    "nameRu": "Обрез | Orange DDPAT",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c2mcZtpJOCSGlif0-94t-RWQyC0nQlp4GyAzoqsdSmWaFJyD5UhEeFcsBm-ktK0M7nj7wKI394Xn3-vhisfujErvbhk58vgGA",
+    "category": "shotguns"
+  },
+  {
+    "name": "Sawed-Off | Analog Input",
+    "nameRu": "Обрез | Analog Input",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLin4Hl-S1d6c29abNoJP-VCFiXwONzot5lRi67gVN3tWTdyNipdCiQPwdxCJV2RuBY4xa_wILgMLu37leK3otMzHmo3H5J8G81tFoL-ETi",
+    "category": "shotguns"
+  },
+  {
+    "name": "SCAR-20 | Emerald",
+    "nameRu": "SCAR-20 | Изумруд",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7vyRbaloMvGfCliS0-9gv95lRi67gVMh5WuDyY2qeH7CbQ8jDMR0RuQDuhOwxtCzZL_ksVTe3otByyz3inkY8G81tKuEs31W",
+    "category": "snipers"
+  },
+  {
+    "name": "SCAR-20 | Cardiac",
+    "nameRu": "SCAR-20 | Cardiac",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7OeRe6dsMqLDMW6e1etkpuRnWyC8myIrujqNjsH9cniTaFApD5R0F7EJsUG_k9bjM-3n4gLY3opBzCio3yxK5io55OdXT-N7rWZZlsYh",
+    "category": "snipers"
+  },
+  {
+    "name": "SCAR-20 | Cyrex",
+    "nameRu": "SCAR-20 | Сайрекс",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk7OeRe6dsMs-QF3WV2dF6ueZhW2fgzUR_52nUzYugICnCPVImApYkRO8NtkLtw4a1Nbzn7lSN2oITnCr5kGoXuXXxbesR",
+    "category": "snipers"
+  },
+  {
+    "name": "SCAR-20 | Bloodsport",
+    "nameRu": "SCAR-20 | Кровавый спорт",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk6OGRe6dsMqLDMWWczuFyo_FmXT2MmRQguynLnoqrcHPCaFdzDMF5F-8P4Bbum9fkYuvrsVffjI5AyS75inlL5ixjsvFCD_R20nqesQ",
+    "category": "snipers"
+  },
+  {
+    "name": "SCAR-20 | Enforcer",
+    "nameRu": "SCAR-20 | Enforcer",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk6OGRe6dsMqLDMWKex-Fks-R7cCW6khUz_TmEn4qudiqVPVB0X5t3QbEN4ELqxNHlY-O27gCLg9oXmyqsjCtN73x1o7FVEvhkFhM",
+    "category": "snipers"
+  },
+  {
+    "name": "SCAR-20 | Powercore",
+    "nameRu": "SCAR-20 | Powercore",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk6OGRe6dsMqLDMXef1utks-57Sha_nBovp3OAzd2qIy_DPVMkXMEiE7UL5ES-l9yyP76wswWP3Y1Nyyn2i35L6S5s_a9cBj_cXeyl",
+    "category": "snipers"
+  },
+  {
+    "name": "SCAR-20 | Splash Jam",
+    "nameRu": "SCAR-20 | Splash Jam",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLinZfyr3Jk5-uRYLFjNPWBMWWcwPRzj_FgQSKMmRQguynLmYn6J3rCPVQiCMZ1EbQIsRHql4a2Y7iw4QbZg48QxXj-hixB7ntvt_FCD_SAL_dw1Q",
+    "category": "snipers"
+  },
+  {
+    "name": "SG 553 | Hypnotic",
+    "nameRu": "SG 553 | Hypnotic",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1a7s24bbZ5KfecMWuZxuZi_rJrF3DlkEUl5GTdy4yudHyRZgYnWZskFucO4RO_kIK0PuOxtVPb2d5bjXKpAmuHKUk",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Hazard Pay",
+    "nameRu": "SG 553 | Hazard Pay",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-QD3KEyOF4j-1gSCGn20Qj52vXw9z6c32RbAV2XpF1Q-UN4Ra7x4bkPuy0tFTciYpCxC37jC1XrnE8Zorh1bo",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Dragon Tech",
+    "nameRu": "SG 553 | Dragon Tech",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-QF2WV09FyouBuQCeMmRQguynLw9ygIHnGbgYlDpciEeBYsEPux9ThMuOz4ACLjY1FmX-viitMvCZp5_FCD_QeAJd5TA",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Cyrex",
+    "nameRu": "SG 553 | Сайрекс",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-QF3WV2dF6ueZhW2frlhl14W7Xzt6geXqQP1N0CMRyQuFY5kHsx9HmZejq7wPei91AzCT_kGoXueC0Dzdv",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Darkwing",
+    "nameRu": "SG 553 | Darkwing",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-XD3Wb1ud4t95lRi67gVN24D7WmN2sdSqSalAmDpR2F-IDtxTpkYKyZrmzsQffgtgXzSmqjSNA8G81tFvCRYkS",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Pulse",
+    "nameRu": "SG 553 | Pulse",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-DG2uDxNF6ueZhW2eykUh24jjczYqscH7GblIpCJBxF-AD4BHtxIKzM-nq5ACK3t1GyySskGoXuRyAaawM",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Integrale",
+    "nameRu": "SG 553 | Integrale",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-BD2uc2NF6ueZhW2e2wkV14m2DzditcnmQOA4gWcYlQOcDs0a7moLvZLiw5geP3dgRnnj2kGoXuQPBQAH6",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Colony IV",
+    "nameRu": "SG 553 | Colony IV",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4c8-BC2aT1eFkj-1gSCGn20Qit2yAn9n8IHKealB2DZIjTO8JsBW7ktDlYu_m5ADWit4Rznn63XtXrnE82sW2soE",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Triarch",
+    "nameRu": "SG 553 | Triarch",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1Y-s29b_E4ds-HHG6R0-1-j-1gSCGn20Qk6m3UmY77IHOeOlNxCJQmQbYMuhC6mtaxP-K0sQLYi94RzC_8iH5XrnE8WPSRipg",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Phantom",
+    "nameRu": "SG 553 | Phantom",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1c_M29b_E4c8-DBmae1eF7j-1gSCGn204k5WXSz4ysJSnDPQ5xDsZ0Ru4PtUKxw9XhMO-0tAON3YpMyS-v23lXrnE80YpLcJc",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Tiger Moth",
+    "nameRu": "SG 553 | Tiger Moth",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1c_M29b_E4c8-HB2CV09F7v_VhcCW6khUz_TnWn9n7cyqRPQ52DpN3QLEPshjrw9zlY-jjs1bWioMQxSj8hyxJu3l1o7FVwqXqqnE",
+    "category": "rifles"
+  },
+  {
+    "name": "SG 553 | Bulldozer",
+    "nameRu": "SG 553 | Bulldozer",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLimcO1qx1I4M23bahhL-esAm6Xyfo44rZsF3jmwU53tmyDzYv6cHnCalQhXMckEe9Y5kXplIC0NrzrtAfcipUFk3th3T45rw",
+    "category": "rifles"
+  },
+  {
     "name": "SSG 08 | Blood in the Water",
     "nameRu": "SSG 08 | Blood in the Water",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1Y-s29YKV_K8-fB2CY1aAmsbFtFnDilkUl5j7UzoqsInmVaFd0XMMlELYDshbuxNPvP-yxtlCMlcsbmlWiixNl",
@@ -5621,6 +6965,168 @@ export const SKIN_DATABASE: DbSkin[] = [
     "nameRu": "SSG 08 | Rapid Transit",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLijZGwpR1I_PX-MJt5MvGdHW6E_vl-ufVscCW6khUz_WTSw479d3vDalIkCJNzFuIN4RHqw9K2P7nktQHf340Wyn-vh3wY7Sd1o7FV_lj0Yvg",
     "category": "snipers"
+  },
+  {
+    "name": "Tec-9 | Red Quartz",
+    "nameRu": "Tec-9 | Red Quartz",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNW0PG8cbd5IfyfB32VxdF6ueZhW2e3xU13tzmAmdqsIC6TPw8hCcF3ReADuxPtl9ThNu3qtVPbjdlFny2okGoXub5yNIFB",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Titanium Bit",
+    "nameRu": "Tec-9 | Titanium Bit",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNW0PSifbBoJM-HC2TJ_uJ_t-l9ASi3w0gm62qHzdz6Jy2WbAZxW8dyTOEIukawldfhY7zqtgKN2d9MyHngznQe9VU90c8",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Re-Entry",
+    "nameRu": "Tec-9 | Re-Entry",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiNW0Oara_1SMvWXDGuR0vpJvOhuRz39lkp-4j_QnoytcS-RPwEgDZt1FuAJshG6ktW1NLy34gCPj44WmH7-jzQJsHhOKqOsYw",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Avalanche",
+    "nameRu": "Tec-9 | Avalanche",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SIeaSAmaewuZzj-1gSCGn20Qi4m_cwtv8dy7Fbg8kXptyRuMJtEG4kdDuN-jq71ffj90QxCT22HxXrnE83F92lc4",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Bamboozle",
+    "nameRu": "Tec-9 | Bamboozle",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiFO0Oara_1SIvGeDGif_uJ_t-l9ASi2xxhzsT6Emdr6JCqTPQJyXpR4RLMI5hm_wNHjZe3r5Qzci41Dy3jgznQeOWU5G3g",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Decimator",
+    "nameRu": "Tec-9 | Дециматор",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiVI0Oara_1SJPWQB2qR1eFkj-1gSCGn20h16j-Ew9j6Jy6QbQB1XJJzQLVYshXqm92xY-7g4wze3dpAySz2iXlXrnE8_HmWmcE",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Remote Control",
+    "nameRu": "Tec-9 | Remote Control",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiVI0Oara_1SJf6FAX6vzedxuPUnGSvrlhxw62zXn92sJynGOFcnA5J5EeIPsRm5l93mM-6w7gzW2olEzzK-0H1xr8Niww",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Brother",
+    "nameRu": "Tec-9 | Brother",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiVI0Oara_1SJ-WWHG6cze9JvOhuRz39xBsj4GmEyt-vIHjEbgJ2CsR2RONfu0K_lYXvZrjg4ADYg4wXzin42DQJsHgTPX1sbQ",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Fuel Injector",
+    "nameRu": "Tec-9 | Топливный инжектор",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wiVI0Oara_1SM-WDC3WTye9kt-RtcCW6khUz_Wvcy9qgdCnEPQ8hApBzRrQJ4RW7moDgMLzktFDZiI5HnyWr3ChN5yp1o7FVg4hNKG8",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Whiteout",
+    "nameRu": "Tec-9 | Whiteout",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wjFU0OWmYbBoL-WHMXOVwrdJvOhuRz39lB9_smmDn9ugdCrCbFcnCJEmFrVcuhC4w9TgNePhsQWKiN4QzSv7hzQJsHg2FaN_Cg",
+    "category": "pistols"
+  },
+  {
+    "name": "Tec-9 | Nuclear Threat",
+    "nameRu": "Tec-9 | Nuclear Threat",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLlm5W5wjFL0Py7Y6F-NOKaHmKvxvxzte9WWyywzCIrujqNjsGtIyjEbQR1A8Z1QLVZtha_k9HvNbu04wTei4sWxCX93SJP7nw_4rtWT-N7rTdwfM9W",
+    "category": "pistols"
+  },
+  {
+    "name": "UMP-45 | Fade",
+    "nameRu": "UMP-45 | Градиент",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1a7s2oaaBoH-WeHlicyOl-pK8_HHzmzU52sTjWntegc32faAR2DMEkELMI4xmxw4G1Yrnn4FCM3d4Q02yg2U-vv27j",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Moonrise",
+    "nameRu": "UMP-45 | Moonrise",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1a7s27ZbQ5dc-eAWie0-dltd56WiegkAkYvzSCkpu3IHzGbQFxCMByE7MJsxC6w9ayN-3ntgPf3YtGmX6tiyxM6X1pt-cCUr1lpPMz7bPahA",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Grand Prix",
+    "nameRu": "UMP-45 | Grand Prix",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1a4s27ZbRSMvGQC3WvzOtyufRkASjjxU1x42nVyo2rdnKQbA9xX5ohRrYMtBntmtW1N7zj5lDZgthFzC3gznQezoUeLLY",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Primal Saber",
+    "nameRu": "UMP-45 | Primal Saber",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbQ5dc-DHG6dwOJlseNsXRa_nBovp3PRn478JHmePQ8hDcF2Q7YDtxXrk92zYbyw7gXYjIhEyCn_3Hsbui44_a9cBklqRdMs",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Arctic Wolf",
+    "nameRu": "UMP-45 | Arctic Wolf",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbQ5dc-EBm6ExNFwse9ucCW6khUz_WiGzY6pJyjCZwN1A5p5Q-MCuxa7ldW0Ne3ntQHW2YpFmSv63S1B73t1o7FVFkKgM50",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Exposure",
+    "nameRu": "UMP-45 | Exposure",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbQ5dc-LQ3WR2NF7seJhRie2qhEutDWR1Nutci2WbwBzWZFyF-Fetka_ltbgM7nh5AKKiYoRmXr73H4b7ilvsekcEf1y88bI5DM",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Momentum",
+    "nameRu": "UMP-45 | Momentum",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSIeKBAXCD_uJ_t-l9ASzrx0txsWiBydv4JCmSaFdzDJt0TOYN5hbtwYWzNerl5QeIj4IXyX3gznQeadzF8t4",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Plastique",
+    "nameRu": "UMP-45 | Plastique",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSIv-eDFicyOl-pK8_Hn_hxh91sWrVyN-rI36XZwIoWJZ3FrMJ50XtxoLhZL625lCM2YxH02yg2Yusl7aN",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Wild Child",
+    "nameRu": "UMP-45 | Wild Child",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSI_yGGmSY_uV_s-pWQyC0nQlpt2iHmNyqd3KVOlB0D5YlTeZb5xjsx9PjZOjl4VCNgt1EnC77iSMf7jErvbhWyVIDbA",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Crime Scene",
+    "nameRu": "UMP-45 | Crime Scene",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1Y-s27ZbRSI-KaA2Kv0u1zvuRWQyC0nQlpt2SEmdiheHiUalMnCJd4FuFb5xHul4LjMu3q5gPX2N0QyC-siXsY7DErvbhN2TV12A",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Scaffold",
+    "nameRu": "UMP-45 | Scaffold",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1c_M27ZbRSIfKKHXSvzedxuPUnGi2ywBwhsmuDnNn9cX_EbA4mCcF1QbJZ5BPtm9fjZejnslDciNgUzTK-0H2MLp31Hw",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Gold Bismuth",
+    "nameRu": "UMP-45 | Gold Bismuth",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1c_M27ZbRSJ_-fCliSyP17pfVhcCW6khUz_Wrczt__dn3GbVR0D8dxEOAMsxW9lofkMum04w3eg4kXzy6q339BvHx1o7FVa_qMENU",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Crimson Foil",
+    "nameRu": "UMP-45 | Crimson Foil",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1c_PGmV7d9L-KHMXKd0bojj-1gSCGn20V2tm_Sn9irdX3EZwUkA5B1R-IL5Ebsk9O2MOni4AKIgogUmH333SlXrnE8E6oIYXY",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Continuum",
+    "nameRu": "UMP-45 | Continuum",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1O4uL6PZtkLPyGA26ewNFg4t5lRi67gVN1tm7Qy9itcXqTOwYlXJpxFLEO4Ba_wYXgP7u0tQXajoxFxX-q3SxP8G81tMlVCWLZ",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | Neo-Noir",
+    "nameRu": "UMP-45 | Нео-нуар",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1O4uL6PZtjJf-sAGiZ09F6ueZhW2flw0R0sGrcy4z9cn6XagVxCpR4F7Rb5BPplIbjY7vj4AOLjt0TzSj9kGoXuYU0ZhpI",
+    "category": "smgs"
+  },
+  {
+    "name": "UMP-45 | K.O. Factory",
+    "nameRu": "UMP-45 | K.O. Factory",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkk4a0qB1O4uL6PZtiLPSsDWaC1eF5vt5lRi67gVN2tWXTzI6tc3rGPQ4kWJUiQrJf4RPskIW2ZO3r4VaKi9hFyX-qhy0a8G81tA_18T9p",
+    "category": "smgs"
   },
   {
     "name": "USP-S | Serum",
@@ -5765,6 +7271,90 @@ export const SKIN_DATABASE: DbSkin[] = [
     "nameRu": "USP-S | Jawbreaker",
     "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLkjYbf7itX6vytbbZSNeODHViUzulxqd5lRi67gVMl62nUyd2scnOVPAcgA5J2TOFY5xLrlN22YbzgsQaI2IlHyiWojnwa8G81tErOD-_J",
     "category": "pistols"
+  },
+  {
+    "name": "XM1014 | Ancient Lore",
+    "nameRu": "XM1014 | Ancient Lore",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7v-RaapuKfWdGliHwPx7j-1gSCGn204k626ByIqteX-TbAQjCcAhRbFcsUK5ktbhYb_j5VePi4JMnyX4in5XrnE8pNPbCik",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Elegant Vines",
+    "nameRu": "XM1014 | Elegant Vines",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7v-RZat_L8-HC3-EyOJzj-N7Ri67gSIrujqNjsGqJX3BagJxDcFwROJbtkLpltHlNOPi4AyLjN8UxX33hypK6Hw_se0GT-N7rUzICquq",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Zombie Offensive",
+    "nameRu": "XM1014 | Zombie Offensive",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7v-RcKlSOv-eDG6V_uFwtuRnXCClkCIrujqNjsGqdnzEOFUjW5omROQNt0LuwNKyYeKwslfYiN0Qmyr83Hsd6iZj5esAT-N7rRccpDyZ",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Teclu Burner",
+    "nameRu": "XM1014 | Teclu Burner",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORcKk8cKHHMW-f1dFkv-VWQyC0nQlptj_Tn9v4J3zEbVIjCZEkELRcska_x4DmNumz4QHWjYtNxSSqjSNAuzErvbjrIzaCAA",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | XOXO",
+    "nameRu": "XM1014 | XOXO",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORcKk8cKHHMXeFz-VJvOhuRz39xE8j5GXQztepd3OUOwJ2C5JwELYKsULslobuY-7htlDditkUnyn73zQJsHgY6bTDGg",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Ziggy",
+    "nameRu": "XM1014 | Ziggy",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORcKk8cKHHMX2Zxulvj-BnTjuwnQQYvzSCkpu3In6XPA4lAsZ5E-JbukWwwd3nY-zn4gLe2thNmCiv2ixK6SZs5ucHVb1lpPO5jVz-xA",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Seasons",
+    "nameRu": "XM1014 | Seasons",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7uORcKlSLPWSCFiWwOpzj-1gSCGn200i6mvRn4mpdCiVblRxDJd3FuILuxi7ktHuNb-04wzW2dpGzin-2ihXrnE8PcTco88",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Monster Melt",
+    "nameRu": "XM1014 | Monster Melt",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRZ7JoMuCSHXSvzOF4o_VsXTqMjRAYvzSCkpu3JXqTOg8gDcYhROQDsxPux9bjYezm5waM2YlGnHn22y1BuiY45ewCBL1lpPOtgL12Pw",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Entombed",
+    "nameRu": "XM1014 | Entombed",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMWad1OJzpN5rQzy2qhEutDWR1N-hI3yWbVRyD8YiEOVZ50TqmoKyZb7rtVfWgosQzX7-3X9K5yc4tr4cEf1yVvkijss",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Tranquility",
+    "nameRu": "XM1014 | Tranquility",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMWSR0-disfJWQyC0nQlp5zjWnNigIC-falMlWMN2F-cP5Ba-xoXlMri0swTZg41EyX34jS1LuDErvbgNI5zBZg",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Heaven Guard",
+    "nameRu": "XM1014 | Heaven Guard",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMW-VwPhzvt5uWiihkSIrujqNjsH7cHLFPwd1WZsiFrJYuhC4lNTuNu3n5ASN3YxEniStjSMa6H45675UT-N7rZnbv6eE",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Incinegator",
+    "nameRu": "XM1014 | Incinegator",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMW6ewud4tfNoWyahqhEutDWR1NuuJXqWO1d0CsdyE-9ctxPpkYDmYr6zsgKLgt5NnC33in9B7idi4u8cEf1ypt9Mlvk",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Black Tie",
+    "nameRu": "XM1014 | Black Tie",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk7OeRcKk8cKHHMXSAxO1iovRkcCW6khUz_Wncm4v6dnuVawImXsZzTONcsRK5xofkYeywtgWKioNDxCX9in8cvy91o7FVLrGdyvk",
+    "category": "shotguns"
+  },
+  {
+    "name": "XM1014 | Solitude",
+    "nameRu": "XM1014 | Solitude",
+    "iconUrl": "i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGIGz3UqlXOLrxM-vMGmW8VNxu5Dx60noTyLpk8ewrHZk_P2tYJtgL-WdGmaZz_1JvOhkRj22kSIzujCApYPwJiPTcAAhDMN2TecI4Rbsld3jN7zr5ATc2o1CnCitj3tKu3to4e8FBaom-KXJz1aWwa05Mw8",
+    "category": "shotguns"
   },
   {
     "name": "★ Bayonet",
