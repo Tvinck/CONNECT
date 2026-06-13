@@ -6,66 +6,42 @@
 
 export interface MarketPrice {
   source: string
-  price: number // USD cents
+  priceUsd: number
+  priceRub?: number
   url: string
-  available: boolean
 }
 
 export interface SkinPricesResponse {
-  name: string
-  iconUrl: string
+  market_hash_name: string
+  icon_url: string
   prices: MarketPrice[]
-  cachedAt?: number
+  history: { date: string; price: number }[]
 }
 
 export const MARKET_META: Record<string, { name: string; url: (name: string) => string }> = {
-  csgoempire: {
-    name: 'CSGOEmpire',
-    url: (name) => `https://www.csgempire.com/marketplace/search?query=${encodeURIComponent(name)}`,
-  },
-  c5game: {
-    name: 'C5Game',
-    url: (name) => `https://c5game.com/search?keywords=${encodeURIComponent(name)}`,
-  },
-  steam: {
-    name: 'Steam Market',
-    url: (name) => `https://steamcommunity.com/market/listings/730/${encodeURIComponent(name)}`,
-  },
-  cs2trader: {
-    name: 'CS2Trader',
-    url: (name) => `https://cs2trader.com/skin/${encodeURIComponent(name)}`,
-  },
-  skinport: {
-    name: 'Skinport',
-    url: (name) => `https://skinport.com/item/${encodeURIComponent(name)}`,
-  },
-  dmarket: {
-    name: 'DMarket',
-    url: (name) => `https://dmarket.com/ingame-items/item-list/csgo-skins?title=${encodeURIComponent(name)}`,
-  },
-  bitskins: {
-    name: 'BitSkins',
-    url: (name) => `https://bitskins.com/market/csgo?search=${encodeURIComponent(name)}`,
-  },
-  csgotm: {
-    name: 'CS.MONEY',
-    url: (name) => `https://cs.money/csgo/trade/?name=${encodeURIComponent(name)}`,
-  },
-  loot_farm: {
-    name: 'Loot.Farm',
-    url: (name) => `https://loot.farm/#csgo,s:${encodeURIComponent(name)}`,
-  },
-  buff163: {
-    name: 'Buff163',
-    url: (name) => `https://buff.163.com/goods?game=csgo&search=${encodeURIComponent(name)}`,
-  },
+  market_csgo: { name: 'Market.CSGO', url: (n) => `https://market.csgo.com/ru/?search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  skinport: { name: 'Skinport', url: (n) => `https://skinport.com/market?search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  dmarket: { name: 'DMarket', url: (n) => `https://dmarket.com/ingame-items/item-list/csgo-skins?title=${encodeURIComponent(n)}&utm_source=skinscan` },
+  waxpeer: { name: 'Waxpeer', url: (n) => `https://waxpeer.com/all?game=csgo&search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  csfloat: { name: 'CSFloat', url: (n) => `https://csfloat.com/search?sort_by=lowest_price&type=buy&search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  skinbaron: { name: 'SkinBaron', url: (n) => `https://skinbaron.de/ru/search?searchQuery=${encodeURIComponent(n)}&utm_source=skinscan` },
+  bitskins: { name: 'BitSkins', url: (n) => `https://bitskins.com/?market_hash_name=${encodeURIComponent(n)}&utm_source=skinscan` },
+  buff: { name: 'BUFF163', url: (n) => `https://buff.163.com/market/goods?search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  lootfarm: { name: 'LootFarm', url: (n) => `https://loot.farm/&utm_source=skinscan` },
+  whitemarket: { name: 'White.market', url: (n) => `https://white.market/market?search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  shadowpay: { name: 'ShadowPay', url: (n) => `https://shadowpay.com/en?search=${encodeURIComponent(n)}&utm_source=skinscan` },
+  csgoempire: { name: 'CSGOEmpire', url: (n) => `https://csgoempire.com/marketplace/search?query=${encodeURIComponent(n)}` },
+  c5game: { name: 'C5Game', url: (n) => `https://c5game.com/search?keywords=${encodeURIComponent(n)}` },
+  mannco: { name: 'Mannco.store', url: (n) => `https://mannco.store/market?search=${encodeURIComponent(n)}` },
+  swapgg: { name: 'Swap.gg', url: (n) => `https://swap.gg/market/csgo?search=${encodeURIComponent(n)}` },
+  tradeitgg: { name: 'Tradeit.gg', url: (n) => `https://tradeit.gg/csgo/trade?search=${encodeURIComponent(n)}` },
+  gamerpay: { name: 'GamerPay', url: (n) => `https://gamerpay.gg/market/csgo?search=${encodeURIComponent(n)}` },
+  steam: { name: 'Steam Market', url: (n) => `https://steamcommunity.com/market/listings/730/${encodeURIComponent(n)}` }
 }
 
 export const RU_TRANSLATIONS: Record<string, string> = {
-  // map Russian names to market_hash_name (example entries)
-  'Кольцо Капли': 'Drop_Of_Rain_Ring',
-  // add more translations as needed
-};
+  'Кольцо Капли': 'Drop_Of_Rain_Ring'
+}
 
 /**
  * Fetch current USD→RUB exchange rate from CoinGecko (no API key needed).
@@ -73,12 +49,12 @@ export const RU_TRANSLATIONS: Record<string, string> = {
  */
 export async function getRubRate(): Promise<number> {
   try {
-    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=rub');
-    const data = await res.json();
-    return data.usd.rub ?? 1;
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=rub')
+    const data = await res.json()
+    return data.usd.rub ?? 92.5
   } catch (e) {
-    console.warn('Failed to fetch RUB rate, defaulting to 1');
-    return 1;
+    console.warn('Failed to fetch RUB rate, defaulting to 92.5')
+    return 92.5
   }
 }
 

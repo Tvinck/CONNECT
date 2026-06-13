@@ -5,13 +5,15 @@
  *
  * Функции:
  *  - Отображает цены с каждого маркетплейса (USD + RUB).
+ *  - Позволяет переключать основную валюту (USD / RUB).
  *  - Подсвечивает минимальную цену зелёным, максимальную — красным.
- *  - Показывает разницу от Steam Market (15% комиссия).
- *  - Содержит ссылки на покупку с реферальными параметрами.
+ *  - Показывает разницу от Steam Market.
+ *  - Содержит ссылки на покупку.
  *  - Сортирует по цене (от дешёвой к дорогой).
  */
 
-import { ExternalLink, TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { useState } from 'react'
+import { ExternalLink, TrendingUp, Minus } from 'lucide-react'
 import { MARKET_META, type MarketPrice } from '@/lib/skinscan/utils'
 
 interface PriceTableProps {
@@ -21,6 +23,8 @@ interface PriceTableProps {
 }
 
 export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) {
+  const [currency, setCurrency] = useState<'USD' | 'RUB'>('RUB') // Ruble is default
+
   if (!prices || prices.length === 0) {
     return (
       <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl p-8 text-center">
@@ -39,18 +43,44 @@ export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) 
   const steamBaseline = Math.round(avgPrice * 1.15 * 100) / 100
 
   return (
-    <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-hidden">
+    <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-white/[0.04] flex items-center justify-between">
-        <h3 className="text-white font-semibold text-[15px]">
-          💰 Сравнение цен
-        </h3>
+      <div className="px-5 py-4 border-b border-white/[0.04] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#13141C]/40">
+        <div className="flex items-center gap-3">
+          <h3 className="text-white font-semibold text-[15px]">
+            💰 Сравнение цен
+          </h3>
+          {/* Currency Switcher */}
+          <div className="inline-flex rounded-lg bg-[#161721] p-0.5 border border-white/[0.04] shrink-0">
+            <button
+              onClick={() => setCurrency('RUB')}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase transition-all ${
+                currency === 'RUB'
+                  ? 'bg-accent text-[#0d0e12]'
+                  : 'text-[#8E92BC] hover:text-white'
+              }`}
+            >
+              RUB (₽)
+            </button>
+            <button
+              onClick={() => setCurrency('USD')}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase transition-all ${
+                currency === 'USD'
+                  ? 'bg-accent text-[#0d0e12]'
+                  : 'text-[#8E92BC] hover:text-white'
+              }`}
+            >
+              USD ($)
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center gap-3 text-xs text-[#8E92BC]">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Лучшая цена
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" /> Лучшая цена
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-red-500" /> Макс. цена
+            <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]" /> Макс. цена
           </span>
         </div>
       </div>
@@ -64,10 +94,13 @@ export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) 
             className="w-4 h-4 rounded"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
           />
-          <span>Steam Market (ориентир, с учётом ~15% комиссии)</span>
+          <span>Steam Market (ориентир, включая ~15% комиссии)</span>
         </div>
         <div className="text-xs font-semibold text-amber-400">
-          ${steamBaseline.toFixed(2)} / {(steamBaseline * exchangeRate).toFixed(0)} ₽
+          {currency === 'RUB'
+            ? `${Math.round(steamBaseline * exchangeRate).toLocaleString('ru-RU')} ₽`
+            : `$${steamBaseline.toFixed(2)}`
+          }
         </div>
       </div>
 
@@ -75,23 +108,25 @@ export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) 
       <div className="overflow-x-auto">
         <table className="w-full text-left">
           <thead>
-            <tr className="text-[10px] uppercase tracking-wider text-[#5A5D7F] font-bold border-b border-white/[0.04]">
-              <th className="px-5 py-3">Маркетплейс</th>
-              <th className="px-5 py-3 text-right">Цена (USD)</th>
-              <th className="px-5 py-3 text-right">Цена (RUB)</th>
+            <tr className="text-[10px] uppercase tracking-wider text-[#5A5D7F] font-bold border-b border-white/[0.04] bg-[#161721]/30">
+              <th className="px-5 py-3">Площадка</th>
+              <th className="px-5 py-3 text-right">Основная цена</th>
+              <th className="px-5 py-3 text-right">В другой валюте</th>
               <th className="px-5 py-3 text-right">Разница</th>
               <th className="px-5 py-3 text-center">Купить</th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((item, idx) => {
+            {sorted.map((item) => {
               const isMin = item.priceUsd === minPrice
               const isMax = item.priceUsd === maxPrice && prices.length > 1
               const meta = MARKET_META[item.source]
               const displayName = meta?.name || item.source
-              const diffFromMin = item.priceUsd - minPrice
-              const diffPercent = minPrice > 0 ? ((diffFromMin / minPrice) * 100).toFixed(1) : '0.0'
-              const rubPrice = Math.round(item.priceUsd * exchangeRate)
+              const rubPrice = item.priceRub ?? Math.round(item.priceUsd * exchangeRate * 100) / 100
+
+              const diffFromMinUsd = item.priceUsd - minPrice
+              const diffFromMinRub = diffFromMinUsd * exchangeRate
+              const diffPercent = minPrice > 0 ? ((diffFromMinUsd / minPrice) * 100).toFixed(1) : '0.0'
 
               return (
                 <tr
@@ -118,28 +153,34 @@ export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) 
                         {displayName}
                       </span>
                       {isMin && (
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase tracking-wider scale-90 origin-left">
                           Best
                         </span>
                       )}
                     </div>
                   </td>
 
-                  {/* Price USD */}
+                  {/* Primary Price */}
                   <td className="px-5 py-3.5 text-right">
                     <span className={`text-[14px] font-bold tabular-nums ${
                       isMin ? 'text-emerald-400' :
                       isMax ? 'text-red-400' :
                       'text-white'
                     }`}>
-                      ${item.priceUsd.toFixed(2)}
+                      {currency === 'RUB'
+                        ? `${Math.round(rubPrice).toLocaleString('ru-RU')} ₽`
+                        : `$${item.priceUsd.toFixed(2)}`
+                      }
                     </span>
                   </td>
 
-                  {/* Price RUB */}
+                  {/* Secondary Price */}
                   <td className="px-5 py-3.5 text-right">
-                    <span className="text-[13px] text-[#8E92BC] tabular-nums">
-                      {rubPrice.toLocaleString('ru-RU')} ₽
+                    <span className="text-[12.5px] text-[#8E92BC]/70 tabular-nums">
+                      {currency === 'RUB'
+                        ? `$${item.priceUsd.toFixed(2)}`
+                        : `${Math.round(rubPrice).toLocaleString('ru-RU')} ₽`
+                      }
                     </span>
                   </td>
 
@@ -153,7 +194,10 @@ export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) 
                     ) : (
                       <span className="flex items-center justify-end gap-1 text-xs text-red-400/80 font-medium">
                         <TrendingUp size={12} />
-                        +${diffFromMin.toFixed(2)} ({diffPercent}%)
+                        +{currency === 'RUB'
+                          ? `${Math.round(diffFromMinRub).toLocaleString('ru-RU')} ₽`
+                          : `$${diffFromMinUsd.toFixed(2)}`
+                        } ({diffPercent}%)
                       </span>
                     )}
                   </td>
@@ -182,11 +226,14 @@ export function PriceTable({ prices, exchangeRate, skinName }: PriceTableProps) 
 
       {/* Footer — Summary */}
       <div className="px-5 py-3 bg-[#161721] border-t border-white/[0.04] flex items-center justify-between text-xs text-[#8E92BC]">
-        <span>Найдено: {sorted.length} маркетплейсов</span>
+        <span>Найдено предложений: {sorted.length}</span>
         <span>
           Экономия до{' '}
           <span className="text-emerald-400 font-bold">
-            ${(maxPrice - minPrice).toFixed(2)}
+            {currency === 'RUB'
+              ? `${Math.round((maxPrice - minPrice) * exchangeRate).toLocaleString('ru-RU')} ₽`
+              : `$${(maxPrice - minPrice).toFixed(2)}`
+            }
           </span>{' '}
           ({minPrice > 0 ? (((maxPrice - minPrice) / minPrice) * 100).toFixed(1) : '0.0'}%)
         </span>

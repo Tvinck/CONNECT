@@ -1,42 +1,13 @@
-
+import { MARKET_META, type MarketPrice, getRubRate } from '@/lib/skinscan/utils'
 
 const PRICEMPIRE_API_KEY = process.env.PRICEMPIRE_API_KEY || ''
 const CSPRICE_API_TOKEN = process.env.CSPRICE_API_TOKEN || ''
-import { getRubRate } from '@/lib/skinscan/utils'
-
-export interface MarketPrice {
-  source: string
-  priceUsd: number
-  priceRub?: number
-  url: string
-}
 
 export interface SkinPricesResponse {
   market_hash_name: string
   icon_url: string
   prices: MarketPrice[]
   history: { date: string; price: number }[]
-}
-
-// Map Pricempire source names to display names & domain links
-export const MARKET_META: Record<string, { name: string; url: (name: string) => string }> = {
-  market_csgo: { name: 'Market.CSGO', url: (n) => `https://market.csgo.com/ru/?search=${encodeURIComponent(n)}&utm_source=skinscan` },
-  skinport: { name: 'Skinport', url: (n) => `https://skinport.com/market?search=${encodeURIComponent(n)}&utm_source=skinscan` },
-  dmarket: { name: 'DMarket', url: (n) => `https://dmarket.com/ingame-items/item-list/csgo-skins?title=${encodeURIComponent(n)}&utm_source=skinscan` },
-  waxpeer: { name: 'Waxpeer', url: (n) => `https://waxpeer.com/all?game=csgo&search=${encodeURIComponent(n)}&utm_source=skinscan` },
-  csfloat: { name: 'CSFloat', url: (n) => `https://csfloat.com/search?sort_by=lowest_price&type=buy&search=${encodeURIComponent(n)}&utm_source=skinscan` },
-  skinbaron: { name: 'SkinBaron', url: (n) => `https://skinbaron.de/ru/search?searchQuery=${encodeURIComponent(n)}&utm_source=skinscan` },
-  bitskins: { name: 'BitSkins', url: (n) => `https://bitskins.com/?market_hash_name=${encodeURIComponent(n)}&utm_source=skinscan` },
-  buff: { name: 'BUFF163', url: (n) => `https://buff.163.com/market/goods?search=${encodeURIComponent(n)}&utm_source=skinscan` },
-  lootfarm: { name: 'LootFarm', url: (n) => `https://loot.farm/&utm_source=skinscan` },
-  whitemarket: { name: 'White.market', url: (n) => `https://white.market/market?search=${encodeURIComponent(n)}&utm_source=skinscan` },
-  shadowpay: { name: 'ShadowPay', url: (n) => `https://shadowpay.com/en?search=${encodeURIComponent(n)}&utm_source=skinscan` },
-}
-
-export function getSteamCdnUrl(iconUrl: string): string {
-  if (!iconUrl) return 'https://community.akamai.steamstatic.com/economy/image/placeholder'
-  const clean = iconUrl.replace('https://community.akamai.steamstatic.com/economy/image/', '')
-  return `https://community.akamai.steamstatic.com/economy/image/${clean}/330x192`
 }
 
 // Generate high quality mock data for demo/fallback purposes
@@ -99,13 +70,14 @@ export async function fetchSkinPrices(name: string): Promise<SkinPricesResponse>
   }
 
   // 1. Rate limiter check (max 1 req/sec)
-  const { throttleRequest } = await import('@/lib/skinscan/redisClient');
-await throttleRequest()
+  const { throttleRequest } = await import('@/lib/skinscan/redisClient')
+  await throttleRequest()
 
   // 2. Try Pricempire API
   if (PRICEMPIRE_API_KEY) {
     try {
-      const url = `https://api.pricempire.com/v3/items/prices?api_key=${PRICEMPIRE_API_KEY}&sources=buff,skinport,csfloat,waxpeer,dmarket,market_csgo,skinbaron,lootfarm`
+      const sourceList = Object.keys(MARKET_META).join(',')
+      const url = `https://api.pricempire.com/v3/items/prices?api_key=${PRICEMPIRE_API_KEY}&sources=${sourceList}`
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } })
       if (res.ok) {
         const data = await res.json()
@@ -123,10 +95,10 @@ await throttleRequest()
             }
           }
           if (prices.length > 0) {
-            const rate = await getRubRate();
+            const rate = await getRubRate()
             prices.forEach(p => {
-              p.priceRub = Math.round(p.priceUsd * rate * 100) / 100;
-            });
+              p.priceRub = Math.round(p.priceUsd * rate * 100) / 100
+            })
             return {
               market_hash_name: name,
               icon_url: itemData.icon || '',
@@ -163,10 +135,10 @@ await throttleRequest()
               url: MARKET_META[src].url(name),
             }
           })
-          const rate = await getRubRate();
+          const rate = await getRubRate()
           prices.forEach(p => {
-            p.priceRub = Math.round(p.priceUsd * rate * 100) / 100;
-          });
+            p.priceRub = Math.round(p.priceUsd * rate * 100) / 100
+          })
           return {
             market_hash_name: name,
             icon_url: data.icon_url || '',
