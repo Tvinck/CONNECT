@@ -29,6 +29,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: 'community.akamai.steamstatic.com' },
+      { protocol: 'https', hostname: 'community.cloudflare.steamstatic.com' },
     ],
   },
   eslint: {
@@ -37,6 +39,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Mark ioredis as server-only — prevents Webpack from bundling it into client chunks
+  serverExternalPackages: ['ioredis'],
   async headers() {
     return [
       {

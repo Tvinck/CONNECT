@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { SkinCard } from '@/components/skinscan/SkinCard'
 import { PriceTable } from '@/components/skinscan/PriceTable'
 import { PriceChart } from '@/components/skinscan/PriceChart'
-import { getSteamCdnUrl } from '@/lib/skinscan/pricempire'
+import { getSteamCdnUrl } from '@/lib/skinscan/utils'
 
 interface MarketPrice {
   source: string

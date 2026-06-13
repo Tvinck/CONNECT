@@ -6,7 +6,7 @@
  */
 
 import Image from 'next/image'
-import { getSteamCdnUrl } from '@/lib/skinscan/pricempire'
+import { getSteamCdnUrl } from '@/lib/skinscan/utils'
 
 interface SkinCardProps {
   name: string
