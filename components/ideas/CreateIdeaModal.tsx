@@ -266,7 +266,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
             Отмена
           </Button>
           <Button
-            className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500"
+            className="flex-1"
             onClick={create}
             disabled={saving}
           >
@@ -309,7 +309,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
           {previews.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mb-3">
               {previews.map((src, index) => (
-                <div key={index} className="relative group aspect-video rounded-xl border border-white/[0.08] overflow-hidden bg-black/20">
+                <div key={index} className="relative group aspect-video rounded-xl border border-line overflow-hidden bg-bg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={src} alt="Вложение" className="w-full h-full object-cover" />
                   <button
@@ -337,7 +337,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3.5 h-10 rounded-xl border border-dashed border-white/[0.08] bg-white/[0.01] hover:bg-white/[0.03] text-[13px] text-slate-400 hover:text-white transition-all w-full justify-center"
+                className="flex items-center gap-1.5 px-3.5 h-10 rounded-xl border border-dashed border-line bg-bg/50 hover:bg-bg text-[13px] text-mute hover:text-[#171821] transition-all w-full justify-center"
                 disabled={saving}
               >
                 <ImageIcon size={14} /> Прикрепить скриншот или вставить (Ctrl+V)
@@ -352,8 +352,8 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
           {links.length > 0 && (
             <div className="space-y-1.5 mb-2">
               {links.map((link, idx) => (
-                <div key={idx} className="flex items-center justify-between px-3 h-8 rounded-lg bg-white/[0.03] border border-white/[0.05] text-[12px]">
-                  <span className="truncate flex items-center gap-1.5 text-indigo-400 font-mono">
+                <div key={idx} className="flex items-center justify-between px-3 h-8 rounded-lg bg-bg border border-line text-[12px]">
+                  <span className="truncate flex items-center gap-1.5 text-accent font-mono">
                     <LinkIcon size={12} />
                     {link}
                   </span>
@@ -419,7 +419,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
               {selectedTags.map(tag => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-600/20 border border-indigo-500/35 text-indigo-300 text-[11px] font-semibold"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent/10 border border-accent/25 text-accent text-[11px] font-semibold"
                 >
                   #{tag}
                   <button
@@ -469,7 +469,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
                       key={t.id}
                       type="button"
                       onClick={() => handleAddTag(t.name)}
-                      className="px-1.5 py-0.5 rounded bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.04] text-slate-400 hover:text-white text-[10.5px]"
+                      className="px-1.5 py-0.5 rounded bg-bg hover:bg-line/50 border border-line text-mute hover:text-[#171821] text-[10.5px]"
                     >
                       +{t.name}
                     </button>
@@ -480,7 +480,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
         </div>
 
         {error && (
-          <div className="text-[12.5px] text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+          <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">
             {error}
           </div>
         )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   X, ChevronUp, ChevronDown, MessageSquare, Clock, Eye,
   Send, Trash2, Loader2, ThumbsUp, ThumbsDown, Link as LinkIcon, Paperclip
@@ -34,6 +35,11 @@ interface Props {
 
 export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onClose, onVote, onDelete, onUpdate }: Props) {
   const supabase = createClient()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const addToast = useUIStore(s => s.addToast)
 
   const [comments, setComments] = useState<Comment[]>([])
@@ -282,19 +288,21 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
       u.full_name.toLowerCase().includes(mentionFilter)
     ).slice(0, 5)
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-md animate-fade-in" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose} />
 
       {/* Modal Dialog */}
       <div
         role="dialog"
         aria-modal="true"
-        className="relative bg-[#111322] border border-white/[0.06] rounded-2xl w-full max-w-[720px] max-h-[90vh] shadow-[0_10px_50px_-12px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col animate-modal-in text-white"
+        className="relative bg-card border border-line rounded-2xl w-full max-w-[720px] max-h-[90vh] shadow-2xl overflow-hidden flex flex-col animate-modal-in text-[#171821]"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
           <div className="flex items-center gap-2">
             <span
               className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
@@ -303,14 +311,14 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
               <StatusIcon size={12} />
               {statusMeta.label}
             </span>
-            <span className="text-[12px] text-slate-500 flex items-center gap-1 font-mono">
+            <span className="text-[12px] text-mute flex items-center gap-1 font-mono">
               <Eye size={12} />
               {idea.views ?? 0}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] transition-all inline-flex items-center justify-center"
+            className="w-8 h-8 rounded-lg text-mute hover:text-[#171821] hover:bg-bg transition-all inline-flex items-center justify-center"
           >
             <X size={18} />
           </button>
@@ -320,19 +328,19 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
           {/* Main Info */}
           <div>
-            <h1 className="text-[20px] font-extrabold tracking-tight leading-snug text-white font-sans">
+            <h1 className="text-[20px] font-extrabold tracking-tight leading-snug text-[#171821] font-sans">
               {idea.title}
             </h1>
             
             {/* Author details */}
             {idea.author && (
-              <div className="flex items-center gap-2 mt-3 text-[12px] text-slate-400">
+              <div className="flex items-center gap-2 mt-3 text-[12px] text-mute">
                 <Avatar
                   initials={getInitials(idea.author.full_name)}
                   color={colorFor(idea.author.full_name)}
                   size={22}
                 />
-                <span className="font-semibold text-slate-200">{idea.author.full_name}</span>
+                <span className="font-semibold text-[#171821]">{idea.author.full_name}</span>
                 <span>·</span>
                 <span>{fmtDate(idea.created_at)}</span>
               </div>
@@ -340,15 +348,15 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
           </div>
 
           {/* Description Container */}
-          <div className="bg-[#181a2b] border border-white/[0.05] rounded-xl p-5 space-y-4 shadow-sm">
-            <div className="text-[14px] text-slate-200/90 leading-relaxed whitespace-pre-wrap">
+          <div className="bg-bg/50 border border-line rounded-xl p-5 space-y-4">
+            <div className="text-[14px] text-[#171821] leading-relaxed whitespace-pre-wrap">
               {idea.description}
             </div>
 
             {/* Attachments List */}
             {idea.attachments?.length > 0 && (
               <div className="space-y-2 pt-2">
-                <span className="text-[11px] uppercase tracking-[0.08em] text-slate-500 font-semibold block">Вложения</span>
+                <span className="text-[11px] uppercase tracking-[0.08em] text-mute2 font-semibold block">Вложения</span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {idea.attachments.map((url, idx) => (
                     <a
@@ -356,7 +364,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative aspect-video rounded-lg overflow-hidden border border-white/[0.08] bg-black/40 hover:border-violet-500/50 transition-all group cursor-zoom-in"
+                      className="relative aspect-video rounded-lg overflow-hidden border border-line bg-bg hover:border-accent transition-all group cursor-zoom-in"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={url} alt="Вложение идеи" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
@@ -369,7 +377,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
             {/* Links List */}
             {idea.links?.length > 0 && (
               <div className="space-y-1.5 pt-2">
-                <span className="text-[11px] uppercase tracking-[0.08em] text-slate-500 font-semibold block">Ссылки</span>
+                <span className="text-[11px] uppercase tracking-[0.08em] text-mute2 font-semibold block">Ссылки</span>
                 <div className="space-y-1">
                   {idea.links.map((link, idx) => (
                     <a
@@ -377,7 +385,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-[12.5px] text-indigo-400 hover:text-indigo-300 font-medium font-mono hover:underline truncate"
+                      className="flex items-center gap-2 text-[12.5px] text-accent hover:text-accent/80 font-medium font-mono hover:underline truncate"
                     >
                       <LinkIcon size={13} className="shrink-0" />
                       {link}
@@ -388,15 +396,15 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
             )}
 
             {/* Voting block inside card */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/[0.04] mt-4">
-              <span className="text-[13px] text-slate-400">Оцените идею:</span>
+            <div className="flex items-center justify-between pt-4 border-t border-line mt-4">
+              <span className="text-[13px] text-mute">Оцените идею:</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onVote('up')}
                   className={`flex items-center gap-1.5 px-3 h-8.5 rounded-xl border text-[12.5px] font-semibold transition-all ${
                     userVote === 1
-                      ? 'bg-violet-600/20 border-violet-500/40 text-violet-400'
-                      : 'bg-white/[0.02] border-white/[0.05] text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                      ? 'bg-accent/15 border border-accent/25 text-accent font-bold'
+                      : 'bg-bg border border-line text-[#171821] hover:bg-bg-hover hover:border-line2'
                   }`}
                 >
                   <ThumbsUp size={13} />
@@ -406,31 +414,31 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                   onClick={() => onVote('down')}
                   className={`flex items-center justify-center w-8.5 h-8.5 rounded-xl border transition-all ${
                     userVote === -1
-                      ? 'bg-amber-500/20 border-amber-500/40 text-amber-500'
-                      : 'bg-white/[0.02] border-white/[0.05] text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                      ? 'bg-warn/15 border border-warn/25 text-warn font-bold'
+                      : 'bg-bg border border-line text-[#171821] hover:bg-bg-hover hover:border-line2'
                   }`}
                   title="Не поддерживаю"
                 >
                   <ThumbsDown size={13} />
                 </button>
-                <span className="text-[14px] font-bold text-white ml-2 font-mono">{score}</span>
+                <span className="text-[14px] font-bold text-[#171821] ml-2 font-mono">{score}</span>
               </div>
             </div>
           </div>
 
           {/* CEO status management & Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-white/[0.04] bg-white/[0.01]">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-line bg-bg/50">
             <div className="flex items-center gap-3">
               {isCeoOrCoowner && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 shrink-0">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-mute shrink-0">
                     Управление:
                   </span>
                   <select
                     value={idea.status}
                     onChange={e => handleStatusChange(e.target.value as any)}
                     disabled={updatingStatus}
-                    className="h-8.5 px-2.5 rounded-lg bg-[#1c1e2e] border border-white/[0.08] text-[12px] font-medium focus:border-indigo-500 cursor-pointer outline-none"
+                    className="h-8.5 px-2.5 rounded-lg bg-card border border-line text-[#171821] font-medium focus:border-accent cursor-pointer outline-none"
                   >
                     <option value="new">Новая идея</option>
                     <option value="planned">Запланировано</option>
@@ -456,25 +464,25 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
 
           {/* Comments section */}
           <div className="space-y-4">
-            <h3 className="text-[14px] font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-[14px] font-bold text-[#171821] tracking-tight flex items-center gap-2">
               <MessageSquare size={16} />
               Обсуждение · {comments.length}
             </h3>
 
             {/* Comment input block */}
-            <div className="bg-[#181a2b] border border-white/[0.05] rounded-xl p-3.5 space-y-3 relative">
+            <div className="bg-bg/50 border border-line rounded-xl p-3.5 space-y-3 relative">
               
               {/* Mentions Dropdown */}
               {showMentions && filteredUsers.length > 0 && (
-                <div className="absolute bottom-full left-0 mb-2 w-[240px] bg-[#1c1e2e] border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden z-50 animate-fade-in">
+                <div className="absolute bottom-full left-0 mb-2 w-[240px] bg-card border border-line rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in">
                   {filteredUsers.map((u, i) => (
                     <button
                       key={u.mention_tag}
                       onClick={() => insertMention(u.mention_tag!)}
-                      className={`w-full text-left px-3 py-2 text-[12.5px] hover:bg-white/[0.05] transition-colors flex flex-col ${i === mentionIndex ? 'bg-white/[0.05]' : ''}`}
+                      className={`w-full text-left px-3 py-2 text-[12.5px] hover:bg-card-hover transition-colors flex flex-col ${i === mentionIndex ? 'bg-bg' : ''}`}
                     >
-                      <span className="font-semibold text-slate-200">{u.full_name}</span>
-                      <span className="text-slate-500 text-[11px]">@{u.mention_tag}</span>
+                      <span className="font-semibold text-[#171821]">{u.full_name}</span>
+                      <span className="text-mute text-[11px]">@{u.mention_tag}</span>
                     </button>
                   ))}
                 </div>
@@ -512,13 +520,13 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                 }}
                 placeholder="Напишите ваш комментарий (используйте @ для упоминания)…"
                 rows={2}
-                className="w-full bg-transparent border-0 outline-none text-[13.5px] placeholder-slate-500 text-white resize-none"
+                className="w-full bg-transparent border-0 outline-none text-[13.5px] placeholder:text-mute2 text-[#171821] resize-none"
                 disabled={sendingComment}
               />
 
               {/* Preview attached screenshot */}
               {previewUrl && (
-                <div className="relative group w-24 aspect-video rounded-lg border border-white/[0.08] overflow-hidden bg-black/40">
+                <div className="relative group w-24 aspect-video rounded-lg border border-line overflow-hidden bg-bg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={previewUrl} alt="Вложение" className="w-full h-full object-cover" />
                   <button
@@ -532,7 +540,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
               )}
 
               {/* Action Buttons inside comment block */}
-              <div className="flex items-center justify-between border-t border-white/[0.04] pt-3">
+              <div className="flex items-center justify-between border-t border-line pt-3">
                 <div className="flex items-center">
                   <input
                     type="file"
@@ -545,7 +553,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                     type="button"
                     onClick={() => commentFileRef.current?.click()}
                     className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                      previewUrl ? 'text-violet-400 bg-violet-600/10' : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                      previewUrl ? 'text-accent bg-accent/10' : 'text-mute hover:text-[#171821] hover:bg-bg'
                     }`}
                     title="Прикрепить изображение"
                     disabled={sendingComment}
@@ -556,7 +564,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                 <button
                   onClick={postComment}
                   disabled={sendingComment || (!commentText.trim() && !attachedFile)}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[12px] px-3.5 h-8.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="bg-accent hover:bg-accent/80 text-white font-semibold text-[12px] px-3.5 h-8.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-glow-sm"
                 >
                   {sendingComment ? (
                     <Loader2 size={13} className="animate-spin" />
@@ -575,7 +583,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                 Загрузка комментариев…
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-8 border border-dashed border-white/[0.04] rounded-xl text-slate-500 text-[12.5px]">
+              <div className="text-center py-8 border border-dashed border-line rounded-xl text-mute text-[12.5px]">
                 Комментариев пока нет. Будьте первыми!
               </div>
             ) : (
@@ -587,22 +595,22 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                   return (
                     <div key={c.id} className="flex gap-3 items-start">
                       <Avatar initials={initials} color={color} size={28} className="shrink-0 mt-0.5" />
-                      <div className="flex-1 min-w-0 bg-white/[0.01] border border-white/[0.03] rounded-xl p-3.5">
+                      <div className="flex-1 min-w-0 bg-card border border-line rounded-xl p-3.5 shadow-sm">
                         <div className="flex items-baseline justify-between mb-1.5">
-                          <span className="text-[13px] font-bold text-slate-200">
+                          <span className="text-[13px] font-bold text-[#171821]">
                             {c.author?.full_name ?? 'Пользователь'}
                           </span>
-                          <span className="text-[10.5px] text-slate-500 font-mono">
+                          <span className="text-[10.5px] text-mute font-mono">
                             {timeAgo(c.created_at)}
                           </span>
                         </div>
-                        <p className="text-[13px] text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-[13px] text-[#171821] leading-relaxed whitespace-pre-wrap">
                           {c.content}
                         </p>
 
                         {/* Comment Attachment */}
                         {c.attachments?.length > 0 && (
-                          <div className="mt-3 max-w-[200px] rounded-lg overflow-hidden border border-white/[0.08] bg-black/20">
+                          <div className="mt-3 max-w-[200px] rounded-lg overflow-hidden border border-line bg-bg">
                             <a href={c.attachments[0]} target="_blank" rel="noopener noreferrer" className="cursor-zoom-in block aspect-video">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={c.attachments[0]} alt="Скриншот в комментарии" className="w-full h-full object-cover hover:scale-105 transition-all duration-200" />
@@ -618,6 +626,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

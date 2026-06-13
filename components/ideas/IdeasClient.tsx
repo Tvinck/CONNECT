@@ -226,40 +226,40 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
   }, [ideas, searchQuery, activeCategory, selectedTag, sortBy])
 
   return (
-    <div className="bg-[#0b0c15] text-white rounded-[24px] border border-white/[0.04] p-6 lg:p-8 min-h-[85vh] relative overflow-hidden shadow-2xl">
+    <div className="bg-card text-[#171821] rounded-[24px] border border-line p-6 lg:p-8 min-h-[85vh] relative overflow-hidden shadow-2xl">
       {/* Decorative Blur Blobs */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan/5 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.06] relative z-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-line relative z-10">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-violet-600/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_15px_rgba(124,58,237,0.15)]">
+          <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shadow-glow-sm">
             <Lightbulb size={24} className="animate-pulse" />
           </div>
           <div>
-            <h1 className="text-[22px] font-bold tracking-tight text-white font-sans">У вас есть идея?</h1>
-            <p className="text-[13px] text-[#8E92BC] mt-0.5">Предлагайте свои идеи по улучшению BAZZAR Group</p>
+            <h1 className="text-[22px] font-bold tracking-tight text-[#171821] font-sans">У вас есть идея?</h1>
+            <p className="text-[13px] text-mute mt-0.5">Предлагайте свои идеи по улучшению BAZZAR Group</p>
           </div>
         </div>
-        <button
+        <Button
           onClick={() => setShowCreate(true)}
-          className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 hover:shadow-[0_0_15px_rgba(79,70,229,0.3)] text-white font-semibold text-[13.5px] px-5 h-11 rounded-xl transition-all flex items-center justify-center gap-2 shrink-0 self-start sm:self-center"
+          className="shadow-glow-sm shrink-0 self-start sm:self-center"
         >
           <Plus size={16} />
           Предложить идею
-        </button>
+        </Button>
       </div>
 
       {/* Search and Sort row */}
       <div className="flex flex-col md:flex-row md:items-center gap-4 mt-6 relative z-10">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-mute2" />
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Поиск по идеям…"
-            className="w-full h-11 pl-10 pr-4 bg-[#141622]/60 border border-white/[0.05] rounded-xl text-[13.5px] text-white placeholder-slate-500 focus:border-indigo-500/60 focus:bg-[#181b2a]/80 outline-none transition-all"
+            className="w-full h-11 pl-10 pr-4 bg-white/[0.025] border border-line rounded-xl text-[13.5px] text-[#171821] placeholder:text-mute2 focus:border-accent focus:bg-white/[0.04] outline-none transition-all"
           />
         </div>
       </div>
@@ -288,28 +288,28 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                 <div
                   key={idea.id}
                   onClick={() => setViewingIdea(idea)}
-                  className="bg-[#141622]/40 border border-white/[0.04] hover:border-white/[0.09] hover:bg-[#181a28]/50 transition-all duration-200 rounded-2xl p-5 flex gap-4 items-start relative group cursor-pointer"
+                  className="card p-5 flex gap-4 items-start relative group cursor-pointer lift"
                 >
                   {/* Left block: Vote widget */}
                   <div
                     onClick={e => e.stopPropagation()}
-                    className="flex flex-col items-center justify-center bg-[#1c1e2e]/80 border border-white/[0.05] rounded-xl py-1.5 w-12 shrink-0 select-none shadow-sm"
+                    className="flex flex-col items-center justify-center bg-bg border border-line rounded-xl py-1.5 w-12 shrink-0 select-none shadow-sm"
                   >
                     <button
                       onClick={() => handleVote(idea.id, 'up')}
                       className={`p-1 rounded-md transition-all hover:bg-white/[0.05] ${
-                        userVote === 1 ? 'text-violet-400 scale-110' : 'text-slate-500 hover:text-slate-300'
+                        userVote === 1 ? 'text-accent scale-110' : 'text-mute2 hover:text-mute'
                       }`}
                     >
                       <ChevronUp size={20} />
                     </button>
-                    <span className="text-[14px] font-bold font-mono text-white tracking-tight leading-none my-1">
+                    <span className="text-[14px] font-bold font-mono text-[#171821] tracking-tight leading-none my-1">
                       {score}
                     </span>
                     <button
                       onClick={() => handleVote(idea.id, 'down')}
                       className={`p-1 rounded-md transition-all hover:bg-white/[0.05] ${
-                        userVote === -1 ? 'text-amber-500 scale-110' : 'text-slate-500 hover:text-slate-300'
+                        userVote === -1 ? 'text-warn scale-110' : 'text-mute2 hover:text-mute'
                       }`}
                     >
                       <ChevronDown size={20} />
@@ -318,22 +318,22 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
 
                   {/* Right block: Information */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-[15.5px] font-bold text-white tracking-tight leading-snug group-hover:text-violet-400 transition-colors duration-150">
+                    <h3 className="text-[15.5px] font-bold text-[#171821] tracking-tight leading-snug group-hover:text-accent transition-colors duration-150">
                       {idea.title}
                     </h3>
-                    <p className="text-[12.5px] text-[#8E92BC]/85 mt-1.5 line-clamp-2 leading-relaxed">
+                    <p className="text-[12.5px] text-mute mt-1.5 line-clamp-2 leading-relaxed">
                       {idea.description}
                     </p>
 
                     {/* Footer tags & details */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-4 text-[11px] text-[#8E92BC]">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-4 text-[11px] text-mute">
                       {/* Comments Badge */}
-                      <span className="flex items-center gap-1 hover:text-white transition-colors">
+                      <span className="flex items-center gap-1 hover:text-[#171821] transition-colors">
                         <MessageSquare size={13} />
                         {idea.comments?.length ?? 0}
                       </span>
 
-                      <span className="text-white/10">|</span>
+                      <span className="text-line2">|</span>
 
                       {/* Status Badge */}
                       <span
@@ -350,7 +350,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                       {/* Project Link */}
                       {project && (
                         <>
-                          <span className="text-white/10">|</span>
+                          <span className="text-line2">|</span>
                           <span
                             className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-semibold text-[10.5px]"
                             style={{ backgroundColor: `${project.color}15`, color: project.color }}
@@ -364,12 +364,12 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                       {/* Idea Tags */}
                       {idea.idea_tags?.length > 0 && (
                         <>
-                          <span className="text-white/10">|</span>
+                          <span className="text-line2">|</span>
                           <div className="flex items-center gap-1">
                             {idea.idea_tags.map(it => it.tag && (
                               <span
                                 key={it.tag.id}
-                                className="px-1.5 py-0.5 bg-white/[0.04] border border-white/[0.02] rounded-md text-[10px] hover:text-white transition-colors"
+                                className="px-1.5 py-0.5 bg-bg border border-line rounded-md text-[10px] text-mute hover:text-[#171821] hover:border-line2 transition-colors"
                               >
                                 {it.tag.name}
                               </span>
@@ -380,13 +380,13 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
 
                       {/* Author */}
                       {idea.author && (
-                        <div className="ml-auto flex items-center gap-1.5 text-[#8E92BC] text-[11px]">
+                        <div className="ml-auto flex items-center gap-1.5 text-mute text-[11px]">
                           <Avatar
                             initials={getInitials(idea.author.full_name)}
                             color={colorFor(idea.author.full_name)}
                             size={18}
                           />
-                          <span className="truncate max-w-[80px] text-slate-300 font-medium">
+                          <span className="truncate max-w-[80px] text-[#171821] font-medium">
                             {idea.author.full_name.split(' ')[0]}
                           </span>
                           <span>·</span>
@@ -404,14 +404,14 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
         {/* Right Column: Sidebar Filters */}
         <div className="space-y-5">
           {/* Sorting Box */}
-          <div className="bg-[#141622]/40 border border-white/[0.04] rounded-2xl p-4">
-            <label className="block text-[10px] uppercase tracking-[0.12em] text-[#8E92BC] font-semibold mb-2">
+          <div className="border border-line rounded-2xl p-4 bg-bg/25">
+            <label className="block text-[10px] uppercase tracking-[0.12em] text-mute font-semibold mb-2">
               Сортировка
             </label>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value as any)}
-              className="w-full h-9 px-3 rounded-xl bg-[#1c1e2e] border border-white/[0.05] focus:border-indigo-500 outline-none text-[12px] text-white transition-all cursor-pointer"
+              className="w-full h-9 px-3 rounded-xl bg-card border border-line focus:border-accent outline-none text-[12px] text-[#171821] transition-all cursor-pointer"
             >
               <option value="newest">Сначала новые</option>
               <option value="votes">По популярности</option>
@@ -420,8 +420,8 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
           </div>
 
           {/* Categories/Statuses filter */}
-          <div className="bg-[#141622]/40 border border-white/[0.04] rounded-2xl p-4">
-            <h3 className="text-[10px] uppercase tracking-[0.12em] text-[#8E92BC] font-semibold mb-3">
+          <div className="border border-line rounded-2xl p-4 bg-bg/25">
+            <h3 className="text-[10px] uppercase tracking-[0.12em] text-mute font-semibold mb-3">
               Статус
             </h3>
             <div className="space-y-1">
@@ -437,15 +437,15 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                     onClick={() => setActiveCategory(catKey)}
                     className={`w-full flex items-center justify-between px-3 h-9 rounded-xl text-[12.5px] font-medium transition-all ${
                       isActive
-                        ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/25'
-                        : 'text-[#8E92BC] hover:text-white hover:bg-white/[0.03] border border-transparent'
+                        ? 'bg-accent/10 text-accent border border-accent/25 font-bold'
+                        : 'text-mute hover:text-[#171821] hover:bg-white/[0.04] border border-transparent'
                     }`}
                   >
                     <span className="flex items-center gap-2">
                       <Icon size={14} style={{ color: isActive ? undefined : meta.color }} />
                       {meta.label}
                     </span>
-                    <span className="text-[11px] font-bold font-mono px-1.5 py-0.5 rounded bg-white/[0.04]">
+                    <span className="text-[11px] font-bold font-mono px-1.5 py-0.5 rounded bg-bg">
                       {count}
                     </span>
                   </button>
@@ -455,8 +455,8 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
           </div>
 
           {/* Tags list filter */}
-          <div className="bg-[#141622]/40 border border-white/[0.04] rounded-2xl p-4">
-            <h3 className="text-[10px] uppercase tracking-[0.12em] text-[#8E92BC] font-semibold mb-3">
+          <div className="border border-line rounded-2xl p-4 bg-bg/25">
+            <h3 className="text-[10px] uppercase tracking-[0.12em] text-mute font-semibold mb-3">
               Популярные теги
             </h3>
             <div className="flex flex-wrap gap-1.5">
@@ -468,8 +468,8 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                     onClick={() => setSelectedTag(isActive ? null : tag.name)}
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
                       isActive
-                        ? 'bg-violet-600/25 border-violet-500/40 text-violet-400 font-bold'
-                        : 'bg-white/[0.02] border-white/[0.04] text-[#8E92BC] hover:text-white hover:border-white/[0.1] hover:bg-white/[0.04]'
+                        ? 'bg-accent/15 border-accent/30 text-accent font-bold'
+                        : 'bg-card border border-line text-mute hover:text-[#171821] hover:border-line2 hover:bg-card-hover'
                     }`}
                   >
                     #{tag.name}
@@ -483,7 +483,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
             {selectedTag && (
               <button
                 onClick={() => setSelectedTag(null)}
-                className="w-full text-center mt-3 text-[11px] text-violet-400 hover:text-violet-300 font-semibold"
+                className="w-full text-center mt-3 text-[11px] text-accent hover:text-accent/80 font-semibold"
               >
                 Сбросить тег
               </button>
