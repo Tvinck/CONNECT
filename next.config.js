@@ -17,7 +17,7 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",   // unsafe-eval needed by Next.js dev
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.suno.ai https://*.suno.co https://www.google.com https://t1.gstatic.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.suno.ai https://*.suno.co https://www.google.com https://t1.gstatic.com https://*.steamstatic.com https://*.akamaihd.net",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.suno.ai https://*.suno.co wss://*.suno.ai",
       "media-src 'self' https://*.suno.ai https://*.suno.co",
       "frame-ancestors 'none'",
@@ -31,6 +31,8 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: 'community.akamai.steamstatic.com' },
       { protocol: 'https', hostname: 'community.cloudflare.steamstatic.com' },
+      { protocol: 'https', hostname: '*.steamstatic.com' },
+      { protocol: 'https', hostname: '*.akamaihd.net' },
     ],
   },
   eslint: {
