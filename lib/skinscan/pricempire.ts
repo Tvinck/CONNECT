@@ -2,7 +2,7 @@
 
 const PRICEMPIRE_API_KEY = process.env.PRICEMPIRE_API_KEY || ''
 const CSPRICE_API_TOKEN = process.env.CSPRICE_API_TOKEN || ''
-import { MARKET_META, type MarketPrice, RU_TRANSLATIONS, getRubRate } from '@/lib/skinscan/utils'
+import { getRubRate } from '@/lib/skinscan/utils'
 
 export interface MarketPrice {
   source: string
