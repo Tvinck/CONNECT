@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Search, Menu, X, CheckCheck, CheckSquare, Folder, Loader2, Info, AlertTriangle, Trophy, BellRing } from 'lucide-react'
+import { Bell, Search, Menu, X, CheckCheck, CheckSquare, Folder, Loader2, Info, AlertTriangle, Trophy, BellRing, Trash2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
@@ -202,6 +202,17 @@ export function Header({ title, subtitle }: HeaderProps) {
     await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false)
   }
 
+  const clearAll = async () => {
+    if (!user) return
+    setNotifs([])
+    const { error } = await supabase.from('notifications').delete().eq('user_id', user.id)
+    if (error) {
+      addToast('Ошибка', 'Не удалось очистить уведомления', 'err')
+    } else {
+      addToast('Успешно', 'Все уведомления удалены', 'ok')
+    }
+  }
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (bellRef.current && !bellRef.current.contains(e.target as Node)) setShowNotifs(false)
@@ -321,57 +332,89 @@ export function Header({ title, subtitle }: HeaderProps) {
           </button>
 
           {showNotifs && (
-            <div className="absolute right-0 top-full mt-2 w-[340px] bg-[#151829] text-white border border-line rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2.5 w-[380px] bg-[#161722]/95 backdrop-blur-xl text-white border border-white/[0.08] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.35)] z-50 overflow-hidden animate-pop-in">
               {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-line">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06] bg-white/[0.01]">
                 <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-semibold tracking-tight">Уведомления</span>
+                  <span className="text-[15px] font-bold text-white tracking-tight">Уведомления</span>
                   {unread > 0 && (
-                    <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-err/15 text-err text-[11px] font-bold inline-flex items-center justify-center">
+                    <span className="h-5 px-2 rounded-full bg-accent/15 text-accent text-[11px] font-bold inline-flex items-center justify-center">
                       {unread}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   {unread > 0 && (
                     <button onClick={markAllRead}
-                      className="flex items-center gap-1 px-2.5 h-7 rounded-lg text-[11.5px] text-mute hover:text-white hover:bg-white/[0.04] transition-all">
-                      <CheckCheck size={12} /> Прочитать все
+                      className="flex items-center gap-1 px-2.5 h-7 rounded-lg text-[11px] font-semibold text-mute2 hover:text-[#BFF128] hover:bg-white/[0.04] transition-all">
+                      <CheckCheck size={13} /> Прочитать все
+                    </button>
+                  )}
+                  {notifs.length > 0 && (
+                    <button onClick={clearAll}
+                      className="flex items-center gap-1 px-2.5 h-7 rounded-lg text-[11px] font-semibold text-mute2 hover:text-err hover:bg-white/[0.04] transition-all">
+                      <Trash2 size={12} /> Очистить всё
                     </button>
                   )}
                   <button onClick={() => setShowNotifs(false)}
-                    className="w-7 h-7 rounded-lg text-mute hover:text-white hover:bg-white/[0.04] transition-all inline-flex items-center justify-center">
-                    <X size={14} />
+                    className="w-7 h-7 rounded-lg text-mute2 hover:text-white hover:bg-white/[0.04] transition-all inline-flex items-center justify-center">
+                    <X size={15} />
                   </button>
                 </div>
               </div>
 
               {/* List */}
-              <div className="max-h-[400px] overflow-y-auto">
+              <div className="max-h-[380px] overflow-y-auto divide-y divide-white/[0.04]">
                 {loadingNotifs && (
-                  <div className="text-center py-6 text-mute text-[13px]">Загрузка…</div>
+                  <div className="flex flex-col items-center justify-center py-12 text-mute text-[13px] gap-2">
+                    <Loader2 size={18} className="animate-spin text-accent" />
+                    <span>Загрузка уведомлений…</span>
+                  </div>
                 )}
                 {!loadingNotifs && notifs.length === 0 && (
-                  <div className="text-center py-8 text-mute text-[13px]">Нет уведомлений</div>
-                )}
-                {!loadingNotifs && notifs.filter(n => n.title).map(n => (
-                  <div key={n.id}
-                    onClick={() => markRead(n.id, n.link)}
-                    className={`flex gap-3 px-4 py-3.5 border-b border-line/40 last:border-0 cursor-pointer hover:bg-white/[0.03] transition-all ${n.is_read ? 'opacity-55' : ''}`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-line shrink-0 inline-flex items-center justify-center mt-0.5">
-                      {NOTIF_ICON[n.type] ?? <BellRing size={18} className="text-accent" />}
+                  <div className="flex flex-col items-center justify-center py-16 text-mute text-[13px] gap-3">
+                    <div className="w-12 h-12 rounded-full bg-white/[0.02] border border-white/[0.04] inline-flex items-center justify-center text-mute2">
+                      <Bell size={20} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-2">
-                        <div className="text-[13px] font-semibold text-white leading-snug flex-1">{n.title}</div>
-                        {!n.is_read && <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-1.5" />}
-                      </div>
-                      <div className="text-[12px] text-gray-300 mt-0.5 line-clamp-2">{n.body}</div>
-                      <div className="text-[11px] text-mute2 mt-1.5 font-mono">{timeAgo(n.created_at)}</div>
-                    </div>
+                    <span>Нет уведомлений</span>
                   </div>
-                ))}
+                )}
+                {!loadingNotifs && notifs.filter(n => n.title).map(n => {
+                  const typeColors: Record<string, { border: string; iconBg: string; text: string }> = {
+                    task: { border: 'border-l-2 border-l-ok', iconBg: 'bg-ok/10 border-ok/20', text: 'text-ok' },
+                    ach: { border: 'border-l-2 border-l-gold', iconBg: 'bg-gold/10 border-gold/20', text: 'text-gold' },
+                    alert: { border: 'border-l-2 border-l-err', iconBg: 'bg-err/10 border-err/20', text: 'text-err' },
+                    info: { border: 'border-l-2 border-l-accent', iconBg: 'bg-accent/10 border-accent/20', text: 'text-accent' },
+                  }
+                  const design = typeColors[n.type] ?? typeColors.info
+
+                  return (
+                    <div key={n.id}
+                      onClick={() => markRead(n.id, n.link)}
+                      className={`flex gap-3 px-5 py-4 cursor-pointer hover:bg-white/[0.02] transition-all relative group ${design.border} ${n.is_read ? 'opacity-50' : ''}`}
+                    >
+                      <div className={`w-9 h-9 rounded-xl border shrink-0 inline-flex items-center justify-center mt-0.5 ${design.iconBg}`}>
+                        {NOTIF_ICON[n.type] ?? <BellRing size={16} className={design.text} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2 justify-between">
+                          <div className="text-[13px] font-bold text-white leading-snug truncate max-w-[200px]">
+                            {n.title}
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 mt-1">
+                            {!n.is_read && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
+                            <span className="text-[10px] text-mute2 font-mono whitespace-nowrap">
+                              {timeAgo(n.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-[12px] text-gray-300 mt-1 line-clamp-2 leading-relaxed">
+                          {n.body}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

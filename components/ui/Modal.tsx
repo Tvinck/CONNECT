@@ -20,7 +20,8 @@
 
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 interface ModalProps {
@@ -42,6 +43,12 @@ interface ModalProps {
  * Renders a centred modal dialog with backdrop, keyboard support, and scroll lock.
  */
 export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] max-w-5xl', className }: ModalProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(() => {
     // Close on Escape key press.
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -57,7 +64,9 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] m
     }
   }, [onClose])
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop — click anywhere outside the panel to dismiss */}
       <div
@@ -95,6 +104,7 @@ export function Modal({ title, onClose, children, footer, maxWidth = 'w-[95vw] m
           <div className="shrink-0 flex gap-3 px-6 py-4 border-t border-line">{footer}</div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

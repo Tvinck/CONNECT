@@ -23,6 +23,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Search, Plus, Clock, Eye, X, Loader2, ArrowLeft, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
@@ -61,6 +62,12 @@ function readTime(text: string) {
 }
 
 function ArticleView({ article, onClose }: { article: Article; onClose: () => void }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
@@ -69,7 +76,9 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
   }, [onClose])
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} aria-hidden="true" />
       <div role="dialog" aria-modal="true" aria-label={article.title}
@@ -105,7 +114,8 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
