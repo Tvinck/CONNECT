@@ -21,7 +21,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
   MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check, ShoppingBag,
-  Wallet, Gift, HeadphonesIcon, Lightbulb, Newspaper,
+  Wallet, Gift, HeadphonesIcon, Lightbulb, Newspaper, Search,
 } from 'lucide-react'
 import { Logomark } from '@/components/ui/Logomark'
 import { Avatar } from '@/components/ui/Avatar'
@@ -42,6 +42,7 @@ const NAV_GROUPS = [
       { key: 'projects',  label: 'Проекты',     href: '/projects',  icon: Folder },
       { key: 'knowledge', label: 'База знаний', href: '/knowledge', icon: BookOpen },
       { key: 'ideas',     label: 'Идеи',        href: '/ideas',     icon: Lightbulb },
+      { key: 'skinscan',  label: 'СкинСкан (Beta)', href: '/skinscan', icon: Search },
     ],
   },
   {
