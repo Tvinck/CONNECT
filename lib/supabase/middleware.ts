@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isPublic = PUBLIC_PATHS.includes(path) || path.startsWith('/auth')
+  const isPublic = PUBLIC_PATHS.includes(path) || path.startsWith('/auth') || path.startsWith('/api')
 
   // Unauthenticated visitor on a protected page -> login
   if (!user && !isPublic) {

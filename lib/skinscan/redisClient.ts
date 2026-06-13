@@ -6,17 +6,17 @@
  */
 import type * as ServerRedis from './server/redis';
 
-export const getCache = async (...args: Parameters<ServerRedis.getCache>) => {
+export const getCache = async (...args: Parameters<typeof ServerRedis.getCache>) => {
   const { getCache } = await import('./server/redis');
   return getCache(...args);
 };
 
-export const setCache = async (...args: Parameters<ServerRedis.setCache>) => {
+export const setCache = async (...args: Parameters<typeof ServerRedis.setCache>) => {
   const { setCache } = await import('./server/redis');
   return setCache(...args);
 };
 
-export const throttleRequest = async (...args: Parameters<ServerRedis.throttleRequest>) => {
+export const throttleRequest = async (...args: Parameters<typeof ServerRedis.throttleRequest>) => {
   const { throttleRequest } = await import('./server/redis');
   return throttleRequest(...args);
 };
