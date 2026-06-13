@@ -40,7 +40,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Mark ioredis as server-only — prevents Webpack from bundling it into client chunks
-  serverExternalPackages: ['ioredis'],
+  experimental: { serverComponentsExternalPackages: ['ioredis'] },
   async headers() {
     return [
       {

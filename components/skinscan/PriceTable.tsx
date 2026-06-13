@@ -12,7 +12,7 @@
  */
 
 import { ExternalLink, TrendingDown, TrendingUp, Minus } from 'lucide-react'
-import { MARKET_META, type MarketPrice } from '@/lib/skinscan/pricempire'
+import { MARKET_META, type MarketPrice } from '@/lib/skinscan/utils'
 
 interface PriceTableProps {
   prices: MarketPrice[]
