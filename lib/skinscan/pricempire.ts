@@ -1,4 +1,4 @@
-import { MARKET_META, type MarketPrice, getRubRate } from '@/lib/skinscan/utils'
+import { MARKET_META, type MarketPrice, getRubRate, getSkinBasePrice } from '@/lib/skinscan/utils'
 
 const PRICEMPIRE_API_KEY = process.env.PRICEMPIRE_API_KEY || ''
 const CSPRICE_API_TOKEN = process.env.CSPRICE_API_TOKEN || ''
@@ -12,80 +12,8 @@ export interface SkinPricesResponse {
 
 // Generate high quality mock data for demo/fallback purposes
 export function generateMockPrices(name: string): SkinPricesResponse {
-  // Base price depending on skin quality/tier
-  let basePrice = 15 // Default base price
+  const finalBasePrice = getSkinBasePrice(name)
 
-  // Knives & Gloves
-  if (name.includes('★')) {
-    basePrice = 200
-    if (name.includes('Fade')) basePrice = 950
-    else if (name.includes('Doppler')) basePrice = 800
-    else if (name.includes('Crimson Web')) basePrice = 550
-    else if (name.includes('Lore')) basePrice = 650
-    else if (name.includes('Tiger Tooth')) basePrice = 450
-    else if (name.includes('Autotronic')) basePrice = 380
-    else if (name.includes('Slaughter')) basePrice = 400
-    else if (name.includes('Marble Fade')) basePrice = 850
-    else if (name.includes('Vanilla')) basePrice = 300
-    else if (name.includes('Pandora')) basePrice = 1800
-    else if (name.includes('Kimono')) basePrice = 900
-    else if (name.includes('Plaid')) basePrice = 400
-  } 
-  // AWP & Snipers
-  else if (name.includes('AWP') || name.includes('SSG 08')) {
-    basePrice = 12
-    if (name.includes('Dragon Lore')) basePrice = 9500
-    else if (name.includes('Gungnir')) basePrice = 8500
-    else if (name.includes('Desert Hydra')) basePrice = 1800
-    else if (name.includes('Lightning Strike')) basePrice = 220
-    else if (name.includes('Medusa')) basePrice = 1600
-    else if (name.includes('Asiimov')) basePrice = 120
-    else if (name.includes('Hyper Beast')) basePrice = 60
-    else if (name.includes('Oni Taiji')) basePrice = 280
-    else if (name.includes('Wildfire')) basePrice = 75
-  }
-  // Rifles
-  else if (name.includes('AK-47') || name.includes('M4A4') || name.includes('M4A1-S') || name.includes('Galil') || name.includes('FAMAS')) {
-    basePrice = 15
-    if (name.includes('Howl')) basePrice = 3500
-    else if (name.includes('Lotus')) basePrice = 8000
-    else if (name.includes('Gold Arabesque')) basePrice = 1500
-    else if (name.includes('Fire Serpent')) basePrice = 650
-    else if (name.includes('Vulcan')) basePrice = 380
-    else if (name.includes('Case Hardened')) basePrice = 220
-    else if (name.includes('Printstream')) basePrice = 120
-    else if (name.includes('Asiimov')) basePrice = 60
-    else if (name.includes('Fuel Injector')) basePrice = 130
-    else if (name.includes('Bloodsport')) basePrice = 85
-    else if (name.includes('Empress')) basePrice = 55
-    else if (name.includes('Neon Rider')) basePrice = 45
-    else if (name.includes('Redline')) basePrice = 30
-    else if (name.includes('Searing Rage')) basePrice = 15
-    else if (name.includes('Жгучая ярость')) basePrice = 15
-  }
-  // Pistols
-  else if (name.includes('Glock-18') || name.includes('USP-S') || name.includes('Desert Eagle') || name.includes('P250')) {
-    basePrice = 6
-    if (name.includes('Blaze')) basePrice = 450
-    else if (name.includes('Fade')) basePrice = 950
-    else if (name.includes('Printstream')) basePrice = 60
-    else if (name.includes('Kill Confirmed')) basePrice = 50
-    else if (name.includes('Neo-Noir')) basePrice = 25
-  }
-
-  // State modifiers
-  let multiplier = 1.0
-  if (name.includes('Factory New')) multiplier = 2.0
-  else if (name.includes('Minimal Wear')) multiplier = 1.3
-  else if (name.includes('Field-Tested')) multiplier = 0.8
-  else if (name.includes('Well-Worn')) multiplier = 0.55
-  else if (name.includes('Battle-Scarred')) multiplier = 0.3
-
-  // StatTrak multiplier
-  if (name.includes('StatTrak™')) multiplier *= 1.4
-  if (name.includes('Souvenir')) multiplier *= 1.15
-
-  const finalBasePrice = basePrice * multiplier
 
   const sources = Object.keys(MARKET_META)
   const prices: MarketPrice[] = sources.map((source) => {

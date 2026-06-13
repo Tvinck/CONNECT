@@ -64,67 +64,113 @@ export function getSteamCdnUrl(iconUrl: string): string {
   return `https://community.akamai.steamstatic.com/economy/image/${clean}/330x192`
 }
 
-export function getSkinBasePrice(name: string): number {
-  let basePrice = 15 // Default base price
+export function getSkinBasePrice(fullName: string): number {
+  // 1. Extract base name without wear, e.g. "AWP | Crakow! (Battle-Scarred)" -> "AWP | Crakow!"
+  const baseName = fullName.includes('(') ? fullName.split('(')[0].trim() : fullName
 
-  // Knives & Gloves
-  if (name.includes('★')) {
-    basePrice = 200
-    if (name.includes('Fade')) basePrice = 950
-    else if (name.includes('Doppler')) basePrice = 800
-    else if (name.includes('Crimson Web')) basePrice = 550
-    else if (name.includes('Lore')) basePrice = 650
-    else if (name.includes('Tiger Tooth')) basePrice = 450
-    else if (name.includes('Autotronic')) basePrice = 380
-    else if (name.includes('Slaughter')) basePrice = 400
-    else if (name.includes('Marble Fade')) basePrice = 850
-    else if (name.includes('Vanilla')) basePrice = 300
-    else if (name.includes('Pandora')) basePrice = 1800
-    else if (name.includes('Kimono')) basePrice = 900
-    else if (name.includes('Plaid')) basePrice = 400
-  } 
-  // AWP & Snipers
-  else if (name.includes('AWP') || name.includes('SSG 08') || name.includes('SCAR-20') || name.includes('G3SG1')) {
-    basePrice = 12
-    if (name.includes('Dragon Lore')) basePrice = 9500
-    else if (name.includes('Gungnir')) basePrice = 8500
-    else if (name.includes('Desert Hydra')) basePrice = 1800
-    else if (name.includes('Lightning Strike')) basePrice = 220
-    else if (name.includes('Medusa')) basePrice = 1600
-    else if (name.includes('Asiimov')) basePrice = 120
-    else if (name.includes('Hyper Beast')) basePrice = 60
-    else if (name.includes('Oni Taiji')) basePrice = 280
-    else if (name.includes('Wildfire')) basePrice = 75
-  }
-  // Rifles
-  else if (name.includes('AK-47') || name.includes('M4A4') || name.includes('M4A1-S') || name.includes('Galil') || name.includes('FAMAS') || name.includes('SG 553') || name.includes('AUG')) {
+  // Default base prices by category
+  let basePrice = 8
+
+  if (baseName.includes('★')) {
+    basePrice = 150
+  } else if (baseName.includes('AWP')) {
+    basePrice = 20
+  } else if (baseName.includes('AK-47') || baseName.includes('M4A4') || baseName.includes('M4A1-S')) {
     basePrice = 15
-    if (name.includes('Howl')) basePrice = 3500
-    else if (name.includes('Lotus')) basePrice = 8000
-    else if (name.includes('Gold Arabesque')) basePrice = 1500
-    else if (name.includes('Fire Serpent')) basePrice = 650
-    else if (name.includes('Vulcan')) basePrice = 380
-    else if (name.includes('Case Hardened')) basePrice = 220
-    else if (name.includes('Printstream')) basePrice = 120
-    else if (name.includes('Asiimov')) basePrice = 60
-    else if (name.includes('Fuel Injector')) basePrice = 130
-    else if (name.includes('Bloodsport')) basePrice = 85
-    else if (name.includes('Empress')) basePrice = 55
-    else if (name.includes('Neon Rider')) basePrice = 45
-    else if (name.includes('Redline')) basePrice = 30
-    else if (name.includes('Searing Rage')) basePrice = 15
-  }
-  // Pistols
-  else if (name.includes('Glock-18') || name.includes('USP-S') || name.includes('Desert Eagle') || name.includes('P250') || name.includes('Five-SeveN') || name.includes('Tec-9') || name.includes('CZ75') || name.includes('Revolver')) {
-    basePrice = 6
-    if (name.includes('Blaze')) basePrice = 450
-    else if (name.includes('Fade')) basePrice = 950
-    else if (name.includes('Printstream')) basePrice = 60
-    else if (name.includes('Kill Confirmed')) basePrice = 50
-    else if (name.includes('Neo-Noir')) basePrice = 25
+  } else if (baseName.includes('USP-S') || baseName.includes('Glock-18') || baseName.includes('Desert Eagle')) {
+    basePrice = 8
   }
 
-  // Field-Tested baseline multiplier
-  return basePrice * 0.8
+  // Exact finish matches (overrides default base price)
+  const FINISH_PRICES: Record<string, number> = {
+    // Ultra High Tier
+    'Dragon Lore': 9500,
+    'Gungnir': 8500,
+    'Howl': 3500,
+    'Lotus': 8000,
+    'Desert Hydra': 1800,
+    'Gold Arabesque': 1500,
+    'Medusa': 1600,
+    'Fade': 950,
+    'Doppler': 800,
+    'Marble Fade': 850,
+    'Crimson Web': 550,
+    'Lore': 650,
+    'Tiger Tooth': 450,
+    'Slaughter': 400,
+    'Autotronic': 380,
+    'Vanilla': 300,
+    'Fire Serpent': 650,
+
+    // High Tier
+    'Inheritance': 150,
+    'Temukau': 180,
+    'Vulcan': 380,
+    'Case Hardened': 220,
+    'Printstream': 120,
+    'Oni Taiji': 280,
+    'Lightning Strike': 220,
+    'Blaze': 450,
+    'Kill Confirmed': 90,
+    'Asiimov': 80,
+    'Bloodsport': 85,
+    'Head Shot': 80,
+    'Crakow!': 60, // AWP | Бдыщ!
+
+    // Mid Tier
+    'Chrome Cannon': 90,
+    'Duality': 25,
+    'The Traitor': 60,
+    'Player Two': 70,
+    'Bullet Queen': 50,
+    'In Living Color': 50,
+    'Wildfire': 75,
+    'Hyper Beast': 60,
+    'Empress': 55,
+    'Neon Rider': 55,
+    'Golden Coil': 65,
+    'Chantico\'s Fire': 45,
+    'Jaguar': 95,
+    'Frontside Misty': 30,
+    'Aquamarine Revenge': 45,
+    'Wasteland Rebel': 40,
+    'Redline': 30,
+    'Desolate Space': 25,
+    'Point Disarray': 25,
+    'Mecha Industries': 20,
+    'Buzz Kill': 20,
+    'Fever Dream': 15,
+    'Decimator': 18,
+    'Neo-Noir': 25,
+    'Water Elemental': 15,
+    'Searing Rage': 15,
+    'Black Nile': 10,
+    'Atheris': 8,
+    'Amber Fade': 15,
+    'Chameleon': 10
+  }
+
+  // Find if name contains any of the finishes
+  for (const [finish, price] of Object.entries(FINISH_PRICES)) {
+    if (baseName.includes(finish)) {
+      basePrice = price
+      break
+    }
+  }
+
+  // 2. State modifiers based on wear in the name
+  let multiplier = 0.8 // Default to Field-Tested (0.8) if no wear specified
+  if (fullName.includes('Factory New')) multiplier = 2.0
+  else if (fullName.includes('Minimal Wear')) multiplier = 1.3
+  else if (fullName.includes('Field-Tested')) multiplier = 0.8
+  else if (fullName.includes('Well-Worn')) multiplier = 0.55
+  else if (fullName.includes('Battle-Scarred')) multiplier = 0.3
+
+  // StatTrak and Souvenir multipliers
+  if (fullName.includes('StatTrak™')) multiplier *= 1.4
+  if (fullName.includes('Souvenir')) multiplier *= 1.15
+
+  return basePrice * multiplier
 }
+
 
