@@ -2,6 +2,7 @@
 
 const PRICEMPIRE_API_KEY = process.env.PRICEMPIRE_API_KEY || ''
 const CSPRICE_API_TOKEN = process.env.CSPRICE_API_TOKEN || ''
+import { MARKET_META, type MarketPrice, RU_TRANSLATIONS, getRubRate } from '@/lib/skinscan/utils'
 
 export interface MarketPrice {
   source: string
@@ -122,7 +123,16 @@ await throttleRequest()
             }
           }
           if (prices.length > 0) {
+            const rate = await getRubRate();
+            prices.forEach(p => {
+              p.priceRub = Math.round(p.priceUsd * rate * 100) / 100;
+            });
             return {
+              market_hash_name: name,
+              icon_url: itemData.icon || '',
+              prices,
+              history: generateMockPrices(name).history, // History baseline
+            }
               market_hash_name: name,
               icon_url: itemData.icon || '',
               prices,
@@ -158,7 +168,16 @@ await throttleRequest()
               url: MARKET_META[src].url(name),
             }
           })
+          const rate = await getRubRate();
+          prices.forEach(p => {
+            p.priceRub = Math.round(p.priceUsd * rate * 100) / 100;
+          });
           return {
+            market_hash_name: name,
+            icon_url: data.icon_url || '',
+            prices,
+            history: generateMockPrices(name).history,
+          }
             market_hash_name: name,
             icon_url: data.icon_url || '',
             prices,

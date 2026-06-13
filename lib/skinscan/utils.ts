@@ -19,6 +19,14 @@ export interface SkinPricesResponse {
 }
 
 export const MARKET_META: Record<string, { name: string; url: (name: string) => string }> = {
+  csgoempire: {
+    name: 'CSGOEmpire',
+    url: (name) => `https://www.csgempire.com/marketplace/search?query=${encodeURIComponent(name)}`,
+  },
+  c5game: {
+    name: 'C5Game',
+    url: (name) => `https://c5game.com/search?keywords=${encodeURIComponent(name)}`,
+  },
   steam: {
     name: 'Steam Market',
     url: (name) => `https://steamcommunity.com/market/listings/730/${encodeURIComponent(name)}`,
@@ -51,6 +59,27 @@ export const MARKET_META: Record<string, { name: string; url: (name: string) => 
     name: 'Buff163',
     url: (name) => `https://buff.163.com/goods?game=csgo&search=${encodeURIComponent(name)}`,
   },
+}
+
+export const RU_TRANSLATIONS: Record<string, string> = {
+  // map Russian names to market_hash_name (example entries)
+  'Кольцо Капли': 'Drop_Of_Rain_Ring',
+  // add more translations as needed
+};
+
+/**
+ * Fetch current USD→RUB exchange rate from CoinGecko (no API key needed).
+ * Returns rate as number (RUB per 1 USD).
+ */
+export async function getRubRate(): Promise<number> {
+  try {
+    const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=usd&vs_currencies=rub');
+    const data = await res.json();
+    return data.usd.rub ?? 1;
+  } catch (e) {
+    console.warn('Failed to fetch RUB rate, defaulting to 1');
+    return 1;
+  }
 }
 
 export function getSteamCdnUrl(iconUrl: string): string {
