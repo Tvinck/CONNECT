@@ -129,6 +129,51 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     vpnReferrals = []
   }
 
+  // 5. Динамическая загрузка данных Pixel AI, если это проект Pixel AI
+  let pixelUsers = null
+  let pixelTransactions = null
+  let pixelCreations = null
+  let pixelSubscriptions = null
+  let pixelTemplates = null
+  let pixelCategories = null
+  let pixelStars = null
+
+  if (params.slug === 'pixel' || params.slug === 'bazzar-pixel') {
+    const { createPixelClient } = await import('@/lib/supabase/pixel')
+    const pixelClient = createPixelClient()
+    
+    const [
+      { data: pUsers },
+      { data: pTx },
+      { data: pCreations },
+      { data: pSubs },
+      { data: pTpls },
+      { data: pCats },
+      { data: pStars }
+    ] = await Promise.all([
+      pixelClient.from('users').select('*, user_stats(*)').order('created_at', { ascending: false }).limit(100),
+      pixelClient.from('transactions').select('*, user:users(id, username, first_name, avatar_url)').order('created_at', { ascending: false }),
+      pixelClient.from('creations').select('*, user:users(username, avatar_url)').order('created_at', { ascending: false }).limit(100),
+      pixelClient.from('subscriptions').select('*, user:users(id, username, first_name, avatar_url)').order('created_at', { ascending: false }),
+      pixelClient.from('templates').select('*').order('sort_order', { ascending: true }),
+      pixelClient.from('template_categories').select('*').order('sort_order', { ascending: true }),
+      pixelClient.from('stars').select('*').order('sort_order', { ascending: true })
+    ])
+    
+    pixelUsers = (pUsers ?? []).map((u: any) => ({
+      ...u,
+      balance: u.user_stats?.[0]?.current_balance ?? u.balance ?? 0,
+      total_gens: u.user_stats?.[0]?.total_generations ?? 0
+    }))
+    
+    pixelTransactions = pTx ?? []
+    pixelCreations = pCreations ?? []
+    pixelSubscriptions = pSubs ?? []
+    pixelTemplates = pTpls ?? []
+    pixelCategories = pCats ?? []
+    pixelStars = pStars ?? []
+  }
+
   return (
     <PageContainer>
       <ProjectDetail
@@ -142,6 +187,14 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         vpnSubscriptions={vpnSubscriptions}
         vpnOrders={vpnOrders}
         vpnReferrals={vpnReferrals}
+        
+        pixelUsers={pixelUsers}
+        pixelTransactions={pixelTransactions}
+        pixelCreations={pixelCreations}
+        pixelSubscriptions={pixelSubscriptions}
+        pixelTemplates={pixelTemplates}
+        pixelCategories={pixelCategories}
+        pixelStars={pixelStars}
       />
     </PageContainer>
   )

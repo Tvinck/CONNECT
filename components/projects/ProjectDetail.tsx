@@ -19,7 +19,7 @@ import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, Pencil, Plus, Trash2, ExternalLink, Link2, Loader2, User2, Settings,
-  Server, Activity, Users, CreditCard, Globe, Search, Copy, Check, Info, Calendar, Key, AlertCircle, Gift
+  Server, Activity, Users, CreditCard, Globe, Search, Copy, Check, Info, Calendar, Key, AlertCircle, Gift, LayoutGrid
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
@@ -38,6 +38,13 @@ import type { TaskRow } from '@/components/tasks/TasksBoard'
 import { AddTransactionModal, TX_CATEGORIES, type TxRow } from '@/components/finance/FinancesClient'
 import type { ProjectStatus, TaskStatus } from '@/types'
 import { fmtRub } from '@/lib/utils'
+
+// Pixel subcomponents
+import { PixelUsers } from './ProjectDetail/PixelUsers'
+import { PixelTransactions } from './ProjectDetail/PixelTransactions'
+import { PixelCreations } from './ProjectDetail/PixelCreations'
+import { PixelSubscriptions } from './ProjectDetail/PixelSubscriptions'
+import { PixelTemplates } from './ProjectDetail/PixelTemplates'
 
 // ─── local types ──────────────────────────────────────────────────────────────
 
@@ -98,6 +105,15 @@ interface Props {
   vpnOrders?: any[] | null
   /** Реферальные связи VPN (только для проекта Veil VPN) */
   vpnReferrals?: any[] | null
+
+  // Pixel AI tables
+  pixelUsers?: any[] | null
+  pixelTransactions?: any[] | null
+  pixelCreations?: any[] | null
+  pixelSubscriptions?: any[] | null
+  pixelTemplates?: any[] | null
+  pixelCategories?: any[] | null
+  pixelStars?: any[] | null
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -172,7 +188,15 @@ export function ProjectDetail({
   vpnServers: initialVpnServers,
   vpnSubscriptions: initialVpnSubscriptions,
   vpnOrders: initialVpnOrders,
-  vpnReferrals: initialVpnReferrals
+  vpnReferrals: initialVpnReferrals,
+
+  pixelUsers,
+  pixelTransactions,
+  pixelCreations,
+  pixelSubscriptions,
+  pixelTemplates,
+  pixelCategories,
+  pixelStars
 }: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
@@ -187,7 +211,8 @@ export function ProjectDetail({
 
   // VPN admin panel states
   const isVpn = project.slug === 'veil' || project.slug === 'veil-vpn'
-  const [activeTab, setActiveTab] = useState<'project' | 'servers' | 'subs' | 'payments' | 'referrals'>('project')
+  const isPixel = project.slug === 'pixel' || project.slug === 'bazzar-pixel'
+  const [activeTab, setActiveTab] = useState<string>('project')
   const [searchQuery, setSearchQuery] = useState('')
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null)
   const [vpnServers, setVpnServers] = useState<any[]>(initialVpnServers ?? [])
@@ -507,6 +532,48 @@ export function ProjectDetail({
         </div>
       )}
 
+      {/* Tab Row for Pixel Project */}
+      {isPixel && (
+        <div className="flex gap-2 border-b border-line pb-4 mb-5 overflow-x-auto">
+          <button onClick={() => setActiveTab('project')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'project' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Activity size={14} /> Проектное управление
+          </button>
+          <button onClick={() => setActiveTab('pixel-users')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'pixel-users' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Users size={14} /> Пользователи ({pixelUsers?.length ?? 0})
+          </button>
+          <button onClick={() => setActiveTab('pixel-transactions')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'pixel-transactions' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <CreditCard size={14} /> Транзакции ({pixelTransactions?.length ?? 0})
+          </button>
+          <button onClick={() => setActiveTab('pixel-creations')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'pixel-creations' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Globe size={14} /> История генераций ({pixelCreations?.length ?? 0})
+          </button>
+          <button onClick={() => setActiveTab('pixel-subscriptions')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'pixel-subscriptions' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Key size={14} /> Подписки ({pixelSubscriptions?.length ?? 0})
+          </button>
+          <button onClick={() => setActiveTab('pixel-templates')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
+              activeTab === 'pixel-templates' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <LayoutGrid size={14} /> Галерея шаблонов ({pixelTemplates?.length ?? 0})
+          </button>
+        </div>
+      )}
+
       {activeTab === 'project' ? (
         <>
           {/* ── Team + Links ─────────────────────────────────────────── */}
@@ -644,6 +711,20 @@ export function ProjectDetail({
             )}
           </div>
         </>
+      ) : activeTab === 'pixel-users' && isPixel ? (
+        <PixelUsers initialUsers={pixelUsers ?? []} />
+      ) : activeTab === 'pixel-transactions' && isPixel ? (
+        <PixelTransactions initialTransactions={pixelTransactions ?? []} />
+      ) : activeTab === 'pixel-creations' && isPixel ? (
+        <PixelCreations initialCreations={pixelCreations ?? []} />
+      ) : activeTab === 'pixel-subscriptions' && isPixel ? (
+        <PixelSubscriptions initialSubscriptions={pixelSubscriptions ?? []} />
+      ) : activeTab === 'pixel-templates' && isPixel ? (
+        <PixelTemplates
+          initialTemplates={pixelTemplates ?? []}
+          categories={pixelCategories ?? []}
+          stars={pixelStars ?? []}
+        />
       ) : activeTab === 'servers' ? (
         <div className="card p-5">
           <div className="flex flex-col gap-4 mb-6 border-b border-line pb-5">
