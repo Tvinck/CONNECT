@@ -174,6 +174,40 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     pixelStars = pStars ?? []
   }
 
+  // 6. Динамическая загрузка данных ПодариМомент
+  const isPm = params.slug === 'podarimoment' || params.slug === 'pm' || params.slug === 'podari-moment'
+  if (isPm) {
+    const [
+      { data: orders },
+      { data: products },
+      { data: clients },
+      { data: logs },
+      { data: kieTasks },
+      { data: promos }
+    ] = await Promise.all([
+      supabase.from('pm_orders').select('*, product:pm_products(*)').order('created_at', { ascending: false }),
+      supabase.from('pm_products').select('*').order('sort_order', { ascending: true }),
+      supabase.from('pm_clients').select('*').order('created_at', { ascending: false }),
+      supabase.from('pm_api_logs').select('*').order('created_at', { ascending: false }).limit(200),
+      supabase.from('pm_kie_tasks').select('*').order('created_at', { ascending: false }),
+      supabase.from('pm_promos').select('*').order('created_at', { ascending: false }),
+    ])
+
+    const { PMPanel } = await import('@/components/pm/PMPanel')
+    return (
+      <PageContainer>
+        <PMPanel
+          initialOrders={orders ?? []}
+          products={products ?? []}
+          initialClients={clients ?? []}
+          initialLogs={logs ?? []}
+          initialKieTasks={kieTasks ?? []}
+          initialPromos={promos ?? []}
+        />
+      </PageContainer>
+    )
+  }
+
   return (
     <PageContainer>
       <ProjectDetail

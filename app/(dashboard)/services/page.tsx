@@ -58,7 +58,7 @@ const SERVICES = [
 
 export default function ServicesPage() {
   const supabase    = createClient()
-  const { user }    = useAuthStore()
+  const { user, permissions } = useAuthStore()
   const { addToast } = useUIStore()
   const isCeoOrCoowner = user?.role === 'ceo' || user?.role === 'coowner'
 
@@ -104,6 +104,18 @@ export default function ServicesPage() {
       setConnected(prev => ({ ...prev, [slug]: !next }))
       addToast('Ошибка', error.message, 'err')
     }
+  }
+
+  const level = permissions?.['Сервисы'] ?? 2
+  if (level === 0) {
+    return (
+      <PageContainer>
+        <Header title="Сервисы" subtitle="Доступ ограничен" />
+        <div className="card p-12 text-center text-mute text-[13.5px] border border-line bg-white/[0.02] mt-6">
+          🔐 Доступ ограничен. У вас нет прав для просмотра этого раздела.
+        </div>
+      </PageContainer>
+    )
   }
 
   const visible = activeCat === 'all' ? SERVICES : SERVICES.filter(s => s.cat === activeCat)

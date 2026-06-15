@@ -5,6 +5,7 @@ import { Pencil, Check, X, Loader2, Plus, Trash2, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore }   from '@/store/ui'
+import { useAuthStore } from '@/store/auth'
 import type { PMProduct } from './types'
 
 type Promo = { id: string; code: string; discount: number; uses: number; source?: string | null }
@@ -17,6 +18,8 @@ interface Props {
 export function SettingsTab({ products: initialProducts, initialPromos }: Props) {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
+  const { user } = useAuthStore()
+  const isCeoOrCoowner = user?.role === 'ceo' || user?.role === 'coowner'
 
   const [products,    setProducts]    = useState<PMProduct[]>(initialProducts)
   const [editing,     setEditing]     = useState<string | null>(null)
@@ -101,6 +104,11 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
 
   return (
     <div className="space-y-6">
+      {!isCeoOrCoowner && (
+        <div className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-line text-[12.5px] text-mute">
+          🔒 Редактирование цен и промокодов доступно только руководству.
+        </div>
+      )}
       {/* Products */}
       <div className="card p-5">
         <h3 className="text-[15px] font-semibold mb-4">Продукты и цены</h3>
@@ -175,9 +183,11 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
                           {Math.round(((p.price - p.cost) / p.price) * 100)}%
                         </div>
                       </div>
-                      <Button size="sm" variant="ghost" className="ml-auto" onClick={() => startEdit(p)}>
-                        <Pencil size={13} /> Изменить
-                      </Button>
+                      {isCeoOrCoowner && (
+                        <Button size="sm" variant="ghost" className="ml-auto" onClick={() => startEdit(p)}>
+                          <Pencil size={13} /> Изменить
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -216,45 +226,49 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
                   ? <Check size={13} className="text-ok" />
                   : <Copy size={13} />}
               </button>
-              <button
-                onClick={() => deletePromo(promo.id)}
-                className="text-mute hover:text-err transition-colors"
-                aria-label="Удалить промокод"
-              >
-                <Trash2 size={13} />
-              </button>
+              {isCeoOrCoowner && (
+                <button
+                  onClick={() => deletePromo(promo.id)}
+                  className="text-mute hover:text-err transition-colors"
+                  aria-label="Удалить промокод"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
             </div>
           ))}
         </div>
 
         {/* Add promo */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <input
-            value={newCode}
-            onChange={e => setNewCode(e.target.value.toUpperCase())}
-            placeholder="КОД"
-            className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] font-mono font-bold placeholder:font-normal placeholder:text-mute2"
-          />
-          <input
-            type="number"
-            value={newDisc}
-            onChange={e => setNewDisc(e.target.value)}
-            placeholder="Скидка %"
-            min={1}
-            max={99}
-            className="w-24 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px]"
-          />
-          <input
-            value={newSource}
-            onChange={e => setNewSource(e.target.value.toLowerCase())}
-            placeholder="Канал (avito, vk...)"
-            className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
-          />
-          <Button size="sm" onClick={addPromo} disabled={savingPromo}>
-            {savingPromo ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-            Добавить
-          </Button>
-        </div>
+        {isCeoOrCoowner && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <input
+              value={newCode}
+              onChange={e => setNewCode(e.target.value.toUpperCase())}
+              placeholder="КОД"
+              className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] font-mono font-bold placeholder:font-normal placeholder:text-mute2"
+            />
+            <input
+              type="number"
+              value={newDisc}
+              onChange={e => setNewDisc(e.target.value)}
+              placeholder="Скидка %"
+              min={1}
+              max={99}
+              className="w-24 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px]"
+            />
+            <input
+              value={newSource}
+              onChange={e => setNewSource(e.target.value.toLowerCase())}
+              placeholder="Канал (avito, vk...)"
+              className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
+            />
+            <Button size="sm" onClick={addPromo} disabled={savingPromo}>
+              {savingPromo ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+              Добавить
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

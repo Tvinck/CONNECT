@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { useUIStore } from '@/store/ui'
+import { useAuthStore } from '@/store/auth'
 import { Upload, Trash2, Loader2, Save } from 'lucide-react'
 import { savePixelTemplate, deletePixelTemplate } from '@/app/actions/pixelActions'
 
@@ -40,10 +41,13 @@ export function PixelEditTemplateModal({
   const [deleting, setDeleting] = useState(false)
   const addToast = useUIStore(s => s.addToast)
 
+  const role = useAuthStore(s => s.role)
+  const canEdit = role === 'ceo' || role === 'coowner'
+
   // Style tokens (aligned with connect globals)
   const labelStyle = 'block text-[11px] uppercase tracking-[0.05em] text-mute2 font-bold mb-1.5'
-  const inputStyle = 'w-full h-9 px-3 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all'
-  const textareaStyle = 'w-full px-3 py-2 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all resize-none'
+  const inputStyle = 'w-full h-9 px-3 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all disabled:opacity-75 disabled:cursor-not-allowed'
+  const textareaStyle = 'w-full px-3 py-2 rounded-xl bg-bg/40 border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all resize-none disabled:opacity-75 disabled:cursor-not-allowed'
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -134,29 +138,37 @@ export function PixelEditTemplateModal({
 
   return (
     <Modal
-      title={template.is_new ? 'Добавить новый шаблон' : `Редактировать: ${template.title}`}
+      title={template.is_new ? 'Добавить новый шаблон' : (canEdit ? `Редактировать: ${template.title}` : `Просмотр шаблона: ${template.title}`)}
       onClose={onClose}
       footer={
-        <div className="flex justify-between items-center gap-2 w-full">
-          {!template.is_new && (
-            <Button
-              variant="ghost"
-              className="text-err hover:bg-err/10 border border-err/20 h-9 shrink-0 px-3"
-              disabled={deleting || saving}
-              onClick={handleDelete}
-            >
-              {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-            </Button>
-          )}
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            <Button variant="ghost" className="h-9" onClick={onClose} disabled={saving || deleting}>
-              Отмена
-            </Button>
-            <Button className="bg-accent text-white h-9 px-4" onClick={handleSave} disabled={saving || deleting}>
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Сохранить
+        !canEdit ? (
+          <div className="flex justify-end gap-2 w-full">
+            <Button variant="ghost" className="h-9" onClick={onClose}>
+              Закрыть
             </Button>
           </div>
-        </div>
+        ) : (
+          <div className="flex justify-between items-center gap-2 w-full">
+            {!template.is_new && (
+              <Button
+                variant="ghost"
+                className="text-err hover:bg-err/10 border border-err/20 h-9 shrink-0 px-3"
+                disabled={deleting || saving}
+                onClick={handleDelete}
+              >
+                {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              </Button>
+            )}
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <Button variant="ghost" className="h-9" onClick={onClose} disabled={saving || deleting}>
+                Отмена
+              </Button>
+              <Button className="bg-accent text-white h-9 px-4" onClick={handleSave} disabled={saving || deleting}>
+                {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Сохранить
+              </Button>
+            </div>
+          </div>
+        )
       }
     >
       <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
@@ -170,12 +182,19 @@ export function PixelEditTemplateModal({
               ) : (
                 <img src={src} alt="Template media" className="w-full h-full object-contain" />
               )}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <label className="cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-lg px-3.5 py-1.5 text-[12.5px] hover:bg-white/20 transition-all flex items-center gap-1.5 font-semibold">
-                  <Upload size={14} /> Заменить файл
-                  <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileUpload} />
-                </label>
-              </div>
+              {canEdit && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <label className="cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-lg px-3.5 py-1.5 text-[12.5px] hover:bg-white/20 transition-all flex items-center gap-1.5 font-semibold">
+                    <Upload size={14} /> Заменить файл
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileUpload} />
+                  </label>
+                </div>
+              )}
+            </div>
+          ) : !canEdit ? (
+            <div className="aspect-video bg-white/[0.01] border border-dashed border-line rounded-xl flex flex-col items-center justify-center gap-2 text-mute select-none">
+              <Upload size={24} className="text-mute2" />
+              <span className="text-[13px]">Превью отсутствует</span>
             </div>
           ) : (
             <label className={`cursor-pointer aspect-video bg-white/[0.01] hover:bg-white/[0.02] border-2 border-dashed border-line rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
@@ -205,6 +224,7 @@ export function PixelEditTemplateModal({
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Введите название"
+              disabled={!canEdit}
             />
           </div>
           <div>
@@ -213,6 +233,7 @@ export function PixelEditTemplateModal({
               className={inputStyle}
               value={category}
               onChange={e => setCategory(e.target.value)}
+              disabled={!canEdit}
             >
               {categories.map(c => (
                 <option key={c.slug} value={c.slug}>
@@ -231,6 +252,7 @@ export function PixelEditTemplateModal({
               className={inputStyle}
               value={modelId}
               onChange={e => setModelId(e.target.value)}
+              disabled={!canEdit}
             >
               <option value="kie-face-swap">Kie Face Swap (kie-face-swap)</option>
               <option value="replicate-flux">Flux Replicate (replicate-flux)</option>
@@ -246,6 +268,7 @@ export function PixelEditTemplateModal({
               className={inputStyle}
               value={generationCost}
               onChange={e => setGenerationCost(e.target.value)}
+              disabled={!canEdit}
             />
           </div>
         </div>
@@ -259,6 +282,7 @@ export function PixelEditTemplateModal({
               className={inputStyle}
               value={sortOrder}
               onChange={e => setSortOrder(e.target.value)}
+              disabled={!canEdit}
             />
           </div>
           <div>
@@ -268,17 +292,19 @@ export function PixelEditTemplateModal({
               className={inputStyle}
               value={requiredFilesCount}
               onChange={e => setRequiredFilesCount(e.target.value)}
+              disabled={!canEdit}
             />
           </div>
           <div className="flex items-center gap-2 pt-5">
             <input
               type="checkbox"
               id="isActiveCheck"
-              className="w-4 h-4 rounded accent-accent bg-bg/40 border border-line"
+              className="w-4 h-4 rounded accent-accent bg-bg/40 border border-line disabled:opacity-75 disabled:cursor-not-allowed"
               checked={isActive}
               onChange={e => setIsActive(e.target.checked)}
+              disabled={!canEdit}
             />
-            <label htmlFor="isActiveCheck" className="text-[12.5px] font-semibold text-white cursor-pointer select-none">
+            <label htmlFor="isActiveCheck" className={`text-[12.5px] font-semibold text-white select-none ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
               Активный шаблон
             </label>
           </div>
@@ -293,6 +319,7 @@ export function PixelEditTemplateModal({
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Описание шаблона для пользователей..."
+            disabled={!canEdit}
           />
         </div>
 
@@ -306,6 +333,7 @@ export function PixelEditTemplateModal({
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
               placeholder="Основной промпт (например, 'A handsome man in a suit...')"
+              disabled={!canEdit}
             />
           </div>
           <div>
@@ -316,6 +344,7 @@ export function PixelEditTemplateModal({
               value={generationPrompt}
               onChange={e => setGenerationPrompt(e.target.value)}
               placeholder="Промпт, отправляемый в AI API..."
+              disabled={!canEdit}
             />
           </div>
         </div>

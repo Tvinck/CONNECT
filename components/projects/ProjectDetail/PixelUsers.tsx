@@ -5,6 +5,7 @@ import { Search, Zap, Loader2, X, Save, User } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { useUIStore } from '@/store/ui'
+import { useAuthStore } from '@/store/auth'
 import { updatePixelUserBalance } from '@/app/actions/pixelActions'
 import { getInitials, colorFor } from '@/lib/utils'
 
@@ -19,6 +20,9 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
   const [newBalance, setNewBalance] = useState('')
   const [updating, setUpdating] = useState(false)
   const addToast = useUIStore(s => s.addToast)
+
+  const role = useAuthStore(s => s.role)
+  const canEdit = role === 'ceo' || role === 'coowner'
 
   const filteredUsers = users.filter(u =>
     (u.first_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -107,7 +111,7 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                {editingUserId === u.id ? (
+                {editingUserId === u.id && canEdit ? (
                   <div className="flex items-center gap-1 bg-white/[0.02] border border-line rounded-lg p-1">
                     <input
                       type="number"
@@ -140,7 +144,7 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
                       <X size={13} />
                     </button>
                   </div>
-                ) : (
+                ) : canEdit ? (
                   <button
                     onClick={() => handleStartEdit(u)}
                     className="flex items-center gap-1.5 bg-accent/10 hover:bg-accent/20 px-3 py-1.5 rounded-lg border border-accent/25 transition-all text-accent group"
@@ -150,6 +154,15 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
                       {u.balance} ⚡
                     </span>
                   </button>
+                ) : (
+                  <div
+                    className="flex items-center gap-1.5 bg-white/[0.04] px-3 py-1.5 rounded-lg border border-line/40 text-mute2 cursor-default"
+                  >
+                    <Zap size={13} className="text-mute2" />
+                    <span className="text-[12.5px] font-bold font-mono text-mute">
+                      {u.balance} ⚡
+                    </span>
+                  </div>
                 )}
               </div>
             </div>

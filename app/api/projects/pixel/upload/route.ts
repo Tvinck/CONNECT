@@ -6,10 +6,13 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authorize user session
+    // 1. Authorize user session & verify privileges
     const profile = await getCurrentProfile()
     if (!profile) {
       return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
+    }
+    if (profile.role !== 'ceo' && profile.role !== 'coowner') {
+      return NextResponse.json({ error: 'Доступ запрещен' }, { status: 403 })
     }
 
     // 2. Parse form data

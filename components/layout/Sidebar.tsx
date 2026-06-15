@@ -94,7 +94,7 @@ interface SidebarProps {
 export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { role, setRole, user, logout } = useAuthStore()
+  const { role, setRole, user, logout, permissions } = useAuthStore()
   const { sidebarOpen, setSidebarOpen, addToast } = useUIStore()
   const [newsCount, setNewsCount] = useState(0)
 
@@ -205,9 +205,30 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
         {/* Navigation */}
         <div className="px-3 flex-1 overflow-y-auto space-y-4">
           {NAV_GROUPS.map((group) => {
-            const visibleItems = group.items.filter(
-              (item) => !('ceoOnly' in item && item.ceoOnly) || role === 'ceo'
-            )
+            const visibleItems = group.items.filter((item) => {
+              if ('ceoOnly' in item && item.ceoOnly) {
+                return role === 'ceo'
+              }
+              const labelMap: Record<string, string> = {
+                dashboard: 'Дашборд',
+                tasks: 'Задачи',
+                projects: 'Проекты',
+                knowledge: 'База знаний',
+                ideas: 'Идеи',
+                crm: 'CRM',
+                finances: 'Финансы',
+                chats: 'Чаты',
+                services: 'Сервисы',
+                support: 'Чаты',
+                shop: 'Сервисы',
+              }
+              const sectionName = labelMap[item.key as keyof typeof labelMap]
+              if (sectionName && permissions) {
+                const level = permissions[sectionName] ?? 2
+                return level > 0
+              }
+              return true
+            })
             if (visibleItems.length === 0) return null
             return (
               <div key={group.label}>

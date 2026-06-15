@@ -8,9 +8,11 @@ import type { User } from '@/types'
 
 export function AuthProvider({
   user,
+  permissions,
   children,
 }: {
   user: User | null
+  permissions?: Record<string, number>
   children: React.ReactNode
 }) {
   const setUser = useAuthStore((s) => s.setUser)
@@ -18,11 +20,11 @@ export function AuthProvider({
   const router = useRouter()
   const supabaseRef = useRef(createClient())
 
-  // Hydrate the store with the server-fetched profile.
+  // Hydrate the store with the server-fetched profile and permissions.
   useEffect(() => {
-    setUser(user)
+    setUser(user, permissions)
     setLoading(false)
-  }, [user, setUser, setLoading])
+  }, [user, permissions, setUser, setLoading])
 
   // React to sign-out / token changes in other tabs.
   useEffect(() => {

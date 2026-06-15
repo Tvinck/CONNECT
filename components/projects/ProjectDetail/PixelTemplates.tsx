@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Plus, Search, LayoutGrid, LayoutList, Eye, EyeOff, Edit, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { PixelEditTemplateModal } from './PixelEditTemplateModal'
+import { useAuthStore } from '@/store/auth'
 
 interface PixelTemplatesProps {
   initialTemplates: any[]
@@ -17,6 +18,9 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
   const [searchQuery, setSearchQuery] = useState('')
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<any | null>(null)
+
+  const role = useAuthStore(s => s.role)
+  const canEdit = role === 'ceo' || role === 'coowner'
 
   const activeCategoryList = useMemo(() => {
     if (categories && categories.length > 0) return categories
@@ -109,9 +113,11 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
             />
             <Search size={12} className="absolute left-2.5 top-2.5 text-mute2" />
           </div>
-          <Button size="sm" onClick={handleOpenAdd} className="bg-accent text-white">
-            <Plus size={13} /> Шаблон
-          </Button>
+          {canEdit && (
+            <Button size="sm" onClick={handleOpenAdd} className="bg-accent text-white">
+              <Plus size={13} /> Шаблон
+            </Button>
+          )}
         </div>
       </div>
 
@@ -204,7 +210,7 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
                 {/* Edit hint overlay */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="p-2.5 rounded-full bg-white/10 backdrop-blur-md text-white">
-                    <Edit size={16} />
+                    {canEdit ? <Edit size={16} /> : <Eye size={16} />}
                   </span>
                 </div>
 

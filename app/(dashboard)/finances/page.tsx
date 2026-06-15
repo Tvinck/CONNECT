@@ -1,14 +1,12 @@
-import { redirect } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { FinancesClient } from '@/components/finance/FinancesClient'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
-import { getCurrentProfile } from '@/lib/auth'
+import { verifyPagePermission } from '@/lib/permissions'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function FinancesPage() {
-  const profile = await getCurrentProfile()
-  if (!profile) redirect('/login')
+  const profile = await verifyPagePermission('Финансы', 1)
 
   const supabase = createClient()
 
