@@ -242,6 +242,36 @@ export function SupportClient() {
    * Отправляет новое сообщение от лица техподдержки в БД.
    * Telegram-бот (слушая БД через Realtime) перешлет его клиенту.
    */
+  const { user } = useAuthStore()
+  const [templateSearch, setTemplateSearch] = useState('')
+
+  const QUICK_TEMPLATES = [
+    { 
+      title: 'Продление подписки', 
+      text: 'Здравствуйте! Для продления подписки вы можете приобрести новый ключ на GGsel, либо перейти на наш сайт: https://www.veil-vps.online/ для продления текущего.' 
+    },
+    { 
+      title: 'Не работает ВПН', 
+      text: 'Здравствуйте! Если VPN не подключается, пожалуйста: 1) Перезагрузите приложение; 2) Попробуйте сменить сеть с Wi-Fi на сотовую связь; 3) Проверьте лимит трафика в личном кабинете.' 
+    },
+    { 
+      title: 'Инструкция iOS', 
+      text: 'Для настройки на iOS (iPhone): 1. Установите V2rayTUN / Shadowrocket из App Store. 2. Скопируйте ваш ключ доступа из личного кабинета. 3. Откройте приложение и добавьте ключ. 4. Нажмите Подключить.' 
+    },
+    { 
+      title: 'Инструкция Android', 
+      text: 'Для настройки на Android: 1. Установите v2rayNG из Google Play. 2. Скопируйте ваш ключ. 3. В приложении нажмите кнопку "+" -> "Импортировать профиль из буфера обмена". 4. Выберите его и подключитесь.' 
+    },
+    { 
+      title: 'Инструкция PC', 
+      text: 'Для ПК (Windows): Установите клиент Nekoray, скопируйте ваш ключ доступа и импортируйте его. Включите режим "Системный прокси".' 
+    }
+  ]
+
+  /**
+   * Отправляет новое сообщение от лица техподдержки в БД.
+   * Сохраняет email отправителя (сотрудника) для информирования коллег в Telegram.
+   */
   const handleSend = async () => {
     if (!text.trim() || !selectedUser) return
     setSending(true)
@@ -252,12 +282,53 @@ export function SupportClient() {
         message: text.trim(),
         is_from_user: false,
         is_read: true,
-        project: selectedUser.project || 'Veil VPN'
+        project: selectedUser.project || 'Veil VPN',
+        sender_email: user?.email || 'unknown'
       } as any)
       .select()
       .single()
     try {
       setText('')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  /**
+   * Продлевает выбранную подписку пользователя на 30 дней в базе данных.
+   * 
+   * @param {any} sub - Объект подписки, которую необходимо продлить
+   */
+  const handleExtendSubscription = async (sub: any) => {
+    if (!sub || !sub.id) return
+    if (!confirm(`Продлить подписку на 30 дней для устройства с ключом ${sub.subscription_key.slice(0, 8)}...?`)) return
+    
+    setSending(true)
+    try {
+      const currentExpires = new Date(sub.expires_at)
+      const baseDate = currentExpires > new Date() ? currentExpires : new Date()
+      const newExpiresAt = new Date(baseDate.getTime() + 30 * 24 * 60 * 60 * 1000)
+      
+      const { error } = await supabase
+        .from('vpn_subscriptions')
+        .update({
+          expires_at: newExpiresAt.toISOString(),
+          status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', sub.id)
+        
+      if (error) throw error
+      
+      alert('Подписка успешно продлена на 30 дней!')
+      
+      // Обновляем состояние выбранного пользователя для перезапуска загрузки данных
+      if (selectedUser) {
+        setSelectedUser({ ...selectedUser })
+      }
+    } catch (err: any) {
+      console.error(err)
+      alert(`Ошибка продления: ${err.message}`)
     } finally {
       setSending(false)
     }
@@ -269,6 +340,11 @@ export function SupportClient() {
       handleSend()
     }
   }
+
+  const filteredTemplates = QUICK_TEMPLATES.filter(
+    t => t.title.toLowerCase().includes(templateSearch.toLowerCase()) || 
+         t.text.toLowerCase().includes(templateSearch.toLowerCase())
+  )
 
   const displayName = selectedUser?.profile?.username || activeSub?.username || selectedUser?.profile?.telegram_username || activeSub?.telegram_username || 'Неизвестный'
   const tgName = selectedUser?.profile?.telegram_username || activeSub?.telegram_username
@@ -544,6 +620,37 @@ export function SupportClient() {
               </div>
             </div>
 
+            {/* Быстрые ответы */}
+            <div className="bg-[#13141C] border border-white/[0.04] rounded-xl p-4 space-y-3">
+              <h3 className="text-[11px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2">
+                <Info size={14} /> Быстрые ответы
+              </h3>
+              
+              <input 
+                type="text"
+                placeholder="Поиск шаблона..."
+                value={templateSearch}
+                onChange={e => setTemplateSearch(e.target.value)}
+                className="w-full bg-[#1C1D2A] border border-white/[0.06] rounded-lg px-3 py-1.5 text-[11.5px] text-white placeholder-[#8E92BC]/50 outline-none focus:border-[#BFF128]/50"
+              />
+
+              <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1 hide-scrollbar">
+                {filteredTemplates.map((tpl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setText(tpl.text)}
+                    className="w-full text-left p-2 rounded-lg bg-[#1C1D2A] hover:bg-white/[0.04] border border-white/[0.02] transition-colors text-[11.5px]"
+                  >
+                    <span className="font-bold text-[#BFF128] block mb-0.5">{tpl.title}</span>
+                    <span className="text-white/60 line-clamp-2 leading-normal">{tpl.text}</span>
+                  </button>
+                ))}
+                {filteredTemplates.length === 0 && (
+                  <p className="text-[11.5px] text-[#8E92BC] text-center py-2">Шаблоны не найдены</p>
+                )}
+              </div>
+            </div>
+
             {/* Referrals */}
             <div className="bg-[#13141C] border border-white/[0.04] rounded-xl p-4">
               <h3 className="text-[11px] uppercase tracking-wider text-[#8E92BC] font-bold mb-3 flex items-center gap-2">
@@ -591,6 +698,14 @@ export function SupportClient() {
                               <span className="text-white">{sub.expires_at ? format(new Date(sub.expires_at), 'dd.MM.yyyy') : 'Бессрочно'}</span>
                             </div>
                           </div>
+
+                          <button
+                            onClick={() => handleExtendSubscription(sub)}
+                            disabled={sending}
+                            className="w-full mt-3 py-1.5 rounded-lg bg-[#BFF128] text-black text-[11px] font-bold hover:bg-[#aade1f] transition-colors disabled:opacity-50"
+                          >
+                            {sending ? 'Продление...' : 'Продлить (+30 дней)'}
+                          </button>
                         </div>
                       </div>
                     )

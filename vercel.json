@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/stuck-orders",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-servers",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
