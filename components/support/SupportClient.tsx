@@ -146,39 +146,76 @@ export function SupportClient() {
     }
     
     const fetchDetails = async () => {
+      let mainSub = null;
+      let subs = [];
+      
       // 1. Сначала пробуем получить основную подписку по UUID (userId)
-      const { data: mainSub } = await supabase
+      const { data: subByUuid } = await supabase
         .from('vpn_subscriptions')
         .select('*')
         .eq('id', selectedUser.userId)
         .maybeSingle()
-      
-      if (mainSub) {
-        setActiveSub(mainSub)
-        // 2. Ищем все подписки по имени этого пользователя
-        const { data: subs } = await supabase
+        
+      if (subByUuid) {
+        mainSub = subByUuid;
+        setActiveSub(subByUuid);
+        const { data: subsByUsername } = await supabase
           .from('vpn_subscriptions')
           .select('*')
-          .eq('username', mainSub.username)
-        
-        setUserDetails({ subs: subs || [mainSub], refCount: 0 })
+          .eq('username', subByUuid.username);
+        subs = subsByUsername || [subByUuid];
       } else {
-        // Fallback если selectedUser.profile имеет имя
-        const fallbackUsername = selectedUser.profile?.username
+        const fallbackUsername = selectedUser.profile?.username;
         if (fallbackUsername) {
-          const { data: subs } = await supabase
+          const { data: subsByFallback } = await supabase
             .from('vpn_subscriptions')
             .select('*')
-            .eq('username', fallbackUsername)
+            .eq('username', fallbackUsername);
           
-          if (subs && subs.length > 0) {
-            setActiveSub(subs[0])
-            setUserDetails({ subs, refCount: 0 })
-            return
+          if (subsByFallback && subsByFallback.length > 0) {
+            mainSub = subsByFallback[0];
+            setActiveSub(subsByFallback[0]);
+            subs = subsByFallback;
           }
         }
-        setActiveSub(null)
-        setUserDetails({ subs: [], refCount: 0 })
+      }
+
+      if (mainSub) {
+        const email = mainSub.username || '';
+        const isEmail = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email);
+
+        let connectUser = null;
+        let projects: any[] = [];
+
+        if (isEmail) {
+          const { data: cUser } = await supabase
+            .from('users')
+            .select('id, email, full_name, role, created_at')
+            .eq('email', email)
+            .maybeSingle();
+          
+          if (cUser) {
+            connectUser = cUser;
+            const { data: mems } = await supabase
+              .from('project_members')
+              .select('role, projects(name, slug)')
+              .eq('user_id', cUser.id);
+            if (mems) {
+              projects = mems;
+            }
+          }
+        }
+
+        setUserDetails({
+          subs: subs,
+          refCount: 0,
+          connectUser,
+          projects,
+          email: isEmail ? email : null
+        });
+      } else {
+        setActiveSub(null);
+        setUserDetails({ subs: [], refCount: 0, connectUser: null, projects: [], email: null });
       }
     }
     fetchDetails()
@@ -397,6 +434,59 @@ export function SupportClient() {
               {tgName && (
                 <p className="text-[13px] text-[#BFF128] font-medium">@{tgName}</p>
               )}
+            </div>
+
+            {/* Registration & Connect Info */}
+            <div className="bg-[#13141C] border border-white/[0.04] rounded-xl p-4 space-y-3">
+              <h3 className="text-[11px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2">
+                <Info size={14} /> Учетная запись
+              </h3>
+              <div className="space-y-2 text-[12px]">
+                <div className="flex justify-between items-baseline gap-2">
+                  <span className="text-[#8E92BC] shrink-0">Email / Логин:</span>
+                  <span className="text-white font-mono truncate max-w-[140px] text-right" title={userDetails?.email || 'не указан'}>
+                    {userDetails?.email || 'не указан'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#8E92BC]">Veil VPN:</span>
+                  <span className={clsx("font-semibold", activeSub ? "text-green-500" : "text-[#8E92BC]")}>
+                    {activeSub ? 'Зарегистрирован' : 'Нет подписки'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#8E92BC]">Аккаунт Connect:</span>
+                  <span className={clsx("font-semibold", userDetails?.connectUser ? "text-[#BFF128]" : "text-[#8E92BC]")}>
+                    {userDetails?.connectUser ? 'Да' : 'Нет'}
+                  </span>
+                </div>
+                {userDetails?.connectUser && (
+                  <>
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className="text-[#8E92BC] shrink-0">ФИО:</span>
+                      <span className="text-white text-right truncate max-w-[160px]">{userDetails.connectUser.full_name || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#8E92BC]">Роль:</span>
+                      <span className="text-[#BFF128] uppercase text-[10px] font-bold bg-white/5 px-1.5 py-0.5 rounded">
+                        {userDetails.connectUser.role || 'user'}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {userDetails?.projects && userDetails.projects.length > 0 && (
+                  <div className="pt-1">
+                    <span className="text-[#8E92BC] block mb-1">Доступ к проектам:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {userDetails.projects.map((p: any) => (
+                        <span key={p.projects?.slug} className="text-[10px] bg-white/5 border border-white/10 text-white px-2 py-0.5 rounded-md">
+                          {p.projects?.name || p.projects?.slug}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Referrals */}

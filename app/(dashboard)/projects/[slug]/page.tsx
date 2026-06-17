@@ -93,7 +93,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     ] = await Promise.all([
       supabase.from('vpn_servers').select('*').order('name'),
       supabase.from('vpn_subscriptions').select('*').order('created_at', { ascending: false }),
-      supabase.from('vpn_orders').select('*').order('created_at', { ascending: false })
+      supabase.from('vpn_orders').select('*').gte('created_at', '2026-06-01T00:00:00Z').order('created_at', { ascending: false })
     ])
     
     vpnServers = servers
