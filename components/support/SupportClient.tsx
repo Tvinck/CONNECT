@@ -388,7 +388,18 @@ export function SupportClient() {
                         "px-4 py-2.5 rounded-2xl text-[13.5px] leading-[1.4] shadow-sm",
                         isMine ? "bg-[#BFF128] text-black rounded-tr-none" : "bg-[#252736] text-white rounded-tl-none border border-white/[0.02]"
                       )}>
-                        {msg.message}
+                        {msg.message.startsWith('📷 [Изображение]:') ? (
+                          <div className="space-y-1">
+                            <img 
+                              src={msg.message.split('📷 [Изображение]: ')[1]} 
+                              alt="Вложение" 
+                              className="max-w-[240px] max-h-[180px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity" 
+                              onClick={() => window.open(msg.message.split('📷 [Изображение]: ')[1], '_blank')} 
+                            />
+                          </div>
+                        ) : (
+                          msg.message
+                        )}
                       </div>
                       <span className="text-[10px] text-[#8E92BC] mt-1.5 flex items-center gap-1">
                         {format(new Date(msg.created_at), 'HH:mm')}
