@@ -89,11 +89,13 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     const [
       { data: servers },
       { data: subs },
-      { data: ords }
+      { data: ords },
+      { data: refs }
     ] = await Promise.all([
       supabase.from('vpn_servers').select('*').order('name'),
       supabase.from('vpn_subscriptions').select('*').order('created_at', { ascending: false }),
-      supabase.from('vpn_orders').select('*').gte('created_at', '2026-06-01T00:00:00Z').order('created_at', { ascending: false })
+      supabase.from('vpn_orders').select('*').gte('created_at', '2026-06-01T00:00:00Z').order('created_at', { ascending: false }),
+      supabase.from('vpn_referrals').select('*').order('created_at', { ascending: false })
     ])
     
     vpnServers = servers
@@ -125,8 +127,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       created_at: o.created_at
     }))
 
-    // Сопоставление участников реферальной сети (отключено, так как нет в новой БД)
-    vpnReferrals = []
+    // Сопоставление участников реферальной сети
+    vpnReferrals = (refs ?? []).map((r: any) => ({
+      id: r.id,
+      referrer_username: r.referrer_username,
+      referred_username: r.referred_username,
+      status: r.status,
+      bonus_days: r.bonus_days,
+      created_at: r.created_at
+    }))
   }
 
   // 5. Динамическая загрузка данных Pixel AI, если это проект Pixel AI
