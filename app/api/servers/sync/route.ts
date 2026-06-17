@@ -4,9 +4,21 @@ import { createClient } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic' // Ensure it's not cached
 
-// Ignore self-signed certificates for X-UI
+/**
+ * Агент HTTPS с отключенной проверкой SSL сертификатов для взаимодействия
+ * с сервером панели X-UI (так как могут использоваться самоподписанные сертификаты).
+ */
 const httpsAgent = new https.Agent({ rejectUnauthorized: false })
 
+/**
+ * Вспомогательная функция для выполнения HTTP/HTTPS запросов к API X-UI.
+ * Обертывает стандартный модуль `https` в Promise.
+ * 
+ * @param {string} url - URL адрес эндпоинта
+ * @param {any} options - Параметры запроса (метод, заголовки и т.д.)
+ * @param {any} [data] - Данные для отправки в теле запроса (опционально)
+ * @returns {Promise<{ data: any, headers: any }>} Результат запроса с телом ответа и заголовками
+ */
 function request(url: string, options: any, data?: any): Promise<{ data: any, headers: any }> {
   return new Promise((resolve, reject) => {
     const req = https.request(url, { ...options, agent: httpsAgent }, (res) => {
@@ -30,6 +42,13 @@ function request(url: string, options: any, data?: any): Promise<{ data: any, he
   })
 }
 
+/**
+ * Обработчик POST-запросов для синхронизации статуса серверов VPN.
+ * Проверяет права доступа авторизованного пользователя, подключается к панели X-UI,
+ * запрашивает показатели нагрузки (CPU, пинг) и обновляет соответствующие записи в таблице `vpn_servers`.
+ * 
+ * @returns {Promise<NextResponse>} JSON-ответ со статусом операции
+ */
 export async function POST() {
   try {
     const supabase = createClient()
