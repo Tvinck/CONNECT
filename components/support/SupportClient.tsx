@@ -186,23 +186,35 @@ export function SupportClient() {
 
         let connectUser = null;
         let projects: any[] = [];
+        let connectClient = null;
 
         if (isEmail) {
-          const { data: cUser } = await supabase
-            .from('users')
-            .select('id, email, full_name, role, created_at')
-            .eq('email', email)
-            .maybeSingle();
-          
-          if (cUser) {
-            connectUser = cUser;
+          const [userRes, clientRes] = await Promise.all([
+            supabase
+              .from('users')
+              .select('id, email, full_name, role, created_at')
+              .eq('email', email)
+              .maybeSingle(),
+            supabase
+              .from('clients')
+              .select('*, manager:users!manager_id(full_name)')
+              .eq('email', email)
+              .maybeSingle()
+          ]);
+
+          if (userRes.data) {
+            connectUser = userRes.data;
             const { data: mems } = await supabase
               .from('project_members')
               .select('role, projects(name, slug)')
-              .eq('user_id', cUser.id);
+              .eq('user_id', userRes.data.id);
             if (mems) {
               projects = mems;
             }
+          }
+
+          if (clientRes.data) {
+            connectClient = clientRes.data;
           }
         }
 
@@ -211,6 +223,7 @@ export function SupportClient() {
           refCount: 0,
           connectUser,
           projects,
+          connectClient,
           email: isEmail ? email : null
         });
       } else {
@@ -483,6 +496,37 @@ export function SupportClient() {
                           {p.projects?.name || p.projects?.slug}
                         </span>
                       ))}
+                    </div>
+                  </div>
+                )}
+                {userDetails?.connectClient && (
+                  <div className="pt-2 border-t border-white/[0.04]">
+                    <span className="text-[#8E92BC] block mb-1">Профиль CRM-Клиента:</span>
+                    <div className="space-y-1.5 text-[11.5px] pl-1">
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Имя в CRM:</span>
+                        <span className="text-white font-semibold">{userDetails.connectClient.name || '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Источник:</span>
+                        <span className="text-white">{userDetails.connectClient.source || '—'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Статус:</span>
+                        <span className="text-white font-semibold">{userDetails.connectClient.status || '—'}</span>
+                      </div>
+                      {userDetails.connectClient.manager?.full_name && (
+                        <div className="flex justify-between">
+                          <span className="text-[#8E92BC]">Менеджер:</span>
+                          <span className="text-white">{userDetails.connectClient.manager.full_name}</span>
+                        </div>
+                      )}
+                      {userDetails.connectClient.total_spent !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-[#8E92BC]">Потрачено:</span>
+                          <span className="text-[#22c55e] font-bold">{userDetails.connectClient.total_spent} руб.</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
