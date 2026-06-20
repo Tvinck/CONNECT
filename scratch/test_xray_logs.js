@@ -1,12 +1,10 @@
 const { Client } = require('ssh2');
 const conn = new Client();
+
 conn.on('ready', () => {
-  const script = `
-    systemctl restart x-ui
-    sleep 3
-    python3 -c "import json; config = json.load(open('/usr/local/x-ui/bin/config.json')); print(json.dumps(config.get('inbounds', []), indent=2))"
-  `;
-  conn.exec(script, (err, stream) => {
+  const cmd = `xray api statsquery --server=127.0.0.1:10085 || systemctl status xray --no-pager || cat /var/log/xray/error.log | tail -n 20`;
+  
+  conn.exec(cmd, (err, stream) => {
     if (err) throw err;
     let out = '';
     stream.on('close', () => {
@@ -18,22 +16,9 @@ conn.on('ready', () => {
       out += data;
     });
   });
-}).on('error', (err) => {
-  console.error('SSH Error:', err);
 }).connect({
   host: '185.142.99.185',
   port: 22,
   username: 'root',
   password: 'iW@Bz+,dM42Ln+'
 });
-
-
-
-
-
-
-
-
-
-
-

@@ -1,12 +1,14 @@
 const { Client } = require('ssh2');
 const conn = new Client();
+
 conn.on('ready', () => {
-  const script = `
-    systemctl restart x-ui
-    sleep 3
-    python3 -c "import json; config = json.load(open('/usr/local/x-ui/bin/config.json')); print(json.dumps(config.get('inbounds', []), indent=2))"
+  const cmd = `
+    sqlite3 /etc/x-ui/x-ui.db ".schema client_traffics"
+    echo "---"
+    sqlite3 /etc/x-ui/x-ui.db ".schema inbounds"
   `;
-  conn.exec(script, (err, stream) => {
+  
+  conn.exec(cmd, (err, stream) => {
     if (err) throw err;
     let out = '';
     stream.on('close', () => {
@@ -18,22 +20,9 @@ conn.on('ready', () => {
       out += data;
     });
   });
-}).on('error', (err) => {
-  console.error('SSH Error:', err);
 }).connect({
   host: '185.142.99.185',
   port: 22,
   username: 'root',
   password: 'iW@Bz+,dM42Ln+'
 });
-
-
-
-
-
-
-
-
-
-
-

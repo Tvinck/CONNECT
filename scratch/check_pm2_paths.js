@@ -1,15 +1,22 @@
 const { Client } = require('ssh2');
 const conn = new Client();
+
 conn.on('ready', () => {
-  const script = `
-    systemctl restart x-ui
-    sleep 3
-    python3 -c "import json; config = json.load(open('/usr/local/x-ui/bin/config.json')); print(json.dumps(config.get('inbounds', []), indent=2))"
+  console.log('SSH Connection established.');
+  
+  const cmd = `
+    pm2 jlist | grep -o '"pm_cwd":"[^"]*"'
   `;
-  conn.exec(script, (err, stream) => {
-    if (err) throw err;
+  
+  conn.exec(cmd, (err, stream) => {
+    if (err) {
+      console.error('Exec error:', err);
+      conn.end();
+      return;
+    }
     let out = '';
     stream.on('close', () => {
+      console.log('Paths of PM2 apps:');
       console.log(out);
       conn.end();
     }).on('data', (data) => {
@@ -19,21 +26,10 @@ conn.on('ready', () => {
     });
   });
 }).on('error', (err) => {
-  console.error('SSH Error:', err);
+  console.error('SSH connection error:', err);
 }).connect({
   host: '185.142.99.185',
   port: 22,
   username: 'root',
   password: 'iW@Bz+,dM42Ln+'
 });
-
-
-
-
-
-
-
-
-
-
-

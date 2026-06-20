@@ -1,0 +1,39 @@
+const { Client } = require('ssh2');
+const conn = new Client();
+
+conn.on('ready', () => {
+  console.log('SSH Connection established.');
+  
+  const cmd = `
+    curl -i -X PATCH "https://fhwrdhebhgywhvoeqpxj.supabase.co/rest/v1/vpn_servers?port=gt.0" \
+      -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZod3JkaGViaGd5d2h2b2VxcHhqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTkyOTQyNywiZXhwIjoyMDk1NTA1NDI3fQ.IIIIpJ7yXhuxp6i1N183ldsqRIHfltsQIPZA27sRMo4" \
+      -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZod3JkaGViaGd5d2h2b2VxcHhqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTkyOTQyNywiZXhwIjoyMDk1NTA1NDI3fQ.IIIIpJ7yXhuxp6i1N183ldsqRIHfltsQIPZA27sRMo4" \
+      -H "Content-Type: application/json" \
+      -d '{"reality_sni": "gateway.icloud.com"}'
+  `;
+  
+  conn.exec(cmd, (err, stream) => {
+    if (err) {
+      console.error('Exec error:', err);
+      conn.end();
+      return;
+    }
+    let out = '';
+    stream.on('close', () => {
+      console.log('Result from VPS:');
+      console.log(out);
+      conn.end();
+    }).on('data', (data) => {
+      out += data;
+    }).stderr.on('data', (data) => {
+      out += data;
+    });
+  });
+}).on('error', (err) => {
+  console.error('SSH connection error:', err);
+}).connect({
+  host: '185.142.99.185',
+  port: 22,
+  username: 'root',
+  password: 'iW@Bz+,dM42Ln+'
+});
