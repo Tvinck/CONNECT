@@ -171,7 +171,7 @@ export async function GET() {
   // 3. VPS & PM2 DIAGNOSTICS OVER SSH
   const sshCmd = `
     echo "===PM2_JLIST==="
-    pm2 jlist
+    pm2 jlist 2>/dev/null
     echo "===UPTIME==="
     uptime
     echo "===FREE==="
@@ -285,7 +285,15 @@ export async function GET() {
     let pm2List: any[] = []
     if (sections.pm2) {
       try {
-        pm2List = JSON.parse(sections.pm2.trim())
+        const pm2Text = sections.pm2.trim()
+        const startIdx = pm2Text.indexOf('[')
+        const endIdx = pm2Text.lastIndexOf(']')
+        if (startIdx !== -1 && endIdx !== -1) {
+          const jsonStr = pm2Text.substring(startIdx, endIdx + 1)
+          pm2List = JSON.parse(jsonStr)
+        } else {
+          pm2List = JSON.parse(pm2Text)
+        }
       } catch (e) {
         // Fallback if parsing fails
       }
