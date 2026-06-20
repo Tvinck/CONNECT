@@ -41,8 +41,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Mark ioredis as server-only — prevents Webpack from bundling it into client chunks
-  experimental: { serverComponentsExternalPackages: ['ioredis'] },
+  experimental: { serverComponentsExternalPackages: ['ioredis', 'ssh2', 'sqlite3'] },
   async headers() {
     return [
       {
