@@ -77,7 +77,8 @@ export async function POST(req: Request) {
 
     if (table === 'notifications') {
       const notif = record;
-      if (notif.type === 'mention' || (notif.title && notif.title.toLowerCase().includes('упомянул'))) {
+      const titleLower = notif.title ? notif.title.toLowerCase() : '';
+      if (notif.type === 'mention' || titleLower.includes('упоминан') || titleLower.includes('упомянул')) {
         const { data: userData } = await supabase.from('users').select('full_name, email').eq('id', notif.user_id).maybeSingle();
         const targetName = userData ? (userData.full_name || userData.email) : 'Сотрудника';
         const text = `🔔 **Упоминание в CONNECT**\n\n**Кого:** ${targetName}\n**Событие:** ${notif.title}\n**Текст:** ${notif.body || ''}\n\n[🔗 Посмотреть](${SITE_URL}${notif.link || '/dashboard'})`;
