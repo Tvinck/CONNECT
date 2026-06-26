@@ -56,7 +56,7 @@ export function BazzarUsersPanel() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-[18px] font-bold tracking-tight">Пользователи сайта</h2>
-          <p className="text-mute text-[13px] mt-1">База всех посетителей, привязавших свое устройство (UDID). *Демо-данные*</p>
+          <p className="text-mute text-[13px] mt-1">База всех посетителей, привязавших свое устройство (UDID).</p>
         </div>
       </div>
 

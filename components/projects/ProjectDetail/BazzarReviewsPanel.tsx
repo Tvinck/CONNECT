@@ -56,7 +56,7 @@ export function BazzarReviewsPanel() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-[18px] font-bold tracking-tight">Отзывы покупателей</h2>
-          <p className="text-mute text-[13px] mt-1">Модерация и просмотр отзывов о товарах. *Демо-данные*</p>
+          <p className="text-mute text-[13px] mt-1">Модерация и просмотр отзывов о товарах.</p>
         </div>
       </div>
 
