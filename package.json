@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "start:operator": "node operator_bot.js"
+    "start:operator": "node operator_bot.js",
+    "start:notifications": "node pachca_bot.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
