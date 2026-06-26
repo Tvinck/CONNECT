@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
 import { RichTextEditor } from '@/components/ui/RichTextEditor'
-import { X, Loader2 } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { Loader2 } from 'lucide-react'
 import { processMentions } from '@/lib/mentions'
 
 export function CreateNewsModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
@@ -49,15 +50,8 @@ export function CreateNewsModal({ isOpen, onClose, onSuccess }: { isOpen: boolea
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between p-5 border-b border-line bg-bg/50">
-          <h2 className="text-lg font-black tracking-tight">Создать новость</h2>
-          <button onClick={onClose} className="p-1.5 text-mute hover:text-text bg-line/50 hover:bg-line rounded-full transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto flex-1 space-y-5">
+    <Modal title="Создать новость" onClose={onClose} maxWidth="max-w-2xl">
+      <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
             <label className="text-[12.5px] font-bold text-slate-700 ml-1">Заголовок</label>
             <input 
@@ -95,8 +89,7 @@ export function CreateNewsModal({ isOpen, onClose, onSuccess }: { isOpen: boolea
               Опубликовать
             </Button>
           </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   )
 }

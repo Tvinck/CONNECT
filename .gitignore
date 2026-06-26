@@ -23,8 +23,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# local env files (.env.example тоже НЕ коммитим — содержит реальный IP VPS и project-refs)
+.env
+.env.*
 
 # vercel
 .vercel

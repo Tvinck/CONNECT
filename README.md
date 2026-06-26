@@ -52,9 +52,9 @@ git checkout claude/pensive-franklin-4EDRO
 В корне проекта создай файл с именем **`.env.local`** и вставь в него:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://fhwrdhebhgywhvoeqpxj.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZod3JkaGViaGd5d2h2b2VxcHhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5Mjk0MjcsImV4cCI6MjA5NTUwNTQyN30.1odxq5Ull4GDI_zoThLfwjbYE6IaDI0_yDGv-_lzDHM
-SUPABASE_SERVICE_ROLE_KEY=ВСТАВЬ_СЮДА_SERVICE_ROLE_KEY
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<вставь_свой_anon_key_из_Supabase>
+SUPABASE_SERVICE_ROLE_KEY=<вставь_свой_service_role_key_из_Supabase>
 ```
 
 > ⚠️ Этот файл специально **не хранится в Git** (в нём секреты). Поэтому при

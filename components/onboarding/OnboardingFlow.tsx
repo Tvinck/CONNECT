@@ -163,6 +163,14 @@ export function OnboardingFlow({ role, name }: Props) {
     return () => document.removeEventListener('keydown', handler)
   }, [visible, dismiss]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Prevent the dashboard behind the onboarding overlay from scrolling.
+  useEffect(() => {
+    if (!visible) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [visible])
+
   const firstName = name.split(' ')[0]
 
   const STEPS = [
@@ -464,7 +472,7 @@ export function OnboardingFlow({ role, name }: Props) {
       style={{ background: 'rgba(7,9,26,0.85)', backdropFilter: 'blur(6px)' }}
     >
       <div
-        className={`relative w-full max-w-[520px] rounded-2xl border border-line bg-[#0D1028] shadow-2xl transition-all duration-300 ${
+        className={`relative w-full max-w-[520px] rounded-2xl border border-line bg-[#0D1028] text-white shadow-2xl transition-all duration-300 ${
           exiting ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
         }`}
       >

@@ -97,7 +97,7 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
             style={{ background: `${meta(article.category).color}20`, color: meta(article.category).color }}>
             {meta(article.category).emoji} {article.category}
           </div>
-          <h1 className="text-[26px] font-bold tracking-tight leading-tight mb-4">{article.title}</h1>
+          <h1 className="text-[26px] font-bold tracking-tight leading-tight mb-4 text-white">{article.title}</h1>
           <div className="flex items-center gap-4 text-[12.5px] text-mute pb-5 mb-5 border-b border-line">
             {article.author && (
               <div className="flex items-center gap-2">

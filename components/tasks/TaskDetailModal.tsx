@@ -74,6 +74,17 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
   // Lightbox state for image zoom
   const [zoomImage, setZoomImage] = useState(false)
 
+  // While the lightbox is open, Escape closes only the zoom — not the whole task modal.
+  // Capture phase + stopPropagation pre-empts the base Modal's Escape listener on document.
+  useEffect(() => {
+    if (!zoomImage) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.stopPropagation(); setZoomImage(false) }
+    }
+    document.addEventListener('keydown', onKey, true)
+    return () => document.removeEventListener('keydown', onKey, true)
+  }, [zoomImage])
+
   useEffect(() => {
     let active = true
     const fetchDetails = async () => {
@@ -335,16 +346,23 @@ export function TaskDetailModal({ task, projects, users, onClose, onUpdated, onD
 
       {/* Lightbox Modal */}
       {zoomImage && imageUrl && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in"
+          onClick={() => setZoomImage(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Просмотр изображения"
+        >
           <div className="absolute top-4 right-4 z-10">
             <button
               onClick={() => setZoomImage(false)}
+              aria-label="Закрыть"
               className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
             >
               <X size={20} />
             </button>
           </div>
-          <div className="max-w-full max-h-full flex items-center justify-center">
+          <div className="max-w-full max-h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imageUrl}

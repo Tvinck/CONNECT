@@ -58,6 +58,18 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
   const [mentionFilter, setMentionFilter] = useState('')
   const [mentionIndex, setMentionIndex] = useState(0)
 
+  // Lock background scroll while open + close on Escape.
+  // Escape is ignored while the @mention popup is open, so it closes that popup first.
+  const showMentionsRef = useRef(showMentions)
+  showMentionsRef.current = showMentions
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !showMentionsRef.current) onClose() }
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
+  }, [onClose])
+
   const isAuthor = currentUser.id === idea.author_id
   const isCeoOrCoowner = currentUser.role === 'ceo' || currentUser.role === 'coowner'
   const score = idea.votes.reduce((sum, v) => sum + v.value, 0)

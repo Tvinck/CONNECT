@@ -111,7 +111,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
   const progressPercent = sub.traffic_limit ? Math.min(100, (sub.traffic_used / sub.traffic_limit) * 100) : 0
 
   return (
-    <Modal onClose={onClose} className="relative bg-bg border border-line rounded-2xl w-full max-w-[800px] flex flex-col shadow-2xl animate-modal-in my-auto overflow-hidden p-0">
+    <Modal onClose={onClose} className="relative bg-bg text-[#171821] border border-line rounded-2xl w-full max-w-[800px] flex flex-col shadow-2xl animate-modal-in my-auto overflow-hidden p-0">
       {/* Header Profile */}
       <div className="p-6 border-b border-line bg-white/[0.01]">
         <div className="flex items-start justify-between">
@@ -129,7 +129,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
               )}
             </div>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center text-mute hover:text-white rounded-lg hover:bg-white/[0.05] transition-all">
+          <button onClick={onClose} aria-label="Закрыть" className="w-8 h-8 flex items-center justify-center text-mute hover:text-[#171821] rounded-lg hover:bg-bg transition-all">
             <X size={16} />
           </button>
         </div>

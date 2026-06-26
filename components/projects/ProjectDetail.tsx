@@ -19,7 +19,7 @@ import { useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   ArrowLeft, Pencil, Plus, Trash2, ExternalLink, Link2, Loader2, User2, Settings,
-  Server, Activity, Users, CreditCard, Globe, Search, Copy, Check, Info, Calendar, Key, AlertCircle, Gift, LayoutGrid
+  Server, Activity, Users, CreditCard, Globe, Search, Copy, Check, Info, Calendar, Key, AlertCircle, Gift, LayoutGrid, MessageSquare
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
@@ -44,6 +44,13 @@ import { PixelTransactions } from './ProjectDetail/PixelTransactions'
 import { PixelCreations } from './ProjectDetail/PixelCreations'
 import { PixelSubscriptions } from './ProjectDetail/PixelSubscriptions'
 import { PixelTemplates } from './ProjectDetail/PixelTemplates'
+
+// Bazzar Certs subcomponents
+import { AppleCertsPanel } from './ProjectDetail/AppleCertsPanel'
+import { BazzarProductsPanel } from './ProjectDetail/BazzarProductsPanel'
+import { BazzarUsersPanel } from './ProjectDetail/BazzarUsersPanel'
+import { BazzarAnalyticsPanel } from './ProjectDetail/BazzarAnalyticsPanel'
+import { BazzarReviewsPanel } from './ProjectDetail/BazzarReviewsPanel'
 
 // ─── local types ──────────────────────────────────────────────────────────────
 
@@ -211,6 +218,7 @@ export function ProjectDetail({
   // VPN admin panel states
   const isVpn = project.slug === 'veil' || project.slug === 'veil-vpn'
   const isPixel = project.slug === 'pixel' || project.slug === 'bazzar-pixel'
+  const isBazzarCerts = project.slug === 'bazzar-certs' || project.slug === 'bazzar-sert' || project.slug === 'bazzarcerts'
   const [activeTab, setActiveTab] = useState<string>('project')
   const [searchQuery, setSearchQuery] = useState('')
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null)
@@ -573,6 +581,48 @@ export function ProjectDetail({
         </div>
       )}
 
+      {/* Tab Row for Bazzar Certs Project */}
+      {isBazzarCerts && (
+        <div className="flex gap-2 border-b border-line pb-4 mb-5 overflow-x-auto">
+          <button onClick={() => setActiveTab('project')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'project' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Activity size={14} /> Проектное управление
+          </button>
+          <button onClick={() => setActiveTab('bazzar-certs')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'bazzar-certs' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Server size={14} /> Регистрация сертификатов
+          </button>
+          <button onClick={() => setActiveTab('bazzar-products')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'bazzar-products' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <LayoutGrid size={14} /> Управление товарами
+          </button>
+          <button onClick={() => setActiveTab('bazzar-users')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'bazzar-users' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Users size={14} /> Пользователи
+          </button>
+          <button onClick={() => setActiveTab('bazzar-analytics')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'bazzar-analytics' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <Activity size={14} /> Аналитика
+          </button>
+          <button onClick={() => setActiveTab('bazzar-reviews')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'bazzar-reviews' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <MessageSquare size={14} /> Отзывы
+          </button>
+        </div>
+      )}
+
       {activeTab === 'project' ? (
         <>
           {/* ── Team + Links ─────────────────────────────────────────── */}
@@ -724,6 +774,16 @@ export function ProjectDetail({
           categories={pixelCategories ?? []}
           stars={pixelStars ?? []}
         />
+      ) : activeTab === 'bazzar-certs' && isBazzarCerts ? (
+        <AppleCertsPanel />
+      ) : activeTab === 'bazzar-products' && isBazzarCerts ? (
+        <BazzarProductsPanel />
+      ) : activeTab === 'bazzar-users' && isBazzarCerts ? (
+        <BazzarUsersPanel />
+      ) : activeTab === 'bazzar-analytics' && isBazzarCerts ? (
+        <BazzarAnalyticsPanel />
+      ) : activeTab === 'bazzar-reviews' && isBazzarCerts ? (
+        <BazzarReviewsPanel />
       ) : activeTab === 'servers' ? (
         <div className="card p-5">
           <div className="flex flex-col gap-4 mb-6 border-b border-line pb-5">
