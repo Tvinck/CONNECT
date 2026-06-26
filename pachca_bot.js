@@ -1,9 +1,11 @@
 const { createClient } = require('@supabase/supabase-js');
+const cron = require('node-cron');
 require('dotenv').config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const webhookUrl = process.env.PACHCA_WEBHOOK_URL;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://connect.tvinck.ru';
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Ошибка: Не найдены переменные для подключения к Supabase.');
@@ -35,7 +37,7 @@ async function sendPachcaNotification(text) {
 
 console.log('🤖 Бот для уведомлений (Пачка) запущен...');
 
-// Слушаем изменения в таблице support_messages
+// 1. Слушаем изменения в таблице support_messages
 supabase
   .channel('pachca_support_notifications')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'support_messages' }, async (payload) => {
@@ -54,11 +56,11 @@ supabase
     }
 
     if (msg.is_from_user) {
-      const text = `📩 **Новое сообщение от клиента** ${clientName}:\n\n${msg.message}\n\n_Проект: ${msg.project || 'Veil VPN'}_`;
+      const text = `📩 **Новое сообщение от:** ${clientName}\n\n**Текст:** ${msg.message}\n**Проект:** ${msg.project || 'Veil VPN'}\n\n[💬 Открыть чат в Connect](${SITE_URL}/support)`;
       await sendPachcaNotification(text);
     } else {
       const operatorName = msg.sender_email ? msg.sender_email.split('@')[0] : 'Сотрудник';
-      const text = `✅ **Сотрудник @${operatorName} ответил** клиенту ${clientName}:\n\n${msg.message}`;
+      const text = `✅ **Сотрудник @${operatorName} ответил** клиенту ${clientName}:\n\n**Текст:** ${msg.message}`;
       await sendPachcaNotification(text);
     }
   })
@@ -66,28 +68,85 @@ supabase
     console.log(`🔌 Статус Realtime-подключения (Поддержка): ${status}`);
   });
 
-// Слушаем новые покупки Apple Certificates
+// 2. Слушаем новые покупки Apple Certificates
 supabase
   .channel('pachca_certs_notifications')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'apple_certificates' }, async (payload) => {
     const cert = payload.new;
     const planName = cert.plan_id === 'vip' ? 'VIP Сертификат' : (cert.plan_id === 'base' ? 'Базовый Сертификат' : cert.plan_id);
-    const text = `🍏 **Новая заявка на Apple Сертификат!**\n\n**Тариф:** ${planName}\n**Сумма:** ${cert.sale_price} ₽\n**Источник:** ${cert.source}\n**UDID:** \`${cert.udid}\`\n\nПроверьте раздел "Финансы" или "Apple Certs" в CRM.`;
+    const text = `🍏 **Новая заявка на Apple Сертификат!**\n\n**Тариф:** ${planName}\n**Сумма:** ${cert.sale_price} ₽\n**Источник:** ${cert.source}\n**UDID:** \`${cert.udid}\`\n\n[💳 Открыть финансы](${SITE_URL}/finances)`;
     await sendPachcaNotification(text);
   })
   .subscribe((status) => {
     console.log(`🔌 Статус Realtime-подключения (Bazzar Certs): ${status}`);
   });
 
-// Слушаем новые подписки VPN
+// 3. Слушаем новые подписки VPN
 supabase
   .channel('pachca_vpn_notifications')
   .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vpn_subscriptions' }, async (payload) => {
     const sub = payload.new;
     const clientName = sub.telegram_username ? `@${sub.telegram_username}` : (sub.username || sub.id);
-    const text = `🛡 **Новая подписка Veil VPN!**\n\n**Клиент:** ${clientName}\n**Лимит:** ${sub.data_limit_gb} ГБ\n\nПроверьте раздел "Пользователи" в CRM.`;
+    const text = `🛡 **Новая подписка Veil VPN!**\n\n**Клиент:** ${clientName}\n**Лимит:** ${sub.data_limit_gb} ГБ\n\n[👤 Открыть CRM](${SITE_URL}/crm)`;
     await sendPachcaNotification(text);
   })
   .subscribe((status) => {
     console.log(`🔌 Статус Realtime-подключения (Veil VPN): ${status}`);
   });
+
+// 4. Слушаем упоминания (notifications.type = 'mention')
+supabase
+  .channel('pachca_mentions')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, async (payload) => {
+    const notif = payload.new;
+    if (notif.type === 'mention' || notif.title.toLowerCase().includes('упомянул')) {
+      // Ищем имя того, кого упомянули
+      const { data: userData } = await supabase.from('users').select('full_name, email').eq('id', notif.user_id).maybeSingle();
+      const targetName = userData ? (userData.full_name || userData.email) : 'Сотрудника';
+      
+      const text = `🔔 **Упоминание в CONNECT**\n\n**Кого:** ${targetName}\n**Событие:** ${notif.title}\n**Текст:** ${notif.body || ''}\n\n[🔗 Посмотреть](${SITE_URL}${notif.link || '/dashboard'})`;
+      await sendPachcaNotification(text);
+    }
+  })
+  .subscribe((status) => {
+    console.log(`🔌 Статус Realtime-подключения (Упоминания): ${status}`);
+  });
+
+// 5. Итоги дня по задачам (каждый день в 00:00 по Москве)
+cron.schedule('0 0 * * *', async () => {
+  console.log('⏰ Запуск ежедневной сводки по задачам...');
+  
+  // Получаем задачи, созданные за последние 24 часа
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const { data: tasks, error } = await supabase
+    .from('tasks')
+    .select('title, status, users!tasks_assignee_id_fkey(full_name)')
+    .gte('created_at', yesterday.toISOString());
+    
+  if (error) {
+    console.error('Ошибка получения задач для сводки:', error);
+    return;
+  }
+  
+  if (!tasks || tasks.length === 0) {
+    await sendPachcaNotification(`📊 **Итоги дня: Задачи**\n\nЗа прошедшие сутки новых задач не поступало. Отличная работа! 🎉`);
+    return;
+  }
+  
+  let summaryText = `📊 **Итоги дня: Новые задачи за сутки**\n\nВсего новых задач: **${tasks.length}**\n\n`;
+  
+  tasks.forEach((task, idx) => {
+    const assignee = task.users?.full_name || 'Не назначена';
+    summaryText += `${idx + 1}. **${task.title}** (Статус: ${task.status}, Исполнитель: ${assignee})\n`;
+  });
+  
+  summaryText += `\n[📋 Открыть доску задач](${SITE_URL}/tasks)`;
+  
+  await sendPachcaNotification(summaryText);
+}, {
+  timezone: "Europe/Moscow"
+});
+
+console.log('⏰ Планировщик ежедневной сводки (Cron) запущен (каждый день в 00:00 МСК)');
