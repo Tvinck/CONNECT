@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createVeilClient } from '@/lib/supabase/veil'
-import { createPixelClient } from '@/lib/supabase/pixel'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 // @ts-ignore
 import { Client } from 'ssh2'
 
@@ -120,15 +118,16 @@ export async function GET() {
 
   // 1. PING WEBSITES
   const websiteChecks = [
-    { key: 'veil_site', url: 'https://www.veil-vps.online/' },
-    { key: 'pixel_site', url: 'https://bazzar-pixel.vercel.app/' }
+    { key: 'veil_site', url: 'https://www.veil-vps.online/', name: 'Veil Secure Website' },
+    { key: 'pixel_site', url: 'https://bazzar-pixel.vercel.app/', name: 'Pixel Agency Website' },
+    { key: 'bazzar_certs', url: 'https://bazzar-certs.vercel.app/', name: 'Bazzar Certs Store' }
   ]
   
   await Promise.all(
     websiteChecks.map(async (check) => {
       const ping = await pingWebsite(check.url)
       responseData.websites[check.key] = {
-        name: check.key === 'veil_site' ? 'Veil Secure Website' : 'Pixel Agency Website',
+        name: check.name,
         url: check.url,
         status: ping.status,
         latency: ping.latency,
@@ -139,23 +138,54 @@ export async function GET() {
 
   // 2. PING DATABASES
   const dbChecks = [
-    { key: 'connect_db', name: 'Connect CRM Database', client: createClient(), table: 'vpn_servers' },
-    { key: 'veil_db', name: 'Veil VPN Database', client: createVeilClient(), table: 'vpn_servers' },
-    { key: 'pixel_db', name: 'Pixel AI Database', client: createPixelClient(), table: 'users' }
+    { 
+      key: 'connect_db', 
+      name: 'Connect CRM Database', 
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL, 
+      token: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      table: 'vpn_servers' 
+    },
+    { 
+      key: 'veil_db', 
+      name: 'Veil VPN Database', 
+      url: process.env.VEIL_SUPABASE_URL || 'https://xryylxpxevnujhndbqem.supabase.co', 
+      token: process.env.VEIL_SUPABASE_SERVICE_ROLE_KEY || 'dummy_token',
+      table: 'vpn_servers' 
+    },
+    { 
+      key: 'pixel_db', 
+      name: 'Pixel AI Database', 
+      url: process.env.PIXEL_SUPABASE_URL || 'https://ktookvpqtmzfccojarwm.supabase.co', 
+      token: process.env.PIXEL_SUPABASE_SERVICE_ROLE_KEY || 'dummy_token',
+      table: 'users' 
+    },
+    { 
+      key: 'bazzar_db', 
+      name: 'Bazzar Certs Database', 
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL, 
+      token: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      table: 'bazzar_products' 
+    }
   ]
 
   await Promise.all(
     dbChecks.map(async (check) => {
       const start = Date.now()
       try {
-        const { error } = await check.client.from(check.table).select('id').limit(1)
+        if (!check.url || !check.token || check.token === 'dummy_token') {
+          throw new Error('Missing connection string or token')
+        }
+        
+        const client = createSupabaseClient(check.url, check.token, { auth: { persistSession: false } })
+        const { error } = await client.from(check.table).select('*').limit(1)
+        if (error) throw error
+        
         const latency = Date.now() - start
-        const isOnline = !error
         responseData.databases[check.key] = {
           name: check.name,
-          status: isOnline ? 'online' : 'offline',
+          status: 'online',
           latency,
-          history: generateUptimeHistory(isOnline)
+          history: generateUptimeHistory(true)
         }
       } catch (err) {
         responseData.databases[check.key] = {
