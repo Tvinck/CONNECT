@@ -192,7 +192,7 @@ export function BazzarProductsPanel() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-background border border-line rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="bg-bg border border-line rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between p-5 border-b border-line">
               <h3 className="font-bold text-[16px]">{editingProduct ? 'Редактировать товар' : 'Новый товар'}</h3>
               <button onClick={() => setModalOpen(false)} className="text-mute hover:text-foreground"><X size={20} /></button>
@@ -202,12 +202,12 @@ export function BazzarProductsPanel() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Название</label>
-                  <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                  <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                     value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Подзаголовок</label>
-                  <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                  <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                     value={formData.subtitle} onChange={e => setFormData({...formData, subtitle: e.target.value})} />
                 </div>
               </div>
@@ -215,17 +215,17 @@ export function BazzarProductsPanel() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Цена (₽)</label>
-                  <input type="number" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent font-mono" 
+                  <input type="number" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent font-mono" 
                     value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Старая цена (₽)</label>
-                  <input type="number" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent font-mono" 
+                  <input type="number" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent font-mono" 
                     value={formData.old_price} onChange={e => setFormData({...formData, old_price: Number(e.target.value)})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Наличие (шт)</label>
-                  <input type="number" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent font-mono" 
+                  <input type="number" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent font-mono" 
                     value={formData.stock} onChange={e => setFormData({...formData, stock: Number(e.target.value)})} />
                 </div>
               </div>
@@ -233,7 +233,7 @@ export function BazzarProductsPanel() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Категория</label>
-                  <select className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent"
+                  <select className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent"
                     value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
                     <option value="certs">Сертификаты</option>
                     <option value="apps">Приложения</option>
@@ -242,12 +242,12 @@ export function BazzarProductsPanel() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Эмодзи</label>
-                  <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                  <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                     value={formData.emoji} onChange={e => setFormData({...formData, emoji: e.target.value})} />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Бейдж</label>
-                  <select className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent"
+                  <select className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent"
                     value={formData.badge} onChange={e => setFormData({...formData, badge: e.target.value})}>
                     <option value="">Нет</option>
                     <option value="hot">Хит</option>
@@ -260,12 +260,12 @@ export function BazzarProductsPanel() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Гарантия</label>
-                  <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                  <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                     value={formData.warranty} onChange={e => setFormData({...formData, warranty: e.target.value})} placeholder="Например: 1 Год" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[12px] font-medium text-mute uppercase tracking-wider">Выдача (скорость)</label>
-                  <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                  <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                     value={formData.delivery} onChange={e => setFormData({...formData, delivery: e.target.value})} placeholder="Например: Моментально" />
                 </div>
               </div>
@@ -275,19 +275,19 @@ export function BazzarProductsPanel() {
                   <span>Ссылка на IPA файл</span>
                   <span className="text-[10px] text-accent lowercase normal-case">Если это приложение/утилита</span>
                 </label>
-                <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                   value={formData.ipa_url} onChange={e => setFormData({...formData, ipa_url: e.target.value})} placeholder="https://..." />
               </div>
               
               <div className="space-y-1.5">
                 <label className="text-[12px] font-medium text-mute uppercase tracking-wider">URL Обложки (Картинка)</label>
-                <input type="text" className="w-full bg-surface border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
+                <input type="text" className="w-full bg-card border border-line rounded-lg px-3 py-2 text-[13px] outline-none focus:border-accent" 
                   value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} placeholder="/img/file.png или https://..." />
               </div>
 
             </div>
 
-            <div className="p-4 border-t border-line bg-surface flex justify-end gap-3">
+            <div className="p-4 border-t border-line bg-card flex justify-end gap-3">
               <button onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-lg text-[13px] font-medium text-mute hover:bg-black/[0.05] dark:hover:bg-white/[0.05] transition-colors">
                 Отмена
               </button>
