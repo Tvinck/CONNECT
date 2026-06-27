@@ -18,6 +18,30 @@ export async function toggleProductStatus(id: string, currentStatus: boolean) {
   return { success: true };
 }
 
+export async function createBazzarProduct(data: any) {
+  const supabase = createClient();
+  const { error } = await supabase.from('bazzar_products').insert([data]);
+  if (error) return { success: false, error: error.message };
+  revalidatePath('/[slug]');
+  return { success: true };
+}
+
+export async function updateBazzarProduct(id: string, data: any) {
+  const supabase = createClient();
+  const { error } = await supabase.from('bazzar_products').update(data).eq('id', id);
+  if (error) return { success: false, error: error.message };
+  revalidatePath('/[slug]');
+  return { success: true };
+}
+
+export async function deleteBazzarProduct(id: string) {
+  const supabase = createClient();
+  const { error } = await supabase.from('bazzar_products').delete().eq('id', id);
+  if (error) return { success: false, error: error.message };
+  revalidatePath('/[slug]');
+  return { success: true };
+}
+
 export async function getBazzarUsers() {
   const supabase = createClient();
   const { data, error } = await supabase.from('bazzar_users').select('*').order('created_at', { ascending: false });
