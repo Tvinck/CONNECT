@@ -517,7 +517,7 @@ export function SupportClient() {
       </div>
 
       {/* Right Column: User Info */}
-      <div className="w-[420px] shrink-0 bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-y-auto shadow-2xl p-6 space-y-7 relative">
+      <div className="w-[480px] shrink-0 bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-y-auto shadow-2xl p-6 space-y-7 relative">
         {!selectedUser ? (
           <div className="flex h-full items-center justify-center text-[#8E92BC] text-[14px] text-center px-4">
             Выберите чат для просмотра деталей клиента
