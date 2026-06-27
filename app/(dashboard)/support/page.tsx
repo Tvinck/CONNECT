@@ -7,8 +7,8 @@ export const metadata = {
 
 export default function SupportPage() {
   return (
-    <PageContainer>
+    <div className="page-enter h-full px-2 sm:px-4 py-2">
       <SupportClient />
-    </PageContainer>
+    </div>
   )
 }
