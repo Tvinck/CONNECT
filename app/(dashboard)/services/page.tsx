@@ -18,7 +18,7 @@ import { Header } from '@/components/layout/Header'
 import {
   Globe, PenLine, Search, CheckCircle, Palette, Sparkles,
   Code2, Layers, Power, Wallet, TrendingUp, Zap, Video,
-  MessageSquare, BarChart3, Flame, Loader2,
+  MessageSquare, BarChart3, Flame, Loader2, ExternalLink
 } from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { useUIStore } from '@/store/ui'
@@ -40,20 +40,21 @@ const CATS = [
   { id: 'analytics', label: 'Аналитика',  emoji: '📊' },
 ]
 
-/** Static metadata for each service. The `slug` must match seeds in migration 0005. */
 const SERVICES = [
-  { slug: 'yandex-search',  name: 'Поисковая выдача',    desc: 'Позиции в Яндекс и Google',   cat: 'seo',     color: '#22C55E', icon: 'Globe'        },
-  { slug: 'figma',          name: 'Figma',               desc: 'Макеты и прототипы',          cat: 'design',  color: '#FF4D9D', icon: 'Palette'      },
-  { slug: 'github',         name: 'GitHub',              desc: 'Репозитории и PR',            cat: 'dev',     color: '#1472F5', icon: 'Code'         },
-  { slug: 'supabase',       name: 'Supabase',            desc: 'База данных и auth',          cat: 'dev',     color: '#1472F5', icon: 'Layers'       },
-  { slug: 'yukassa',        name: 'ЮKassa',              desc: 'Эквайринг и платежи',         cat: 'fin',     color: '#FFC833', icon: 'Wallet'       },
-  { slug: 'suno-api',       name: 'Suno API',            desc: 'AI-генерация песен',          cat: 'ai',      color: '#6F4FE8', icon: 'Sparkle'      },
-  { slug: 'heygen',         name: 'HeyGen',              desc: 'AI-видео с аватарами',        cat: 'ai',      color: '#6F4FE8', icon: 'Camera'       },
-  { slug: 'chatgpt',        name: 'ChatGPT',             desc: 'Тексты, идеи, скрипты',       cat: 'ai',      color: '#6F4FE8', icon: 'MessageSquare'},
-  { slug: 'yandex-metrika', name: 'Яндекс Метрика',      desc: 'Аналитика трафика',           cat: 'analytics',color: '#00C2FF',icon: 'TrendUp'      },
-  { slug: 'sentry',         name: 'Sentry',              desc: 'Логи ошибок и мониторинг',    cat: 'analytics',color: '#00C2FF',icon: 'Flame'        },
-  { slug: 'vps-panel',      name: 'VPS-панель',          desc: 'Серверы и деплои',            cat: 'dev',     color: '#1472F5', icon: 'Power'        },
-  { slug: 'site-audit',     name: 'Аудит сайта',         desc: 'Технический и контентный',    cat: 'seo',     color: '#22C55E', icon: 'CheckCircle'  },
+  { slug: 'bazzar-certs',   name: 'Bazzar Certs',        desc: 'Сертификаты Apple Developer', cat: 'dev', color: '#3b82f6', icon: 'Globe', url: 'https://bazzar-serts.vercel.app' },
+  { slug: 'bot-certs',      name: 'Бот @one_ibot',       desc: 'Telegram-бот сертификатов',   cat: 'dev', color: '#0ea5e9', icon: 'MessageSquare', url: 'https://t.me/one_ibot' },
+  { slug: 'bazzar-market',  name: 'Bazzar Market',       desc: 'Маркетплейс товаров',         cat: 'dev', color: '#10b981', icon: 'Globe' },
+  { slug: 'veil-vpn',       name: 'Veil VPN',            desc: 'VPN сервис',                  cat: 'dev', color: '#8b5cf6', icon: 'Globe' },
+  { slug: 'system-monitor', name: 'Мониторинг Систем',   desc: 'Статус серверов и БД',        cat: 'analytics', color: '#ef4444', icon: 'Flame', url: '/monitoring' },
+  { slug: 'ggsel-seller',   name: 'GGSel Seller',        desc: 'Панель продавца',             cat: 'fin', color: '#10b981', icon: 'Wallet', url: 'https://seller.ggsel.com/' },
+  { slug: 'plati-market',   name: 'Digiseller (Plati)',  desc: 'Площадка товаров',            cat: 'fin', color: '#3b82f6', icon: 'Wallet', url: 'https://digiseller.ru/' },
+  { slug: 'avito',          name: 'Авито',               desc: 'Площадка объявлений',         cat: 'fin', color: '#8b5cf6', icon: 'Globe', url: 'https://www.avito.ru/' },
+  { slug: 'kie-ai',         name: 'Kie.ai',              desc: 'API ИИ и пиксель',            cat: 'ai', color: '#6F4FE8', icon: 'Sparkle', url: 'https://kie.ai/ru' },
+  { slug: 'desslyhub',      name: 'DesslyHub',           desc: 'Партнер для продажи игр',     cat: 'dev', color: '#1472F5', icon: 'Globe', url: 'https://dbm.desslyhub.com' },
+  { slug: 'github',         name: 'GitHub',              desc: 'Репозитории и PR',            cat: 'dev', color: '#1472F5', icon: 'Code', url: 'https://github.com' },
+  { slug: 'supabase',       name: 'Supabase',            desc: 'База данных и auth',          cat: 'dev', color: '#10b981', icon: 'Layers', url: 'https://supabase.com' },
+  { slug: 'yukassa',        name: 'ЮKassa',              desc: 'Эквайринг и платежи',         cat: 'fin', color: '#FFC833', icon: 'Wallet', url: 'https://yookassa.ru' },
+  { slug: 'yandex-metrika', name: 'Яндекс Метрика',      desc: 'Аналитика трафика',           cat: 'analytics', color: '#00C2FF', icon: 'TrendUp', url: 'https://metrika.yandex.ru' },
 ]
 
 export default function ServicesPage() {
@@ -168,11 +169,21 @@ export default function ServicesPage() {
                     style={{ background: `${s.color}22`, color: s.color }}>
                     <IconComponent size={20} />
                   </div>
-                  <span className={`text-[10.5px] font-semibold px-2 h-5 rounded-full inline-flex items-center ${
-                    loadingDb ? 'bg-white/[0.05] text-mute' : isOn ? 'bg-ok/15 text-ok' : 'bg-white/[0.05] text-mute'
-                  }`}>
-                    {loadingDb ? '…' : isOn ? '● Подключён' : '○ Отключён'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {s.url && (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" 
+                        className="w-7 h-7 rounded-full bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-mute hover:text-white transition-colors"
+                        title="Открыть сайт"
+                      >
+                        <ExternalLink size={13} />
+                      </a>
+                    )}
+                    <span className={`text-[10.5px] font-semibold px-2 h-5 rounded-full inline-flex items-center ${
+                      loadingDb ? 'bg-white/[0.05] text-mute' : isOn ? 'bg-ok/15 text-ok' : 'bg-white/[0.05] text-mute'
+                    }`}>
+                      {loadingDb ? '…' : isOn ? '● Подключён' : '○ Отключён'}
+                    </span>
+                  </div>
                 </div>
                 <div className="text-[14px] font-semibold tracking-tight">{s.name}</div>
                 <div className="text-[12px] text-mute mt-1">{s.desc}</div>
