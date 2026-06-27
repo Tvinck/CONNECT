@@ -8,6 +8,7 @@ import { Header } from '@/components/layout/Header'
 import { useUIStore } from '@/store/ui'
 import { Loader2, ShoppingBag, CheckCircle2, X, Star } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { GGSelProducts } from '@/components/shop/GGSelProducts'
 
 type ShopItem = {
   id: string
@@ -112,6 +113,7 @@ export default function ShopPage() {
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null)
   const [buying, setBuying] = useState(false)
   const [category, setCategory] = useState('all')
+  const [viewTab, setViewTab] = useState<'internal' | 'ggsel'>('internal')
 
   useEffect(() => {
     Promise.all([
@@ -155,11 +157,32 @@ export default function ShopPage() {
   return (
     <PageContainer>
       <Header
-        title="Магазин баллов"
-        subtitle={`Баланс: ${user?.points ?? 0} баллов`}
+        title="Магазин товаров"
+        subtitle={viewTab === 'internal' ? `Баланс: ${user?.points ?? 0} баллов` : 'Управление товарами GGSel'}
       />
 
-      {/* Category filter */}
+      <div className="flex items-center gap-2 mb-6 p-1 bg-white/[0.02] border border-line rounded-xl w-fit">
+        <button
+          onClick={() => setViewTab('internal')}
+          className={`h-9 px-5 rounded-lg text-[13px] font-semibold transition-all ${
+            viewTab === 'internal' ? 'bg-accent text-white shadow-sm' : 'text-mute hover:text-white'
+          }`}
+        >
+          Внутренние товары
+        </button>
+        <button
+          onClick={() => setViewTab('ggsel')}
+          className={`h-9 px-5 rounded-lg text-[13px] font-semibold transition-all ${
+            viewTab === 'ggsel' ? 'bg-[#FF9900]/20 text-[#FF9900] border border-[#FF9900]/30 shadow-sm' : 'text-mute hover:text-[#FF9900]'
+          }`}
+        >
+          Витрина GGSel
+        </button>
+      </div>
+
+      {viewTab === 'internal' ? (
+        <>
+          {/* Category filter */}
       <div className="flex flex-wrap gap-2 mb-6">
         {categories.map(cat => {
           const meta = cat === 'all' ? { label: 'Все', color: '#8B92B4' } : (CATEGORY_META[cat] ?? { label: cat, color: '#8B92B4' })
@@ -295,6 +318,10 @@ export default function ShopPage() {
             </table>
           </div>
         </div>
+      )}
+      </>
+      ) : (
+        <GGSelProducts />
       )}
 
       {selectedItem && (

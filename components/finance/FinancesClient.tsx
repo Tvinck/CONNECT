@@ -257,7 +257,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
   return (
     <>
       {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="card p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-xl bg-ok/15 text-ok flex items-center justify-center">
@@ -285,6 +285,29 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
           </div>
           <div className={`text-[28px] font-bold tabular-nums ${totals.net >= 0 ? 'text-ok' : 'text-err'}`}>
             {totals.net >= 0 ? '+' : ''}{fmtRub(totals.net)}
+          </div>
+        </div>
+        
+        {/* GGSel Widget */}
+        <div className="card p-5 border border-[#FF9900]/20 relative overflow-hidden transition-all hover:border-[#FF9900]/40">
+          <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none" style={{ background: 'radial-gradient(circle at top right, rgba(255,153,0,0.1), transparent 70%)' }} />
+          <div className="flex items-center gap-3 mb-3 relative z-10">
+            <div className="w-9 h-9 rounded-xl bg-[#FF9900]/15 text-[#FF9900] flex items-center justify-center font-bold tracking-tighter">
+              GG
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[12.5px] text-[#FF9900] font-bold">Баланс GGSel</span>
+              <span className="text-[10px] text-mute uppercase tracking-widest">К выводу</span>
+            </div>
+          </div>
+          <div className="text-[28px] font-bold tabular-nums text-white relative z-10">
+            14 550 <span className="text-[18px] text-mute font-medium">₽</span>
+          </div>
+          <div className="text-[11.5px] text-mute mt-2 pt-2 border-t border-line flex justify-between items-center relative z-10">
+            <span>В холде: <span className="text-white font-medium">4 200 ₽</span></span>
+            <button className="text-[#FF9900] font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer">
+              Вывести
+            </button>
           </div>
         </div>
       </div>
