@@ -24,8 +24,8 @@ export async function POST(req: Request) {
     const configDir2 = '/tmp/higgsfield';
     fs.mkdirSync(configDir1, { recursive: true });
     fs.mkdirSync(configDir2, { recursive: true });
-    fs.writeFileSync(path.join(configDir1, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
-    fs.writeFileSync(path.join(configDir2, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
+    fs.writeFileSync(path.join(configDir1, 'credentials.json'), JSON.stringify({ access_token: b2cToken }));
+    fs.writeFileSync(path.join(configDir2, 'credentials.json'), JSON.stringify({ access_token: b2cToken }));
 
     const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
     const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
