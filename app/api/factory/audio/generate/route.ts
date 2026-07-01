@@ -14,9 +14,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Сценарий не передан' }, { status: 400 });
     }
 
-    const b2cToken = process.env.HIGGSFIELD_B2C_TOKEN;
-    if (!b2cToken) {
-      return NextResponse.json({ error: 'Добавьте HIGGSFIELD_B2C_TOKEN (старый oat_...) в настройки Vercel' }, { status: 500 });
+    const cliToken = process.env.HIGGSFIELD_CLI_TOKEN;
+    const cliRefresh = process.env.HIGGSFIELD_CLI_REFRESH;
+    if (!cliToken) {
+      return NextResponse.json({ error: 'Добавьте HIGGSFIELD_CLI_TOKEN в настройки Vercel' }, { status: 500 });
     }
 
     // Подготовка окружения для CLI (создаем временный auth.json в /tmp)
@@ -24,8 +25,10 @@ export async function POST(req: Request) {
     const configDir2 = '/tmp/higgsfield';
     fs.mkdirSync(configDir1, { recursive: true });
     fs.mkdirSync(configDir2, { recursive: true });
-    fs.writeFileSync(path.join(configDir1, 'credentials.json'), JSON.stringify({ access_token: b2cToken }));
-    fs.writeFileSync(path.join(configDir2, 'credentials.json'), JSON.stringify({ access_token: b2cToken }));
+    
+    const creds = { access_token: cliToken, refresh_token: cliRefresh || '' };
+    fs.writeFileSync(path.join(configDir1, 'credentials.json'), JSON.stringify(creds));
+    fs.writeFileSync(path.join(configDir2, 'credentials.json'), JSON.stringify(creds));
 
     const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
     const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
