@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
     ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-    const { videoUrl, audioUrl } = await req.json();
+    const { videoUrl, audioUrl, prompt } = await req.json();
 
     if (!videoUrl || !audioUrl) {
       return NextResponse.json({ error: 'Требуется videoUrl и audioUrl' }, { status: 400 });
@@ -59,6 +59,12 @@ export async function POST(req: Request) {
               .from('support-attachments')
               .getPublicUrl(`renders/${outputFileName}`);
             
+            // Сохраняем в историю (базу данных)
+            await supabase.from('factory_generations').insert({
+              prompt: prompt || 'Сценарий не указан',
+              video_url: publicUrl
+            });
+
             fs.unlinkSync(outputPath);
             resolve(NextResponse.json({ mergedUrl: publicUrl }));
           } catch(e: any) {

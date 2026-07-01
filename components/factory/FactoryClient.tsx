@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wand2, Loader2, Copy, Check, Video, Download, Mic, Coins, Clock, Combine } from 'lucide-react'
+import { Wand2, Loader2, Copy, Check, Video, Download, Mic, Coins, Clock, Combine, ThumbsUp, ThumbsDown, MessageSquare, Send } from 'lucide-react'
 
 export function FactoryClient() {
   const [topic, setTopic] = useState('')
@@ -25,6 +25,10 @@ export function FactoryClient() {
 
   const [balance, setBalance] = useState<number | null>(null)
   const [history, setHistory] = useState<any[]>([])
+  
+  // State for handling dislikes
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
+  const [commentText, setCommentText] = useState('')
 
   // Fetch balance & history
   const fetchDashboardData = () => {
@@ -40,6 +44,41 @@ export function FactoryClient() {
   useEffect(() => {
     fetchDashboardData()
   }, [])
+
+  const handleFeedback = async (id: string, feedback: 'LIKE' | 'DISLIKE') => {
+    try {
+      setHistory(prev => prev.map(job => job.id === id ? { ...job, feedback } : job))
+      await fetch('/api/factory/history/feedback', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, feedback })
+      })
+      if (feedback === 'DISLIKE') {
+        setActiveCommentId(id)
+        setCommentText('')
+      } else {
+        setActiveCommentId(null)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const submitComment = async (id: string) => {
+    if (!commentText.trim()) return
+    try {
+      setHistory(prev => prev.map(job => job.id === id ? { ...job, feedback_comment: commentText } : job))
+      await fetch('/api/factory/history/feedback', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, feedback: 'DISLIKE', feedback_comment: commentText })
+      })
+      setActiveCommentId(null)
+      setCommentText('')
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   // Polling for video status
   useEffect(() => {
@@ -80,7 +119,7 @@ export function FactoryClient() {
       fetch('/api/factory/merge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoUrl, audioUrl })
+        body: JSON.stringify({ videoUrl, audioUrl, prompt: script })
       })
       .then(r => r.json())
       .then(data => {
@@ -340,33 +379,83 @@ export function FactoryClient() {
             <Clock className="w-6 h-6 text-primary" />
             История работ
           </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {history.filter(j => j.result_url).map(job => (
-              <div key={job.id} className="relative group rounded-2xl overflow-hidden border border-border/50 bg-card shadow-sm hover:shadow-xl transition-all">
-                {job.job_type.includes('video') || job.job_type.includes('kling') ? (
-                  <div className="aspect-[9/16] bg-black">
-                    <video src={job.result_url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                ) : (
-                  <div className="aspect-[9/16] bg-blue-500/5 flex flex-col items-center justify-center p-4 text-center">
-                    <Mic className="w-10 h-10 text-blue-500/40 mb-3" />
-                    <audio src={job.result_url} controls className="w-[120%] scale-75 origin-center" />
-                  </div>
-                )}
-                
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 pt-12">
-                  <p className="text-white text-xs font-medium line-clamp-2 leading-tight">
-                    {job.params?.prompt || 'Генерация без описания'}
-                  </p>
-                  <p className="text-white/50 text-[10px] mt-1 flex items-center justify-between">
-                    <span>{job.job_type}</span>
-                  </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {history.map(job => (
+              <div key={job.id} className="flex flex-col bg-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div className="w-full bg-black relative flex items-center justify-center">
+                  <video src={job.video_url} controls className="w-full max-h-[300px] object-contain" />
                 </div>
+                
+                <div className="p-5 flex flex-col flex-1">
+                  <p className="text-sm font-medium mb-4 line-clamp-3 leading-relaxed text-foreground/90">
+                    {job.prompt || 'Генерация без описания'}
+                  </p>
+                  
+                  <div className="mt-auto flex items-center justify-between gap-3">
+                    <a href={job.video_url} download target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg transition-colors">
+                      <Download className="w-4 h-4" /> Скачать
+                    </a>
+                    
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleFeedback(job.id, 'LIKE')}
+                        className={`p-2 rounded-lg transition-colors ${job.feedback === 'LIKE' ? 'bg-green-500/20 text-green-500' : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'}`}
+                        title="Всё отлично!"
+                      >
+                        <ThumbsUp className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleFeedback(job.id, 'DISLIKE')}
+                        className={`p-2 rounded-lg transition-colors ${job.feedback === 'DISLIKE' ? 'bg-red-500/20 text-red-500' : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'}`}
+                        title="Есть ошибки"
+                      >
+                        <ThumbsDown className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                  <a href={job.result_url} target="_blank" rel="noreferrer" className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-bold shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all">
-                    Открыть
-                  </a>
+                  {/* Comment box if disliked */}
+                  <AnimatePresence>
+                    {(job.feedback === 'DISLIKE' && !job.feedback_comment && activeCommentId === job.id) && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }} 
+                        animate={{ opacity: 1, height: 'auto' }} 
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-4 pt-4 border-t border-border overflow-hidden"
+                      >
+                        <p className="text-xs font-medium text-red-400 mb-2 flex items-center gap-1">
+                          <MessageSquare className="w-3 h-3" /> Что пошло не так?
+                        </p>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={commentText}
+                            onChange={e => setCommentText(e.target.value)}
+                            placeholder="Например: плохой звук, артефакты..."
+                            className="flex-1 bg-background text-sm border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500/50"
+                            onKeyDown={e => e.key === 'Enter' && submitComment(job.id)}
+                          />
+                          <button 
+                            onClick={() => submitComment(job.id)}
+                            className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-colors"
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                    {job.feedback_comment && (
+                       <motion.div 
+                         initial={{ opacity: 0 }} 
+                         animate={{ opacity: 1 }} 
+                         className="mt-4 pt-4 border-t border-border"
+                       >
+                         <p className="text-xs text-muted-foreground bg-red-500/5 p-3 rounded-lg border border-red-500/10 italic">
+                           "{job.feedback_comment}"
+                         </p>
+                       </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             ))}

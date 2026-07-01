@@ -5,20 +5,26 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export async function GET() {
+export async function PATCH(req: Request) {
   try {
+    const { id, feedback, feedback_comment } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: 'Требуется ID' }, { status: 400 });
+    }
+
     const { data, error } = await supabase
       .from('factory_generations')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
+      .update({ feedback, feedback_comment })
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) throw error;
 
-    return NextResponse.json({ jobs: data });
+    return NextResponse.json({ success: true, data });
   } catch (error: any) {
-    console.error('History Error:', error);
+    console.error('Feedback Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

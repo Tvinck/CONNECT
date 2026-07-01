@@ -197,4 +197,12 @@ model Notification {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
+// ---------- Factory Generations ----------
+model FactoryGeneration {
+  id              String   @id @default(uuid())
+  prompt          String
+  videoUrl        String
+  feedback        String?
+  feedbackComment String?
+  created_at      DateTime @default(now())
+}
