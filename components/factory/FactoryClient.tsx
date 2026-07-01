@@ -62,6 +62,9 @@ export function FactoryClient() {
   const [balance, setBalance] = useState<number | null>(null)
   const [history, setHistory] = useState<any[]>([])
   
+  // Server-side background queue
+  const [projectId, setProjectId] = useState<string>('')
+
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
 
@@ -75,6 +78,7 @@ export function FactoryClient() {
     const cachedChunks = localStorage.getItem('raccoon_factory_chunks')
     const cachedMusicUrl = localStorage.getItem('raccoon_factory_music_url')
     const cachedMergedUrl = localStorage.getItem('raccoon_factory_merged_url')
+    const cachedProjectId = localStorage.getItem('raccoon_factory_project_id')
 
     if (cachedScript) setScript(cachedScript)
     if (cachedChunks) {
@@ -84,9 +88,62 @@ export function FactoryClient() {
     }
     if (cachedMusicUrl) setMusicUrl(cachedMusicUrl)
     if (cachedMergedUrl) setMergedUrl(cachedMergedUrl)
+    if (cachedProjectId) setProjectId(cachedProjectId)
 
     fetchDashboardData()
   }, [])
+
+  // Background queue polling — sync state from server every 8s
+  useEffect(() => {
+    if (!projectId || mergedUrl) return;
+    let stopped = false;
+    let timerId: ReturnType<typeof setTimeout>;
+
+    const poll = async () => {
+      if (stopped) return;
+      try {
+        const res = await fetch(`/api/factory/queue/status?projectId=${projectId}`);
+        const data = await res.json();
+        if (!res.ok || data.status === 'FAILED') {
+          setError(data.error || 'Серверная очередь завершилась с ошибкой');
+          setIsPlanning(false);
+          setCurrentActiveIndex(null);
+          return;
+        }
+        // Sync chunks from server state
+        if (data.chunks) {
+          setChunks(data.chunks);
+          const activeIdx = data.chunks.findIndex((c: any) =>
+            c.imageStatus === 'PENDING' || c.videoStatus === 'PENDING' || c.audioStatus === 'PENDING' ||
+            c.videoStatus === 'QUEUED' || c.audioStatus === 'QUEUED' ||
+            c.imageStatus === 'QUEUED' || c.videoStatus === 'WAITING_FOR_IMAGE'
+          );
+          setCurrentActiveIndex(activeIdx >= 0 ? activeIdx : null);
+        }
+        if (data.status === 'COMPLETED' && data.mergedUrl) {
+          setMergedUrl(data.mergedUrl);
+          localStorage.setItem('raccoon_factory_merged_url', data.mergedUrl);
+          setIsPlanning(false);
+          setCurrentActiveIndex(null);
+          updateAgentStatus('editor', 'completed');
+          fetchDashboardData();
+          return; // Stop polling
+        }
+        if (data.status === 'CONCATENATING') {
+          updateAgentStatus('editor', 'active');
+          setIsMerging(true);
+        } else {
+          setIsMerging(false);
+        }
+      } catch (e) {
+        // Network blip — retry silently
+      }
+      if (!stopped) timerId = setTimeout(poll, 8000);
+    };
+
+    timerId = setTimeout(poll, 3000); // First poll after 3s
+    return () => { stopped = true; clearTimeout(timerId); };
+  }, [projectId, mergedUrl]);
 
   useEffect(() => {
     if (script) localStorage.setItem('raccoon_factory_script', script)
@@ -186,44 +243,34 @@ export function FactoryClient() {
     setError('')
     setChunks([])
     setMergedUrl('')
-    setMusicUrl('lofi') // Сразу используем стабильный локальный Lofi-трек
+    setProjectId('')
+    setMusicUrl('lofi')
     setCurrentActiveIndex(null)
+    localStorage.removeItem('raccoon_factory_project_id')
+    localStorage.removeItem('raccoon_factory_merged_url')
     
     setAgents(prev => prev.map(a => a.id === 'writer' ? { ...a, status: 'completed' } : { ...a, status: 'idle' }))
     updateAgentStatus('director', 'active')
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 50000);
-    
     try {
-      const planRes = await fetch('/api/factory/plan', {
+      // Запускаем серверную очередь — она будет работать даже при закрытии вкладки!
+      const res = await fetch('/api/factory/queue/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script }),
-        signal: controller.signal
+        body: JSON.stringify({ script })
       })
-      clearTimeout(timeoutId)
-      const planData = await planRes.json()
-      if (!planRes.ok) throw new Error(planData.error || 'Ошибка планирования')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Ошибка запуска очереди')
       
-      const scenes = planData.scenes;
-      let newChunks: ChunkState[] = scenes.map((s: any, idx: number) => ({
-        id: idx,
-        text: s.text,
-        isMascot: s.isMascot,
-        prompt: s.prompt,
-        videoStatus: 'QUEUED',
-        audioStatus: 'QUEUED'
-      }))
+      const pid = data.projectId
+      setProjectId(pid)
+      localStorage.setItem('raccoon_factory_project_id', pid)
       
-      setChunks(newChunks)
-      setIsPlanning(false)
       updateAgentStatus('director', 'completed')
-      
-      await processSceneQueue(newChunks)
+      setIsPlanning(false)
+      // Polling start через useEffect projectId
       
     } catch (err: any) {
-      clearTimeout(timeoutId)
       setIsPlanning(false)
       setCurrentActiveIndex(null)
       setAgents(prev => prev.map(a => a.status === 'active' ? { ...a, status: 'failed' } : a))
@@ -445,10 +492,15 @@ export function FactoryClient() {
     
     if (chunks.length > 0 && currentActiveIndex !== null) {
       const activeChunk = chunks[currentActiveIndex];
-      if (activeChunk.imageStatus === 'PENDING') return `Сцена ${currentActiveIndex + 1}: ИИ Художник генерирует первый кадр (Flux)...`;
-      if (activeChunk.videoStatus === 'PENDING') return `Сцена ${currentActiveIndex + 1}: Kling анимирует сцену...`;
-      if (activeChunk.videoStatus === 'SUBMITTING') return `Сцена ${currentActiveIndex + 1}: Запуск нейросетей в облаке...`;
-      return `Генерация сцены ${currentActiveIndex + 1} из ${chunks.length}...`
+      if (activeChunk.imageStatus === 'PENDING') return `☁️ Сцена ${currentActiveIndex + 1}: ИИ Художник генерирует кадр (Flux)...`;
+      if (activeChunk.videoStatus === 'WAITING_FOR_IMAGE') return `☁️ Сцена ${currentActiveIndex + 1}: Ожидание готового кадра от Flux...`;
+      if (activeChunk.videoStatus === 'PENDING') return `☁️ Сцена ${currentActiveIndex + 1}: Kling анимирует сцену на сервере...`;
+      if (activeChunk.audioStatus === 'PENDING') return `☁️ Сцена ${currentActiveIndex + 1}: Inworld озвучивает текст на сервере...`;
+      return `☁️ Обработка сцены ${currentActiveIndex + 1} из ${chunks.length} на сервере...`
+    }
+    if (chunks.length > 0 && projectId) {
+      const done = chunks.filter(c => c.processedUrl).length;
+      return `☁️ Сервер генерирует: ${done}/${chunks.length} сцен готово — можно закрыть вкладку!`
     }
     if (chunks.length > 0) {
       return "Сцены подготовлены, запуск сборщика..."
@@ -602,7 +654,15 @@ export function FactoryClient() {
                   </button>
                 )}
                 <button 
-                  onClick={() => { localStorage.clear(); setChunks([]); setMergedUrl(''); setMusicUrl(''); }} 
+                  onClick={() => { 
+                    localStorage.clear(); 
+                    setChunks([]); 
+                    setMergedUrl(''); 
+                    setMusicUrl(''); 
+                    setProjectId('');
+                    setError('');
+                    setCurrentActiveIndex(null);
+                  }} 
                   className="text-xs bg-muted hover:bg-muted/80 text-muted-foreground px-3 py-2 rounded-lg border flex items-center gap-1"
                 >
                   Сбросить сессию
