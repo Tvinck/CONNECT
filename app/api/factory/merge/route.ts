@@ -83,7 +83,23 @@ export async function POST(req: Request) {
       const wrappedText = wrapText(text || '');
       fs.writeFileSync(textFilePath, wrappedText, 'utf8');
 
-      const fontFilePath = path.join(process.cwd(), 'public', 'fonts', 'Montserrat-Bold.ttf');
+      let fontFilePath = path.join(process.cwd(), 'public', 'fonts', 'Montserrat-Bold.ttf');
+      if (!fs.existsSync(fontFilePath)) {
+        // Fallback 1: check if it's placed differently in deployment
+        fontFilePath = path.join(process.cwd(), 'fonts', 'Montserrat-Bold.ttf');
+      }
+      if (!fs.existsSync(fontFilePath)) {
+        // Fallback 2: download to /tmp as a fallback to ensure offline / container safety
+        fontFilePath = path.join(tmpDir, 'Montserrat-Bold.ttf');
+        if (!fs.existsSync(fontFilePath)) {
+          try {
+            console.log('[Merge] Downloading font fallback to /tmp...');
+            await downloadFile('https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Bold.ttf', fontFilePath);
+          } catch (fontErr) {
+            console.error('[Merge] Failed to download font fallback:', fontErr);
+          }
+        }
+      }
 
       // Готовим фильтр субтитров с чтением из файла
       const textFilter = text ? `,drawtext=textfile='${getFFmpegSafePath(textFilePath)}':fontfile='${getFFmpegSafePath(fontFilePath)}':fontcolor=yellow:fontsize=44:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-350` : '';
