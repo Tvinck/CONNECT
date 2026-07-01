@@ -17,27 +17,46 @@ export async function POST(req: Request) {
     }
 
     const outputFileName = `merged_${randomUUID()}.mp4`;
-    // Сохраняем в public/renders, чтобы клиент мог скачать по прямой ссылке
-    const publicDir = path.join(process.cwd(), 'public', 'renders');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
+    const tmpDir = '/tmp';
+    if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir, { recursive: true });
     }
-    const outputPath = path.join(publicDir, outputFileName);
+    const outputPath = path.join(tmpDir, outputFileName);
 
     return new Promise((resolve) => {
       ffmpeg()
         .input(videoUrl)
         .input(audioUrl)
         .outputOptions([
-          '-c:v copy',      // Копируем видеопоток без пережатия
-          '-c:a aac',       // Аудио кодируем в aac
-          '-map 0:v:0',     // Берем видео из первого входа
-          '-map 1:a:0',     // Берем аудио из второго входа
-          '-shortest'       // Обрезаем по самому короткому потоку
+          '-c:v copy',
+          '-c:a aac',
+          '-map 0:v:0',
+          '-map 1:a:0',
+          '-shortest'
         ])
         .save(outputPath)
-        .on('end', () => {
-          resolve(NextResponse.json({ mergedUrl: `/renders/${outputFileName}` }));
+        .on('end', async () => {
+          try {
+            const fileBuffer = fs.readFileSync(outputPath);
+            const blob = new Blob([fileBuffer], { type: 'video/mp4' });
+            const formData = new FormData();
+            formData.append('reqtype', 'fileupload');
+            formData.append('fileToUpload', blob, outputFileName);
+            
+            const uploadRes = await fetch('https://catbox.moe/user/api.php', {
+              method: 'POST',
+              body: formData
+            });
+            const textUrl = await uploadRes.text();
+            
+            // Очищаем временный файл
+            fs.unlinkSync(outputPath);
+            
+            resolve(NextResponse.json({ mergedUrl: textUrl }));
+          } catch(e) {
+            console.error('Catbox upload error:', e);
+            resolve(NextResponse.json({ error: 'Ошибка при загрузке видео' }, { status: 500 }));
+          }
         })
         .on('error', (err) => {
           console.error('FFmpeg merge error:', err);

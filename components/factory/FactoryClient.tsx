@@ -87,10 +87,15 @@ export function FactoryClient() {
         if (data.mergedUrl) {
            setMergedUrl(data.mergedUrl)
            fetchDashboardData() // Refresh history and balance
+           setIsMerging(false)
+        } else {
+           // Если ошибка при мерже, останавливаем попытки, чтобы не спамить
+           console.error("Merge failed:", data.error)
         }
       })
-      .catch(console.error)
-      .finally(() => setIsMerging(false))
+      .catch(err => {
+         console.error(err)
+      })
     }
   }, [videoStatus, audioStatus, videoUrl, audioUrl, mergedUrl, isMerging])
 
