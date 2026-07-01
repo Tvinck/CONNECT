@@ -41,7 +41,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: { serverComponentsExternalPackages: ['ioredis', 'ssh2', 'sqlite3'] },
+  experimental: { serverComponentsExternalPackages: ['ioredis', 'ssh2', 'sqlite3', 'fluent-ffmpeg', '@ffmpeg-installer/ffmpeg'] },
   async headers() {
     return [
       {
