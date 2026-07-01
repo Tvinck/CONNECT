@@ -9,16 +9,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Сценарий не передан' }, { status: 400 });
     }
 
-    const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
-    
-    const host = req.headers.get('host') || 'connect-4va6.vercel.app';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
-    const imageUrl = `${protocol}://${host}/mascot.png`;
-
     // Подписываемся на задачу генерации
     const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
       input: {
-        image_url: imageUrl,
+        image_url: 'https://files.catbox.moe/d45nqz.png',
         prompt: script,
         duration: 5
       },
