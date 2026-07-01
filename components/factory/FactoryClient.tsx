@@ -65,6 +65,11 @@ export function FactoryClient() {
   // Server-side background queue
   const [projectId, setProjectId] = useState<string>('')
 
+  // Multi-project queue
+  interface QueueItem { projectId: string; script: string; status: string; title: string; mergedUrl?: string; }
+  const [globalQueue, setGlobalQueue] = useState<QueueItem[]>([])
+  const [addingToQueue, setAddingToQueue] = useState(false)
+
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
 
@@ -95,7 +100,7 @@ export function FactoryClient() {
 
   // Background queue polling — sync state from server every 8s
   useEffect(() => {
-    if (!projectId || mergedUrl) return;
+    if (!projectId) return;
     let stopped = false;
     let timerId: ReturnType<typeof setTimeout>;
 
@@ -143,7 +148,36 @@ export function FactoryClient() {
 
     timerId = setTimeout(poll, 3000); // First poll after 3s
     return () => { stopped = true; clearTimeout(timerId); };
-  }, [projectId, mergedUrl]);
+  }, [projectId]);
+
+  // Global queue polling — refresh every 10s
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/factory/queue/list');
+        const data = await res.json();
+        if (data.items) setGlobalQueue(data.items);
+
+        // If we are watching a PENDING project and it became PROCESSING, reload page state
+        if (projectId && data.items) {
+          const myItem = data.items.find((i: QueueItem) => i.projectId === projectId);
+          if (myItem?.status === 'PROCESSING' && chunks.length === 0) {
+            // The project was activated — fetch its state
+            const stateRes = await fetch(`/api/factory/queue/status?projectId=${projectId}`);
+            const stateData = await stateRes.json();
+            if (stateData.chunks?.length > 0) setChunks(stateData.chunks);
+          }
+          if (myItem?.status === 'COMPLETED' && myItem.mergedUrl && !mergedUrl) {
+            setMergedUrl(myItem.mergedUrl);
+            localStorage.setItem('raccoon_factory_merged_url', myItem.mergedUrl);
+          }
+        }
+      } catch {}
+    };
+    poll();
+    const t = setInterval(poll, 10000);
+    return () => clearInterval(t);
+  }, [projectId, mergedUrl, chunks.length]);
 
   useEffect(() => {
     if (script) localStorage.setItem('raccoon_factory_script', script)
@@ -266,14 +300,20 @@ export function FactoryClient() {
       setProjectId(pid)
       localStorage.setItem('raccoon_factory_project_id', pid)
 
-      // Сразу показываем сцены в UI (не ждём первый поллинг)
-      if (data.scenes) {
-        setChunks(data.scenes)
+      if (data.queued) {
+        // Проект добавлен в очередь — ждёт завершения текущего
+        setChunks([])
+        setError('')
+        setIsPlanning(false)
+        setAgents(prev => prev.map(a => ({ ...a, status: 'idle' })))
+        // UI покажет позицию в очереди через globalQueue polling
+      } else {
+        // Проект запущен сразу — показываем сцены
+        if (data.scenes) setChunks(data.scenes)
+        updateAgentStatus('director', 'completed')
+        updateAgentStatus('artist', 'active')
+        setIsPlanning(false)
       }
-      
-      updateAgentStatus('director', 'completed')
-      updateAgentStatus('artist', 'active')
-      setIsPlanning(false)
       // Polling продолжается через useEffect projectId
       
     } catch (err: any) {
@@ -451,6 +491,26 @@ export function FactoryClient() {
     
     setChunks(freshChunks)
     await processSceneQueue(freshChunks)
+  }
+
+  const handleSwitchProject = async (pid: string) => {
+    setProjectId(pid);
+    localStorage.setItem('raccoon_factory_project_id', pid);
+    
+    try {
+      const res = await fetch(`/api/factory/queue/status?projectId=${pid}`);
+      const data = await res.json();
+      if (res.ok) {
+        if (data.chunks) setChunks(data.chunks);
+        if (data.mergedUrl) {
+          setMergedUrl(data.mergedUrl);
+          localStorage.setItem('raccoon_factory_merged_url', data.mergedUrl);
+        } else {
+          setMergedUrl('');
+          localStorage.removeItem('raccoon_factory_merged_url');
+        }
+      }
+    } catch {}
   }
 
   // Auto-merge (Concat) when ALL chunks have processedUrl
@@ -738,6 +798,89 @@ export function FactoryClient() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Multi-Project Queue Panel */}
+      {globalQueue.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-border">
+          <h3 className="text-2xl font-bold flex items-center gap-3 mb-6">
+            <LayoutTemplate className="w-6 h-6 text-violet-500" />
+            Очередь задач ИИ Завода
+            <span className="text-sm font-normal text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+              {globalQueue.filter(q => q.status === 'PENDING' || q.status === 'PROCESSING').length} активных
+            </span>
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {globalQueue.map((item) => {
+              const isActive = projectId === item.projectId;
+              const statusColors = {
+                PENDING: 'bg-muted text-muted-foreground border-border',
+                PROCESSING: 'bg-violet-500/10 text-violet-500 border-violet-500/30 animate-pulse',
+                COMPLETED: 'bg-green-500/10 text-green-500 border-green-500/30',
+                FAILED: 'bg-red-500/10 text-red-500 border-red-500/30'
+              };
+
+              const statusLabels = {
+                PENDING: 'В очереди...',
+                PROCESSING: 'Генерируется...',
+                COMPLETED: 'Готово 🎉',
+                FAILED: 'Ошибка ❌'
+              };
+
+              return (
+                <div 
+                  key={item.projectId} 
+                  className={`flex flex-col bg-card border rounded-2xl p-5 transition-all shadow-sm hover:shadow-md relative ${
+                    isActive ? 'border-violet-500 ring-2 ring-violet-500/20' : 'border-border'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-2 mb-3">
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                      statusColors[item.status as keyof typeof statusColors] || 'bg-muted'
+                    }`}>
+                      {statusLabels[item.status as keyof typeof statusLabels] || item.status}
+                    </span>
+                    {isActive && (
+                      <span className="text-[10px] bg-violet-600 text-white px-2 py-0.5 rounded-full font-bold">
+                        Активный экран
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-sm font-medium mb-5 line-clamp-3 italic text-muted-foreground">
+                    "{item.script}"
+                  </p>
+
+                  <div className="mt-auto pt-4 border-t border-border flex items-center justify-between gap-3">
+                    <button
+                      onClick={() => handleSwitchProject(item.projectId)}
+                      className={`text-xs font-semibold px-4 py-2 rounded-lg transition-all flex items-center gap-1.5 ${
+                        isActive 
+                          ? 'bg-violet-600/10 text-violet-600 cursor-default' 
+                          : 'bg-secondary hover:bg-secondary/80 text-foreground'
+                      }`}
+                    >
+                      <Play className="w-3.5 h-3.5" /> 
+                      {isActive ? 'Выбран' : 'Следить за ходом'}
+                    </button>
+
+                    {item.mergedUrl && (
+                      <a 
+                        href={item.mergedUrl} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-xs font-semibold text-green-500 hover:text-green-600 flex items-center gap-1"
+                      >
+                        Смотреть результат 🎬
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {history.length > 0 && (
         <div className="mt-16 pt-8 border-t border-border">

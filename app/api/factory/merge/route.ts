@@ -5,6 +5,8 @@ import fs from 'fs';
 import { randomUUID } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 
+export const maxDuration = 60; // Allow up to 60 seconds for downloading chunks, merging, and uploading final render
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -139,10 +141,7 @@ export async function POST(req: Request) {
 
     // --- Действие 2: Финальное объединение (Concat) и наложение музыки ---
     if (action === 'concat') {
-      const { processedUrls, musicUrl, prompt } = body;
-      if (!processedUrls || !Array.isArray(processedUrls) || processedUrls.length === 0) {
-        return NextResponse.json({ error: 'Не передан массив processedUrls' }, { status: 400 });
-      }
+      const { musicUrl, prompt } = body;
 
       const runId = randomUUID();
       const outputFileName = `final_${runId}.mp4`;
@@ -150,6 +149,14 @@ export async function POST(req: Request) {
       const mergedPath = path.join(tmpDir, `merged_${runId}.mp4`);
       const finalMusicPath = path.join(tmpDir, `final_${runId}.mp4`);
       const musicPath = path.join(tmpDir, `m_${runId}.mp3`);
+      
+      const finalOutputPath = mergedPath;
+      const finalMusicOutputPath = finalMusicPath;
+
+      const processedUrls = body.processedUrls || body.chunks;
+      if (!processedUrls || !Array.isArray(processedUrls) || processedUrls.length === 0) {
+        return NextResponse.json({ error: 'Не передан массив processedUrls' }, { status: 400 });
+      }
 
       const downloadedPaths: string[] = [];
       let concatContent = '';

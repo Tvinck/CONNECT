@@ -85,7 +85,17 @@ export async function GET(req: Request) {
       await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       await supabase.from('factory_generations').insert({ prompt: state.script, video_url: state.mergedUrl });
 
-      return NextResponse.json({ status: 'completed' });
+      // Автоматически запускаем следующий проект из очереди
+      const { markProjectCompleted } = await import('@/lib/factoryQueue');
+      const nextProjectId = await markProjectCompleted(projectId, mergeData.mergedUrl);
+
+      if (nextProjectId) {
+        console.log(`[Queue] Auto-starting next project: ${nextProjectId}`);
+        // Планируем следующий проект и запускаем его тик
+        fetch(`${baseUrl}/api/factory/queue/activate?projectId=${nextProjectId}`).catch(() => {});
+      }
+
+      return NextResponse.json({ status: 'completed', nextProjectId });
     }
 
     // --- Сценарий 2: Обработка текущей сцены ---

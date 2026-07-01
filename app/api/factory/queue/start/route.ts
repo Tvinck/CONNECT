@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { setupCredentials } from '@/lib/cliCreds';
+import { addToQueue, getQueue } from '@/lib/factoryQueue';
 
 export const maxDuration = 60;
 
@@ -20,10 +21,37 @@ export async function POST(req: Request) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    // Авто-рефреш токенов Higgsfield при старте проекта
+    // Check if another project is already active — if so, queue this one but don't start tick yet
+    const currentQueue = await getQueue();
+    const isQueueBusy = !!currentQueue.activeProjectId;
+
+    const projectId = randomUUID();
+
+    if (isQueueBusy) {
+      // Add to queue as PENDING — tick of current project will auto-start this one
+      const chunks = [{
+        id: 0, text: '...', isMascot: false, prompt: '...',
+        imageStatus: 'QUEUED', videoStatus: 'QUEUED', audioStatus: 'QUEUED'
+      }];
+
+      const projectState = {
+        projectId, status: 'PENDING', script,
+        musicUrl: 'lofi', currentSceneIndex: 0, error: null, mergedUrl: null,
+        chunks: []
+      };
+
+      await supabase.from('factory_generations').insert({
+        prompt: `project_state_${projectId}`,
+        video_url: JSON.stringify(projectState)
+      });
+
+      const queue = await addToQueue(projectId, script);
+      return NextResponse.json({ projectId, queued: true, queuePosition: queue.items.length, scenes: [] });
+    }
+
+    // No active project — start immediately
     await setupCredentials({ withRefresh: true });
 
-    // 1. Планируем сцены через ИИ Режиссера (Claude)
     const planRes = await fetch(`${baseUrl}/api/factory/plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,8 +61,6 @@ export async function POST(req: Request) {
     if (!planRes.ok) throw new Error(planData.error || 'Ошибка планирования');
 
     const scenes = planData.scenes;
-    const projectId = randomUUID();
-
     const chunks = scenes.map((s: any, idx: number) => ({
       id: idx,
       text: s.text,
@@ -46,30 +72,22 @@ export async function POST(req: Request) {
     }));
 
     const projectState = {
-      projectId,
-      status: 'PROCESSING',
-      script,
-      musicUrl: 'lofi',
-      currentSceneIndex: 0,
-      error: null,
-      mergedUrl: null,
-      chunks
+      projectId, status: 'PROCESSING', script,
+      musicUrl: 'lofi', currentSceneIndex: 0, error: null, mergedUrl: null, chunks
     };
 
-    // 2. Сохраняем начальное состояние проекта в БД
-    const { error: dbError } = await supabase
-      .from('factory_generations')
-      .insert({
-        prompt: `project_state_${projectId}`,
-        video_url: JSON.stringify(projectState)
-      });
+    await supabase.from('factory_generations').insert({
+      prompt: `project_state_${projectId}`,
+      video_url: JSON.stringify(projectState)
+    });
 
-    if (dbError) throw dbError;
+    // Register in global queue as PROCESSING
+    await addToQueue(projectId, script);
 
-    // 3. Запускаем первый тик (без ожидания — фоновая цепочка стартует)
+    // Kick off tick chain (fire and forget)
     fetch(`${baseUrl}/api/factory/queue/tick?projectId=${projectId}`).catch(() => {});
 
-    return NextResponse.json({ projectId, scenes: chunks });
+    return NextResponse.json({ projectId, queued: false, queuePosition: 1, scenes: chunks });
   } catch (error: any) {
     console.error('Queue Start Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
