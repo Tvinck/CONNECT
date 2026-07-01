@@ -265,10 +265,16 @@ export function FactoryClient() {
       const pid = data.projectId
       setProjectId(pid)
       localStorage.setItem('raccoon_factory_project_id', pid)
+
+      // Сразу показываем сцены в UI (не ждём первый поллинг)
+      if (data.scenes) {
+        setChunks(data.scenes)
+      }
       
       updateAgentStatus('director', 'completed')
+      updateAgentStatus('artist', 'active')
       setIsPlanning(false)
-      // Polling start через useEffect projectId
+      // Polling продолжается через useEffect projectId
       
     } catch (err: any) {
       setIsPlanning(false)

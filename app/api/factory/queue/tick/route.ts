@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { setupCredentials } from '@/lib/cliCreds';
 
-export const maxDuration = 60; // Vercel: max 60s per tick invocation
+export const maxDuration = 60;
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Функция для безопасной отправки асинхронного тика
 async function triggerNextTick(baseUrl: string, projectId: string) {
   try {
-    // Делаем вызов и даем сокету 500мс передать пакет перед замораживанием контейнера Vercel
     fetch(`${baseUrl}/api/factory/queue/tick?projectId=${projectId}`).catch(() => {});
     await new Promise(resolve => setTimeout(resolve, 500));
   } catch (e) {
@@ -45,25 +44,27 @@ export async function GET(req: Request) {
 
     const state = JSON.parse(dbData.video_url);
 
-    // Если проект уже завершен или упал с ошибкой - останавливаемся
     if (state.status !== 'PROCESSING' && state.status !== 'CONCATENATING') {
       return NextResponse.json({ status: 'idle', message: 'Project is not active' });
     }
 
-    // Троттлинг: гарантируем интервал между тиками не менее 8 секунд
+    // Троттлинг: минимум 8 секунд между тиками
     const now = Date.now();
     const lastTickedAt = state.lastTickedAt || 0;
     if (now - lastTickedAt < 8000) {
       const sleepTime = 8000 - (now - lastTickedAt);
-      console.log(`[Queue] Throttling tick for ${sleepTime}ms...`);
       await new Promise(resolve => setTimeout(resolve, sleepTime));
     }
     state.lastTickedAt = Date.now();
 
+    // Авто-рефреш токенов Higgsfield перед каждым шагом
+    // withRefresh: true — запускает `generate list` для обновления access_token
+    await setupCredentials({ withRefresh: true });
+
     const chunks = state.chunks;
     const i = state.currentSceneIndex;
 
-    // --- Сценарий 1: Склейка всего ролика (Concat) ---
+    // --- Сценарий 1: Финальная склейка ---
     if (state.status === 'CONCATENATING') {
       console.log(`[Queue] Final merging for project ${projectId}...`);
       const mergeRes = await fetch(`${baseUrl}/api/factory/merge`, {
@@ -81,19 +82,8 @@ export async function GET(req: Request) {
       state.status = 'COMPLETED';
       state.mergedUrl = mergeData.mergedUrl;
 
-      // Обновляем состояние проекта в БД
-      await supabase
-        .from('factory_generations')
-        .update({ video_url: JSON.stringify(state) })
-        .eq('id', dbData.id);
-
-      // Сохраняем готовую запись в историю ИИ Завода
-      await supabase
-        .from('factory_generations')
-        .insert({
-          prompt: state.script,
-          video_url: state.mergedUrl
-        });
+      await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
+      await supabase.from('factory_generations').insert({ prompt: state.script, video_url: state.mergedUrl });
 
       return NextResponse.json({ status: 'completed' });
     }
@@ -102,7 +92,7 @@ export async function GET(req: Request) {
     const chunk = chunks[i];
     console.log(`[Queue] Processing scene ${i + 1}/${chunks.length} for project ${projectId}...`);
 
-    // Шаг А: Запуск Flux-генерации (если B-Roll)
+    // Шаг А: Запуск Flux (только для B-Roll сцен)
     if (!chunk.isMascot && chunk.imageStatus === 'QUEUED') {
       const imgRes = await fetch(`${baseUrl}/api/factory/image/generate`, {
         method: 'POST',
@@ -117,41 +107,33 @@ export async function GET(req: Request) {
       chunk.videoStatus = 'WAITING_FOR_IMAGE';
       chunk.audioStatus = 'WAITING_FOR_IMAGE';
 
-      await supabase
-        .from('factory_generations')
-        .update({ video_url: JSON.stringify(state) })
-        .eq('id', dbData.id);
-
+      await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       await triggerNextTick(baseUrl, projectId);
       return NextResponse.json({ status: 'triggered_image' });
     }
 
-    // Шаг Б: Ожидание Flux-кадра
+    // Шаг Б: Ожидание Flux
     if (!chunk.isMascot && chunk.imageStatus === 'PENDING') {
       const statusRes = await fetch(`${baseUrl}/api/factory/video/status?taskId=${chunk.imageTaskId}`);
       const statusData = await statusRes.json();
       if (statusData.status === 'COMPLETED') {
         chunk.imageStatus = 'COMPLETED';
         chunk.imageUrl = statusData.videoUrl;
-        chunk.videoStatus = 'QUEUED'; // На следующем тике запустим Kling
+        chunk.videoStatus = 'QUEUED';
         chunk.audioStatus = 'QUEUED';
       } else if (statusData.status === 'FAILED') {
         throw new Error('Сбой отрисовки первого кадра во Flux');
       }
 
-      await supabase
-        .from('factory_generations')
-        .update({ video_url: JSON.stringify(state) })
-        .eq('id', dbData.id);
-
+      await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       await triggerNextTick(baseUrl, projectId);
       return NextResponse.json({ status: 'waiting_image' });
     }
 
-    // Шаг В: Запуск Kling и Диктора
+    // Шаг В: Запуск Kling + Диктора
     if (chunk.videoStatus === 'QUEUED' || chunk.audioStatus === 'QUEUED') {
       const startingImage = chunk.isMascot ? '1b2ef010-50b6-4a19-8db6-8707d03013b9' : chunk.imageUrl;
-      
+
       const [vidRes, audRes] = await Promise.all([
         fetch(`${baseUrl}/api/factory/video/generate`, {
           method: 'POST',
@@ -176,16 +158,12 @@ export async function GET(req: Request) {
       chunk.audioTaskId = audData.taskId;
       chunk.audioStatus = 'PENDING';
 
-      await supabase
-        .from('factory_generations')
-        .update({ video_url: JSON.stringify(state) })
-        .eq('id', dbData.id);
-
+      await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       await triggerNextTick(baseUrl, projectId);
       return NextResponse.json({ status: 'triggered_media' });
     }
 
-    // Шаг Г: Опрос статуса Kling и Диктора
+    // Шаг Г: Опрос статуса Kling + Диктора
     if (chunk.videoStatus === 'PENDING' || chunk.audioStatus === 'PENDING') {
       let changed = false;
 
@@ -214,17 +192,14 @@ export async function GET(req: Request) {
       }
 
       if (changed) {
-        await supabase
-          .from('factory_generations')
-          .update({ video_url: JSON.stringify(state) })
-          .eq('id', dbData.id);
+        await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       }
 
       await triggerNextTick(baseUrl, projectId);
       return NextResponse.json({ status: 'polling_media' });
     }
 
-    // Шаг Д: Монтаж сцены (Слияние видео+аудио+сабы)
+    // Шаг Д: Монтаж сцены
     if (chunk.videoStatus === 'COMPLETED' && chunk.audioStatus === 'COMPLETED' && !chunk.processedUrl) {
       console.log(`[Queue] Merging scene ${i + 1} for project ${projectId}...`);
       const mergeRes = await fetch(`${baseUrl}/api/factory/merge`, {
@@ -243,30 +218,23 @@ export async function GET(req: Request) {
 
       chunk.processedUrl = mergeData.processedUrl;
 
-      // Переходим к следующей сцене
       if (i + 1 < chunks.length) {
         state.currentSceneIndex = i + 1;
       } else {
         state.status = 'CONCATENATING';
       }
 
-      await supabase
-        .from('factory_generations')
-        .update({ video_url: JSON.stringify(state) })
-        .eq('id', dbData.id);
-
+      await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       await triggerNextTick(baseUrl, projectId);
       return NextResponse.json({ status: 'chunk_processed' });
     }
 
-    // Если ничего не подошло, запускаем следующий тик
+    // Fallback
     await triggerNextTick(baseUrl, projectId);
     return NextResponse.json({ status: 'waiting' });
 
   } catch (error: any) {
     console.error('Queue Tick Error:', error);
-    
-    // Пытаемся записать ошибку в состояние проекта
     try {
       const { data: dbData } = await supabase
         .from('factory_generations')
@@ -277,15 +245,9 @@ export async function GET(req: Request) {
         const state = JSON.parse(dbData.video_url);
         state.status = 'FAILED';
         state.error = error.message;
-        await supabase
-          .from('factory_generations')
-          .update({ video_url: JSON.stringify(state) })
-          .eq('id', dbData.id);
+        await supabase.from('factory_generations').update({ video_url: JSON.stringify(state) }).eq('id', dbData.id);
       }
-    } catch (dbErr) {
-      console.error('Failed to log project error:', dbErr);
-    }
-
+    } catch {}
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

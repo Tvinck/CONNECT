@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
+import { setupCredentials } from '@/lib/cliCreds';
 
 export const maxDuration = 60;
 
@@ -19,7 +20,10 @@ export async function POST(req: Request) {
     const protocol = host.includes('localhost') ? 'http' : 'https';
     const baseUrl = `${protocol}://${host}`;
 
-    // 1. Планируем сцены через ИИ Режиссера
+    // Авто-рефреш токенов Higgsfield при старте проекта
+    await setupCredentials({ withRefresh: true });
+
+    // 1. Планируем сцены через ИИ Режиссера (Claude)
     const planRes = await fetch(`${baseUrl}/api/factory/plan`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -36,7 +40,7 @@ export async function POST(req: Request) {
       text: s.text,
       isMascot: s.isMascot,
       prompt: s.prompt,
-      imageStatus: 'QUEUED',
+      imageStatus: s.isMascot ? 'SKIPPED' : 'QUEUED',
       videoStatus: 'QUEUED',
       audioStatus: 'QUEUED'
     }));
@@ -62,10 +66,10 @@ export async function POST(req: Request) {
 
     if (dbError) throw dbError;
 
-    // 3. Запускаем фоновый tick-процесс (асинхронный вызов без ожидания)
+    // 3. Запускаем первый тик (без ожидания — фоновая цепочка стартует)
     fetch(`${baseUrl}/api/factory/queue/tick?projectId=${projectId}`).catch(() => {});
 
-    return NextResponse.json({ projectId });
+    return NextResponse.json({ projectId, scenes: chunks });
   } catch (error: any) {
     console.error('Queue Start Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
