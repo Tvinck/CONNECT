@@ -265,6 +265,18 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error('Segmented Merge Error:', error);
+    try {
+      await supabase.from('factory_generations').insert({
+        prompt: 'debug_merge_error',
+        video_url: JSON.stringify({
+          message: error.message,
+          stack: error.stack,
+          body: body ? JSON.stringify(body).substring(0, 1000) : 'no_body'
+        })
+      });
+    } catch (dbErr) {
+      console.error('Failed to log error to Supabase:', dbErr);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
