@@ -111,13 +111,18 @@ export function FactoryClient() {
     setError('')
     setChunks([])
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    
     try {
       // 1. ИИ Режиссер разбивает текст на сцены
       const planRes = await fetch('/api/factory/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script })
+        body: JSON.stringify({ script }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
       const planData = await planRes.json()
       if (!planRes.ok) throw new Error(planData.error || 'Ошибка планирования')
       
@@ -163,7 +168,12 @@ export function FactoryClient() {
       }
       
     } catch (err: any) {
-      setError(err.message)
+      clearTimeout(timeoutId)
+      if (err.name === 'AbortError') {
+        setError('Превышено время ожидания планирования сцен (20 сек). Попробуйте еще раз.')
+      } else {
+        setError(err.message)
+      }
     } finally {
       setIsPlanning(false)
     }
@@ -313,6 +323,12 @@ export function FactoryClient() {
                 onChange={(e) => setScript(e.target.value)}
                 className="w-full h-[250px] p-4 bg-background border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-base leading-relaxed"
               />
+
+              {error && (
+                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
               
               {chunks.length === 0 && (
                 <button

@@ -39,44 +39,59 @@ Return ONLY a JSON array of objects with the following format:
 ]
 No markdown blocks, just the raw JSON array.`;
 
-    const response = await fetch(`${anthropicUrl}/v1/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anthropicKey}`,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: `Script:\n${script}` }
-        ]
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Claude API Error:', errorText);
-      return NextResponse.json({ error: 'Ошибка при планировании сцен (Claude)' }, { status: 500 });
-    }
-
-    const data = await response.json();
-    const rawText = data.content?.[0]?.text?.trim() || '';
-    
-    // Clean up markdown if the LLM accidentally added it
-    const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    let scenes = [];
     try {
-      scenes = JSON.parse(jsonStr);
-    } catch (e) {
-      console.error('Failed to parse LLM JSON:', jsonStr);
-      return NextResponse.json({ error: 'Ошибка при разборе плана сцен' }, { status: 500 });
-    }
+      const response = await fetch(`${anthropicUrl}/v1/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${anthropicKey}`,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [
+            { role: 'user', content: `Script:\n${script}` }
+          ]
+        }),
+        signal: controller.signal
+      });
 
-    return NextResponse.json({ scenes });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Claude API Error:', errorText);
+        return NextResponse.json({ error: 'Ошибка при планировании сцен (Claude)' }, { status: 500 });
+      }
+
+      const data = await response.json();
+      const rawText = data.content?.[0]?.text?.trim() || '';
+      
+      // Clean up markdown if the LLM accidentally added it
+      const jsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+      
+      let scenes = [];
+      try {
+        scenes = JSON.parse(jsonStr);
+      } catch (e) {
+        console.error('Failed to parse LLM JSON:', jsonStr);
+        return NextResponse.json({ error: 'Ошибка при разборе плана сцен' }, { status: 500 });
+      }
+
+      return NextResponse.json({ scenes });
+    } catch (fetchErr: any) {
+      clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        console.error('Claude API request timed out');
+        return NextResponse.json({ error: 'Запрос к Claude превысил лимит времени (15 сек)' }, { status: 504 });
+      }
+      throw fetchErr;
+    }
 
   } catch (error: any) {
     console.error('Planner Error:', error);
