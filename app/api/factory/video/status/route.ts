@@ -87,7 +87,11 @@ export async function GET(req: Request) {
     if (result.status === 'completed') status = 'COMPLETED';
     else if (result.status === 'failed' || result.status === 'nsfw') status = 'FAILED';
 
-    const url = result.video?.url || (result.images && result.images[0]?.url) || '';
+    const url = result.video?.url || 
+                (result.images && result.images[0]?.url) || 
+                result.audio?.url ||
+                (result.audios && result.audios[0]?.url) ||
+                '';
     return NextResponse.json({ status, videoUrl: url });
   } catch (error: any) {
     console.error('Status Error:', error.stderr || error?.response?.data || error.message);

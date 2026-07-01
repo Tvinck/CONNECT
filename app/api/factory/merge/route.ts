@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
     ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-    const { chunks, prompt } = await req.json();
+    const { chunks, prompt, musicUrl } = await req.json();
 
     if (!chunks || !Array.isArray(chunks) || chunks.length === 0) {
       return NextResponse.json({ error: 'Требуется массив chunks' }, { status: 400 });
@@ -41,11 +41,13 @@ export async function POST(req: Request) {
 
     const runId = randomUUID();
     const outputFileName = `merged_${runId}.mp4`;
-    const finalOutputPath = path.join(tmpDir, outputFileName);
+    const finalOutputPath = path.join(tmpDir, `concat_${outputFileName}`);
+    const finalMusicOutputPath = path.join(tmpDir, outputFileName);
     const concatListPath = path.join(tmpDir, `concat_${runId}.txt`);
+    const musicPath = path.join(tmpDir, `music_${runId}.mp3`);
     
     let concatFileContent = '';
-    const filesToCleanup: string[] = [concatListPath, finalOutputPath];
+    const filesToCleanup: string[] = [concatListPath, finalOutputPath, finalMusicOutputPath, musicPath];
 
     // Обрабатываем каждый чанк по очереди (скачиваем, склеиваем, накладываем сабы)
     for (let i = 0; i < chunks.length; i++) {
@@ -65,9 +67,6 @@ export async function POST(req: Request) {
       const textFilter = cleanText ? `,drawtext=text='${escapeDrawtext(cleanText)}':fontcolor=yellow:fontsize=48:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-250` : '';
 
       // Объединяем видео и аудио, накладываем текст.
-      // Kling video 5s, Audio м.б. длиннее или короче.
-      // -shortest обрежет по самому короткому стриму. Но если аудио длиннее видео, видео "зависнет" на последнем кадре если не залупить.
-      // Для простоты используем -shortest и -stream_loop -1 для видео, чтобы оно залупилось, если аудио длиннее.
       await new Promise<void>((resolve, reject) => {
         ffmpeg()
           .input(videoPath)
@@ -104,8 +103,42 @@ export async function POST(req: Request) {
         .on('error', (err) => reject(err));
     });
 
+    let renderPath = finalOutputPath;
+
+    // Если есть фоновая музыка - накладываем её на готовое видео
+    if (musicUrl) {
+      try {
+        await downloadFile(musicUrl, musicPath);
+        
+        await new Promise<void>((resolve, reject) => {
+          ffmpeg()
+            .input(finalOutputPath)
+            .input(musicPath)
+            .complexFilter([
+              // Голос берем на 100% громкости, музыку тише (12%), обрезаем по длине первого стрима (голоса)
+              '[0:a]volume=1.0[voice];[1:a]volume=0.12[bgmusic];[voice][bgmusic]amix=inputs=2:duration=first[a]'
+            ])
+            .outputOptions([
+              '-c:v copy',
+              '-c:a aac',
+              '-map 0:v:0',
+              '-map [a]',
+              '-y'
+            ])
+            .save(finalMusicOutputPath)
+            .on('end', () => {
+              renderPath = finalMusicOutputPath;
+              resolve();
+            })
+            .on('error', (err) => reject(err));
+        });
+      } catch (musicErr) {
+        console.error('Failed to overlay music:', musicErr);
+      }
+    }
+
     // Загружаем финальный файл в Supabase
-    const fileBuffer = fs.readFileSync(finalOutputPath);
+    const fileBuffer = fs.readFileSync(renderPath);
     const { data, error } = await supabase.storage
       .from('support-attachments')
       .upload(`renders/${outputFileName}`, fileBuffer, {
