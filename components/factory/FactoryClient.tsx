@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wand2, Loader2, Copy, Check, Video, Download, Mic, Coins, Clock, Combine, ThumbsUp, ThumbsDown, MessageSquare, Send } from 'lucide-react'
+import { Wand2, Loader2, Copy, Check, Video, Download, Mic, Coins, Clock, ThumbsUp, ThumbsDown, MessageSquare, Send, Users, Cpu, FileText, LayoutTemplate, Palette, Sparkles, Volume2, Film } from 'lucide-react'
 
 interface ChunkState {
   id: number;
@@ -17,6 +17,14 @@ interface ChunkState {
   audioUrl?: string;
 }
 
+interface AgentState {
+  id: string;
+  name: string;
+  role: string;
+  icon: any;
+  status: 'idle' | 'active' | 'completed' | 'failed';
+}
+
 export function FactoryClient() {
   const [topic, setTopic] = useState('')
   const [script, setScript] = useState('')
@@ -27,15 +35,34 @@ export function FactoryClient() {
   // V4 Pipeline State
   const [isPlanning, setIsPlanning] = useState(false)
   const [chunks, setChunks] = useState<ChunkState[]>([])
+  const [currentActiveIndex, setCurrentActiveIndex] = useState<number | null>(null)
   
   const [mergedUrl, setMergedUrl] = useState('')
   const [isMerging, setIsMerging] = useState(false)
+
+  // AI Team States
+  const [agents, setAgents] = useState<AgentState[]>([
+    { id: 'writer', name: 'ИИ Сценарист', role: 'Пишет вирусный сценарий', icon: FileText, status: 'idle' },
+    { id: 'director', name: 'ИИ Режиссер', role: 'Планирует сцены и промпты', icon: LayoutTemplate, status: 'idle' },
+    { id: 'artist', name: 'ИИ Художник', role: 'Рисует фоны и B-Roll кадры', icon: Palette, status: 'idle' },
+    { id: 'actor', name: 'ИИ Актер', role: 'Анимирует речь Енота', icon: Sparkles, status: 'idle' },
+    { id: 'voice', name: 'ИИ Диктор', role: 'Озвучивает текст диктора', icon: Volume2, status: 'idle' },
+    { id: 'editor', name: 'ИИ Монтажер', role: 'Накладывает субтитры и склеивает', icon: Film, status: 'idle' }
+  ])
 
   const [balance, setBalance] = useState<number | null>(null)
   const [history, setHistory] = useState<any[]>([])
   
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null)
   const [commentText, setCommentText] = useState('')
+
+  const updateAgentStatus = (id: string, status: 'idle' | 'active' | 'completed' | 'failed') => {
+    setAgents(prev => prev.map(a => a.id === id ? { ...a, status } : a))
+  }
+
+  const resetAgents = () => {
+    setAgents(prev => prev.map(a => ({ ...a, status: 'idle' })))
+  }
 
   const fetchDashboardData = () => {
     fetch('/api/factory/balance').then(r => r.json()).then(d => {
@@ -87,6 +114,9 @@ export function FactoryClient() {
     setLoading(true)
     setError('')
     setScript('')
+    resetAgents()
+    updateAgentStatus('writer', 'active')
+    
     try {
       const res = await fetch('/api/factory/generate', {
         method: 'POST',
@@ -98,8 +128,10 @@ export function FactoryClient() {
       setScript(data.script)
       setChunks([])
       setMergedUrl('')
+      updateAgentStatus('writer', 'completed')
     } catch (err: any) {
       setError(err.message)
+      updateAgentStatus('writer', 'failed')
     } finally {
       setLoading(false)
     }
@@ -110,9 +142,14 @@ export function FactoryClient() {
     setIsPlanning(true)
     setError('')
     setChunks([])
+    setCurrentActiveIndex(null)
+    
+    // Сбрасываем и активируем Режиссера
+    setAgents(prev => prev.map(a => a.id === 'writer' ? { ...a, status: 'completed' } : { ...a, status: 'idle' }))
+    updateAgentStatus('director', 'active')
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
     
     try {
       // 1. ИИ Режиссер разбивает текст на сцены
@@ -131,18 +168,33 @@ export function FactoryClient() {
         id: idx,
         text: s.text,
         isMascot: s.isMascot,
-        prompt: s.prompt
+        prompt: s.prompt,
+        videoStatus: 'QUEUED',
+        audioStatus: 'QUEUED'
       }))
       
       setChunks(newChunks)
+      setIsPlanning(false)
+      updateAgentStatus('director', 'completed')
       
-      // 2. Отправляем в параллельную генерацию все чанки
+      // 2. Последовательная генерация чанков (чтобы не превысить лимит 2 одновременных задач)
       for (let i = 0; i < newChunks.length; i++) {
-        const chunk = newChunks[i]
-        const mascotImage = chunk.isMascot ? '1b2ef010-50b6-4a19-8db6-8707d03013b9' : null;
+        setCurrentActiveIndex(i)
+        setChunks(prev => prev.map(c => c.id === i ? { ...c, videoStatus: 'SUBMITTING', audioStatus: 'SUBMITTING' } : c))
         
-        // Запускаем асинхронно, чтобы не блокировать цикл
-        Promise.all([
+        const chunk = newChunks[i]
+        const mascotImage = chunk.isMascot ? '1b2ef010-50b6-4a19-8db6-8707d03013b9' : '';
+        
+        // Активируем нужных агентов
+        if (chunk.isMascot) {
+          updateAgentStatus('actor', 'active')
+        } else {
+          updateAgentStatus('artist', 'active')
+        }
+        updateAgentStatus('voice', 'active')
+        
+        // Запускаем видео и аудио для текущей сцены
+        const [vidRes, audRes] = await Promise.all([
           fetch('/api/factory/video/generate', { 
             method: 'POST', 
             body: JSON.stringify({ script: chunk.text, prompt: chunk.prompt, start_image: mascotImage }) 
@@ -151,76 +203,85 @@ export function FactoryClient() {
             method: 'POST', 
             body: JSON.stringify({ script: chunk.text }) 
           })
-        ]).then(async ([vidRes, audRes]) => {
-          const vidData = await vidRes.json()
-          const audData = await audRes.json()
+        ])
+        
+        const vidData = await vidRes.json()
+        const audData = await audRes.json()
+        
+        if (!vidRes.ok) throw new Error(vidData.error || 'Ошибка запуска видео')
+        if (!audRes.ok) throw new Error(audData.error || 'Ошибка запуска звука')
+        
+        setChunks(prev => prev.map(c => c.id === i ? { 
+          ...c, 
+          videoTaskId: vidData.taskId, 
+          videoStatus: 'PENDING',
+          audioTaskId: audData.taskId,
+          audioStatus: 'PENDING'
+        } : c))
+        
+        // Поллинг текущего чанка до COMPLETED или FAILED
+        let videoUrl = ''
+        let audioUrl = ''
+        
+        while (!videoUrl || !audioUrl) {
+          await new Promise(resolve => setTimeout(resolve, 5000))
           
-          setChunks(prev => prev.map(c => c.id === i ? { 
-            ...c, 
-            videoTaskId: vidData.taskId, 
-            videoStatus: 'PENDING',
-            audioTaskId: audData.taskId,
-            audioStatus: 'PENDING'
-          } : c))
-        }).catch(err => {
-          setChunks(prev => prev.map(c => c.id === i ? { ...c, videoStatus: 'FAILED', audioStatus: 'FAILED' } : c))
-        })
+          if (!videoUrl) {
+            const statusRes = await fetch(`/api/factory/video/status?taskId=${vidData.taskId}`)
+            const statusData = await statusRes.json()
+            if (statusData.status === 'COMPLETED') {
+              videoUrl = statusData.videoUrl
+              setChunks(prev => prev.map(c => c.id === i ? { ...c, videoStatus: 'COMPLETED', videoUrl } : c))
+            } else if (statusData.status === 'FAILED') {
+              throw new Error(`Ошибка рендера видео в сцене ${i + 1}`)
+            }
+          }
+          
+          if (!audioUrl) {
+            const statusRes = await fetch(`/api/factory/video/status?taskId=${audData.taskId}`)
+            const statusData = await statusRes.json()
+            if (statusData.status === 'COMPLETED') {
+              audioUrl = statusData.videoUrl
+              setChunks(prev => prev.map(c => c.id === i ? { ...c, audioStatus: 'COMPLETED', audioUrl } : c))
+            } else if (statusData.status === 'FAILED') {
+              throw new Error(`Ошибка озвучки в сцене ${i + 1}`)
+            }
+          }
+        }
+        
+        // Переводим агентов этой сцены в статус выполненных
+        if (chunk.isMascot) {
+          updateAgentStatus('actor', 'completed')
+        } else {
+          updateAgentStatus('artist', 'completed')
+        }
+        updateAgentStatus('voice', 'completed')
       }
+      
+      setCurrentActiveIndex(null)
       
     } catch (err: any) {
       clearTimeout(timeoutId)
+      setIsPlanning(false)
+      setCurrentActiveIndex(null)
+      setAgents(prev => prev.map(a => a.status === 'active' ? { ...a, status: 'failed' } : a))
       if (err.name === 'AbortError') {
-        setError('Превышено время ожидания планирования сцен (20 сек). Попробуйте еще раз.')
+        setError('Превышено время ожидания планирования сцен (25 сек). Попробуйте еще раз.')
       } else {
         setError(err.message)
       }
-    } finally {
-      setIsPlanning(false)
     }
   }
 
-  // Поллинг статусов всех чанков
-  useEffect(() => {
-    if (chunks.length === 0) return;
-    
-    let isAllDone = true;
-    const interval = setInterval(() => {
-      chunks.forEach(chunk => {
-        if (chunk.videoTaskId && chunk.videoStatus !== 'COMPLETED' && chunk.videoStatus !== 'FAILED') {
-          isAllDone = false;
-          fetch(`/api/factory/video/status?taskId=${chunk.videoTaskId}`)
-            .then(r => r.json())
-            .then(data => {
-              if (data.status) {
-                setChunks(prev => prev.map(c => c.id === chunk.id ? { ...c, videoStatus: data.status, videoUrl: data.videoUrl || c.videoUrl } : c))
-              }
-            }).catch(() => {})
-        }
-        if (chunk.audioTaskId && chunk.audioStatus !== 'COMPLETED' && chunk.audioStatus !== 'FAILED') {
-          isAllDone = false;
-          fetch(`/api/factory/video/status?taskId=${chunk.audioTaskId}`)
-            .then(r => r.json())
-            .then(data => {
-              if (data.status) {
-                setChunks(prev => prev.map(c => c.id === chunk.id ? { ...c, audioStatus: data.status, audioUrl: data.videoUrl || c.audioUrl } : c))
-              }
-            }).catch(() => {})
-        }
-      })
-    }, 10000)
-    
-    return () => clearInterval(interval)
-  }, [chunks])
-
-  // Auto-merge when ALL chunks are ready
+  // Auto-merge when ALL chunks are COMPLETED
   useEffect(() => {
     if (chunks.length === 0 || mergedUrl || isMerging) return;
     
     const allCompleted = chunks.every(c => c.videoStatus === 'COMPLETED' && c.audioStatus === 'COMPLETED' && c.videoUrl && c.audioUrl);
-    const anyFailed = chunks.some(c => c.videoStatus === 'FAILED' || c.audioStatus === 'FAILED');
     
     if (allCompleted) {
       setIsMerging(true)
+      updateAgentStatus('editor', 'active')
       const mergePayload = chunks.map(c => ({
         videoUrl: c.videoUrl,
         audioUrl: c.audioUrl,
@@ -236,11 +297,17 @@ export function FactoryClient() {
       .then(data => {
         if (data.mergedUrl) {
            setMergedUrl(data.mergedUrl)
+           updateAgentStatus('editor', 'completed')
            fetchDashboardData()
+        } else {
+           updateAgentStatus('editor', 'failed')
         }
         setIsMerging(false)
       })
-      .catch(() => setIsMerging(false))
+      .catch(() => {
+        setIsMerging(false)
+        updateAgentStatus('editor', 'failed')
+      })
     }
   }, [chunks, mergedUrl, isMerging, script])
 
@@ -249,9 +316,11 @@ export function FactoryClient() {
     if (isMerging) return "Финальная склейка сцен и рендер субтитров..."
     if (isPlanning) return "ИИ Режиссер планирует сцены..."
     
+    if (chunks.length > 0 && currentActiveIndex !== null) {
+      return `Генерация сцены ${currentActiveIndex + 1} из ${chunks.length}...`
+    }
     if (chunks.length > 0) {
-      const completed = chunks.filter(c => c.videoStatus === 'COMPLETED' && c.audioStatus === 'COMPLETED').length
-      return `Рендер сцен в облаке (${completed} из ${chunks.length * 2} процессов)...`
+      return "Сцены подготовлены, запуск сборщика..."
     }
     return "Ожидание команды..."
   }
@@ -266,8 +335,36 @@ export function FactoryClient() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">ИИ Завод v4</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Автоматическое производство динамичных хитов до 60с</p>
+          <h1 className="text-3xl font-bold tracking-tight">ИИ Завод v4 (Team Mode)</h1>
+          <p className="text-muted-foreground mt-2 text-lg">Команда нейросетей работает над созданием вашего Shorts</p>
+        </div>
+      </div>
+
+      {/* AI Agents Team Panel */}
+      <div className="bg-card border rounded-2xl p-6 shadow-sm">
+        <h3 className="text-lg font-bold flex items-center gap-2 mb-6">
+          <Users className="w-5 h-5 text-violet-500" />
+          Сотрудничество ИИ-Агентов
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {agents.map(agent => {
+            const Icon = agent.icon
+            const statusColors = {
+              idle: 'bg-muted border-border text-muted-foreground opacity-60',
+              active: 'bg-violet-500/10 border-violet-500 text-violet-500 animate-pulse ring-2 ring-violet-500/20',
+              completed: 'bg-green-500/10 border-green-500 text-green-500',
+              failed: 'bg-red-500/10 border-red-500 text-red-500'
+            }
+            return (
+              <div key={agent.id} className={`flex flex-col items-center justify-center p-4 border rounded-xl text-center transition-all ${statusColors[agent.status]}`}>
+                <div className={`p-2.5 rounded-lg mb-2 ${agent.status === 'active' ? 'bg-violet-500 text-white' : 'bg-secondary'}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="font-bold text-xs">{agent.name}</span>
+                <span className="text-[10px] opacity-70 mt-1 line-clamp-1">{agent.role}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -325,7 +422,7 @@ export function FactoryClient() {
               />
 
               {error && (
-                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm">
+                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg text-sm animate-shake">
                   {error}
                 </div>
               )}
@@ -341,7 +438,7 @@ export function FactoryClient() {
                       <Video className="w-6 h-6" /> + <Mic className="w-5 h-5" />
                     </div>
                   )}
-                  Оживить Енота и сгенерировать длинное видео
+                  Запустить ИИ-Команду и создать видео
                 </button>
               )}
             </motion.div>
@@ -359,7 +456,7 @@ export function FactoryClient() {
             <div className="text-center mb-8">
               <h3 className="text-2xl font-bold mb-2">Конвейер Енота v4 🎬</h3>
               <p className="text-violet-500 font-medium bg-violet-500/10 inline-flex items-center gap-2 px-4 py-2 rounded-full">
-                {(isMerging || isPlanning || chunks.some(c => c.videoStatus === 'PENDING' || c.videoStatus === 'IN_PROGRESS' || c.audioStatus === 'IN_PROGRESS' || c.audioStatus === 'PENDING')) && <Loader2 className="w-4 h-4 animate-spin" />}
+                {(isMerging || isPlanning || currentActiveIndex !== null) && <Loader2 className="w-4 h-4 animate-spin" />}
                 {getOverallProgressText()}
               </p>
             </div>
@@ -376,27 +473,33 @@ export function FactoryClient() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
-              {chunks.map((chunk, idx) => (
-                <div key={idx} className="bg-secondary/50 rounded-xl p-4 border border-border text-sm flex flex-col gap-2">
-                  <span className="font-bold">Сцена {idx + 1} {chunk.isMascot ? '🦝' : '🎥'}</span>
-                  <p className="line-clamp-2 text-muted-foreground italic">"{chunk.text}"</p>
-                  
-                  <div className="mt-auto flex justify-between items-center border-t border-border pt-2">
-                    <div className="flex items-center gap-1">
-                      <Video className="w-3 h-3" />
-                      <span className={chunk.videoStatus === 'COMPLETED' ? 'text-green-500' : chunk.videoStatus === 'FAILED' ? 'text-red-500' : 'text-yellow-500'}>
-                        {chunk.videoStatus === 'COMPLETED' ? 'ОК' : chunk.videoStatus === 'FAILED' ? 'ERR' : '...'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Mic className="w-3 h-3" />
-                      <span className={chunk.audioStatus === 'COMPLETED' ? 'text-green-500' : chunk.audioStatus === 'FAILED' ? 'text-red-500' : 'text-yellow-500'}>
-                        {chunk.audioStatus === 'COMPLETED' ? 'ОК' : chunk.audioStatus === 'FAILED' ? 'ERR' : '...'}
-                      </span>
+              {chunks.map((chunk, idx) => {
+                const isActive = currentActiveIndex === idx;
+                return (
+                  <div key={idx} className={`rounded-xl p-4 border text-sm flex flex-col gap-2 transition-all ${isActive ? 'bg-violet-500/10 border-violet-500 scale-[1.02] shadow-md animate-pulse' : 'bg-secondary/50 border-border opacity-70'}`}>
+                    <span className="font-bold flex items-center justify-between">
+                      <span>Сцена {idx + 1} {chunk.isMascot ? '🦝' : '🎥'}</span>
+                      {isActive && <span className="text-[10px] bg-violet-500 text-white px-2 py-0.5 rounded-full">Обработка</span>}
+                    </span>
+                    <p className="line-clamp-2 text-muted-foreground italic">"{chunk.text}"</p>
+                    
+                    <div className="mt-auto flex justify-between items-center border-t border-border pt-2">
+                      <div className="flex items-center gap-1">
+                        <Video className="w-3 h-3" />
+                        <span className={chunk.videoStatus === 'COMPLETED' ? 'text-green-500 font-bold' : chunk.videoStatus === 'FAILED' ? 'text-red-500 font-bold' : chunk.videoStatus === 'SUBMITTING' ? 'text-yellow-500 font-medium' : 'text-muted-foreground'}>
+                          {chunk.videoStatus === 'COMPLETED' ? 'ОК' : chunk.videoStatus === 'FAILED' ? 'ERR' : chunk.videoStatus === 'PENDING' ? 'Рендер...' : chunk.videoStatus === 'SUBMITTING' ? 'Запуск...' : 'Очередь'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Mic className="w-3 h-3" />
+                        <span className={chunk.audioStatus === 'COMPLETED' ? 'text-green-500 font-bold' : chunk.audioStatus === 'FAILED' ? 'text-red-500 font-bold' : chunk.audioStatus === 'SUBMITTING' ? 'text-yellow-500 font-medium' : 'text-muted-foreground'}>
+                          {chunk.audioStatus === 'COMPLETED' ? 'ОК' : chunk.audioStatus === 'FAILED' ? 'ERR' : chunk.audioStatus === 'PENDING' ? 'Озвучка...' : chunk.audioStatus === 'SUBMITTING' ? 'Запуск...' : 'Очередь'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </motion.div>
         )}

@@ -11,20 +11,14 @@ export async function POST(req: Request) {
     }
     const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
 
-    // Если есть картинка - используем image-to-video, иначе text-to-video
-    const model = start_image ? 'kling-video/v2.1/pro/image-to-video' : 'kling-video/v2.1/pro/text-to-video';
-    const inputPayload: any = {
-      prompt: finalPrompt,
-      duration: 5
-    };
-    if (start_image) {
-      inputPayload.image_url = start_image;
-    } else {
-      inputPayload.aspect_ratio = '9:16';
-    }
-
-    const response = await client.subscribe(model, {
-      input: inputPayload,
+    // Всегда используем image-to-video с заглушкой, если нет маскота
+    const finalImage = start_image || 'https://placehold.co/1080x1920/333333/333333.png';
+    const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
+      input: {
+        image_url: finalImage,
+        prompt: finalPrompt,
+        duration: 5
+      },
       withPolling: false
     });
 
