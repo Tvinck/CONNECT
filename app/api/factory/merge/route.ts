@@ -38,6 +38,16 @@ function wrapText(text: string, maxChars = 28) {
   return lines.join('\n');
 }
 
+// Безопасный путь для FFmpeg (особенно важно на Windows из-за двоеточий в путях)
+function getFFmpegSafePath(filePath: string) {
+  let p = filePath.replace(/\\/g, '/');
+  // На Windows экранируем двоеточие после буквы диска
+  if (p.includes(':')) {
+    p = p.replace(/:/g, '\\\\:');
+  }
+  return p;
+}
+
 export async function POST(req: Request) {
   try {
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
@@ -72,7 +82,7 @@ export async function POST(req: Request) {
       fs.writeFileSync(textFilePath, wrappedText, 'utf8');
 
       // Готовим фильтр субтитров с чтением из файла
-      const textFilter = text ? `,drawtext=textfile='${textFilePath.replace(/\\/g, '/')}':fontcolor=yellow:fontsize=44:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-350` : '';
+      const textFilter = text ? `,drawtext=textfile='${getFFmpegSafePath(textFilePath)}':fontcolor=yellow:fontsize=44:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-350` : '';
 
       await new Promise<void>((resolve, reject) => {
         ffmpeg()
