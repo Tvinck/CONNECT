@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     if (!script) {
       return NextResponse.json({ error: 'Сценарий не передан' }, { status: 400 });
     }
+    const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
 
     // Подписываемся на задачу генерации
     const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
