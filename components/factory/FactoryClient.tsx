@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Wand2, Loader2, Copy, Check, Video, Download, Mic, Coins, Clock, ThumbsUp, ThumbsDown, MessageSquare, Send, Users, Cpu, FileText, LayoutTemplate, Palette, Sparkles, Volume2, Film, RefreshCw } from 'lucide-react'
+import { Wand2, Loader2, Copy, Check, Video, Download, Mic, Coins, Clock, ThumbsUp, ThumbsDown, MessageSquare, Send, Users, Cpu, FileText, LayoutTemplate, Palette, Sparkles, Volume2, Film, RefreshCw, Play } from 'lucide-react'
 
 interface ChunkState {
   id: number;
@@ -592,12 +592,22 @@ export function FactoryClient() {
                   {getOverallProgressText()}
                 </p>
               </div>
-              <button 
-                onClick={() => { localStorage.clear(); setChunks([]); setMergedUrl(''); setMusicUrl(''); }} 
-                className="text-xs bg-muted hover:bg-muted/80 text-muted-foreground px-3 py-2 rounded-lg border flex items-center gap-1"
-              >
-                Сбросить сессию
-              </button>
+              <div className="flex gap-2">
+                {currentActiveIndex === null && !mergedUrl && !isMerging && chunks.some(c => !c.processedUrl) && (
+                  <button 
+                    onClick={() => processSceneQueue(chunks)} 
+                    className="text-xs bg-violet-600 hover:bg-violet-700 text-white font-bold px-3 py-2 rounded-lg flex items-center gap-1 shadow-md transition-all"
+                  >
+                    <Play className="w-3.5 h-3.5" /> Продолжить рендер
+                  </button>
+                )}
+                <button 
+                  onClick={() => { localStorage.clear(); setChunks([]); setMergedUrl(''); setMusicUrl(''); }} 
+                  className="text-xs bg-muted hover:bg-muted/80 text-muted-foreground px-3 py-2 rounded-lg border flex items-center gap-1"
+                >
+                  Сбросить сессию
+                </button>
+              </div>
             </div>
 
             {mergedUrl && (
