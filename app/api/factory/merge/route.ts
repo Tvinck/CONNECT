@@ -51,11 +51,12 @@ function getFFmpegSafePath(filePath: string) {
 }
 
 export async function POST(req: Request) {
+  let body: any = null;
   try {
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
     ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-    const body = await req.json();
+    body = await req.json();
     const { action } = body;
 
     const tmpDir = '/tmp';
