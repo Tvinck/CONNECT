@@ -102,6 +102,7 @@ export async function GET(req: Request) {
 
     const url = result.video?.url || 
                 (result.images && result.images[0]?.url) || 
+                result.image?.url ||
                 result.audio?.url ||
                 (result.audios && result.audios[0]?.url) ||
                 '';
