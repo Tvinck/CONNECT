@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
-    const command = `npx --yes -p @higgsfield/cli higgsfield generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
+    const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
     
     const { stdout } = await execAsync(command);
     const result = JSON.parse(stdout.trim());
