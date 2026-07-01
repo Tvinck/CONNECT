@@ -5,6 +5,8 @@ import { setupCredentials, persistRefreshedCredentials } from '@/lib/cliCreds';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 const execAsync = promisify(exec);
 
 export async function GET(req: Request) {
