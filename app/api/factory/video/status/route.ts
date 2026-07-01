@@ -3,8 +3,14 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
+import { createClient } from '@supabase/supabase-js';
 
 const execAsync = promisify(exec);
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(req: Request) {
   try {
@@ -18,18 +24,41 @@ export async function GET(req: Request) {
     // --- B2C (CLI) Tasks (Для аудио) ---
     if (taskId.startsWith('b2c:')) {
       const realId = taskId.replace('b2c:', '');
-      const b2cToken = process.env.HIGGSFIELD_B2C_TOKEN;
-      if (!b2cToken) return NextResponse.json({ error: 'Нет B2C токена' }, { status: 500 });
       
-      const configDir1 = '/tmp/.config/higgsfield';
-      const configDir2 = '/tmp/higgsfield';
+      const cliToken = process.env.HIGGSFIELD_CLI_TOKEN;
+      const cliRefresh = process.env.HIGGSFIELD_CLI_REFRESH;
+      if (!cliToken) return NextResponse.json({ error: 'Нет CLI токена' }, { status: 500 });
+      
+      const tmpBase = os.tmpdir();
+      const configDir1 = path.join(tmpBase, '.config', 'higgsfield');
+      const configDir2 = path.join(tmpBase, 'higgsfield');
       fs.mkdirSync(configDir1, { recursive: true });
       fs.mkdirSync(configDir2, { recursive: true });
-      fs.writeFileSync(path.join(configDir1, 'credentials.json'), JSON.stringify({ access_token: b2cToken }));
-      fs.writeFileSync(path.join(configDir2, 'credentials.json'), JSON.stringify({ access_token: b2cToken }));
+      
+      let creds = { access_token: cliToken, refresh_token: cliRefresh || '' };
+      const { data: fileData, error: downloadError } = await supabase.storage.from('support-attachments').download('cli_credentials.json');
+      if (fileData && !downloadError) {
+        try {
+          const text = await fileData.text();
+          creds = JSON.parse(text);
+        } catch (e) {}
+      }
+
+      const credPath1 = path.join(configDir1, 'credentials.json');
+      const credPath2 = path.join(configDir2, 'credentials.json');
+      fs.writeFileSync(credPath1, JSON.stringify(creds));
+      fs.writeFileSync(credPath2, JSON.stringify(creds));
       
       const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate get ${realId} --json`;
-      const { stdout } = await execAsync(command, { env: { ...process.env, HOME: '/tmp', XDG_CONFIG_HOME: '/tmp' } });
+      const { stdout } = await execAsync(command, { env: { ...process.env, HOME: tmpBase, XDG_CONFIG_HOME: tmpBase } });
+      
+      try {
+        const newCredsText = fs.readFileSync(credPath1, 'utf8');
+        if (newCredsText !== JSON.stringify(creds)) {
+          await supabase.storage.from('support-attachments').upload('cli_credentials.json', newCredsText, { upsert: true, contentType: 'application/json' });
+        }
+      } catch (e) {}
+
       const result = JSON.parse(stdout.trim());
       
       let status = 'IN_PROGRESS';
