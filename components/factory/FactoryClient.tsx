@@ -263,13 +263,18 @@ export function FactoryClient() {
           let imageUrl = ''
           while (!imageUrl) {
             await new Promise(r => setTimeout(r, 4000))
-            const statusRes = await fetch(`/api/factory/video/status?taskId=${imgData.taskId}`)
-            const statusData = await statusRes.json()
-            if (statusData.status === 'COMPLETED') {
-              imageUrl = statusData.videoUrl
-              setChunks(prev => prev.map(c => c.id === i ? { ...c, imageStatus: 'COMPLETED', imageUrl } : c))
-            } else if (statusData.status === 'FAILED') {
-              throw new Error('Сбой отрисовки первого кадра во Flux')
+            try {
+              const statusRes = await fetch(`/api/factory/video/status?taskId=${imgData.taskId}`)
+              const statusData = await statusRes.json()
+              if (statusData.status === 'COMPLETED') {
+                imageUrl = statusData.videoUrl
+                setChunks(prev => prev.map(c => c.id === i ? { ...c, imageStatus: 'COMPLETED', imageUrl } : c))
+              } else if (statusData.status === 'FAILED') {
+                throw new Error('Сбой отрисовки первого кадра во Flux')
+              }
+            } catch (pollErr: any) {
+              if (pollErr.message && pollErr.message.includes('Сбой отрисовки')) throw pollErr;
+              console.warn('Temporary Flux image poll failure:', pollErr);
             }
           }
           startingImage = imageUrl;
@@ -313,24 +318,34 @@ export function FactoryClient() {
           await new Promise(resolve => setTimeout(resolve, 5000))
 
           if (!videoUrl) {
-            const statusRes = await fetch(`/api/factory/video/status?taskId=${vidData.taskId}`)
-            const statusData = await statusRes.json()
-            if (statusData.status === 'COMPLETED') {
-              videoUrl = statusData.videoUrl
-              setChunks(prev => prev.map(c => c.id === i ? { ...c, videoStatus: 'COMPLETED', videoUrl } : c))
-            } else if (statusData.status === 'FAILED') {
-              throw new Error(`Сбой анимации в сцене ${i + 1}`)
+            try {
+              const statusRes = await fetch(`/api/factory/video/status?taskId=${vidData.taskId}`)
+              const statusData = await statusRes.json()
+              if (statusData.status === 'COMPLETED') {
+                videoUrl = statusData.videoUrl
+                setChunks(prev => prev.map(c => c.id === i ? { ...c, videoStatus: 'COMPLETED', videoUrl } : c))
+              } else if (statusData.status === 'FAILED') {
+                throw new Error(`Сбой анимации в сцене ${i + 1}`)
+              }
+            } catch (pollErr: any) {
+              if (pollErr.message && pollErr.message.includes('Сбой анимации')) throw pollErr;
+              console.warn('Temporary video poll failure:', pollErr);
             }
           }
 
           if (!audioUrl) {
-            const statusRes = await fetch(`/api/factory/video/status?taskId=${audData.taskId}`)
-            const statusData = await statusRes.json()
-            if (statusData.status === 'COMPLETED') {
-              audioUrl = statusData.videoUrl
-              setChunks(prev => prev.map(c => c.id === i ? { ...c, audioStatus: 'COMPLETED', audioUrl } : c))
-            } else if (statusData.status === 'FAILED') {
-              throw new Error(`Сбой озвучки в сцене ${i + 1}`)
+            try {
+              const statusRes = await fetch(`/api/factory/video/status?taskId=${audData.taskId}`)
+              const statusData = await statusRes.json()
+              if (statusData.status === 'COMPLETED') {
+                audioUrl = statusData.videoUrl
+                setChunks(prev => prev.map(c => c.id === i ? { ...c, audioStatus: 'COMPLETED', audioUrl } : c))
+              } else if (statusData.status === 'FAILED') {
+                throw new Error(`Сбой озвучки в сцене ${i + 1}`)
+              }
+            } catch (pollErr: any) {
+              if (pollErr.message && pollErr.message.includes('Сбой озвучки')) throw pollErr;
+              console.warn('Temporary audio poll failure:', pollErr);
             }
           }
         }
