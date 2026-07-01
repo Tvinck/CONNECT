@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // Подписываемся на задачу генерации
     const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
       input: {
-        image_url: '1b2ef010-50b6-4a19-8db6-8707d03013b9',
+        image_url: 'https://connect-4va6.vercel.app/mascot.png',
         prompt: script,
         duration: 5
       },
