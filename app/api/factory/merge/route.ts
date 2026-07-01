@@ -4,9 +4,15 @@ import path from 'path';
 import fs from 'fs';
 import { randomUUID } from 'crypto';
 
+import { createClient } from '@supabase/supabase-js';
+
+// Инициализируем Supabase клиент
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 export async function POST(req: Request) {
   try {
-    // Устанавливаем путь динамически, чтобы не ломать сборку Next.js
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
     ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -38,23 +44,25 @@ export async function POST(req: Request) {
         .on('end', async () => {
           try {
             const fileBuffer = fs.readFileSync(outputPath);
-            const blob = new Blob([fileBuffer], { type: 'video/mp4' });
-            const formData = new FormData();
-            formData.append('reqtype', 'fileupload');
-            formData.append('fileToUpload', blob, outputFileName);
             
-            const uploadRes = await fetch('https://catbox.moe/user/api.php', {
-              method: 'POST',
-              body: formData
-            });
-            const textUrl = await uploadRes.text();
+            // Загружаем в Supabase storage
+            const { data, error } = await supabase.storage
+              .from('support-attachments')
+              .upload(`renders/${outputFileName}`, fileBuffer, {
+                contentType: 'video/mp4',
+                upsert: false
+              });
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage
+              .from('support-attachments')
+              .getPublicUrl(`renders/${outputFileName}`);
             
-            // Очищаем временный файл
             fs.unlinkSync(outputPath);
-            
-            resolve(NextResponse.json({ mergedUrl: textUrl }));
-          } catch(e) {
-            console.error('Catbox upload error:', e);
+            resolve(NextResponse.json({ mergedUrl: publicUrl }));
+          } catch(e: any) {
+            console.error('Supabase upload error:', e.message);
             resolve(NextResponse.json({ error: 'Ошибка при загрузке видео' }, { status: 500 }));
           }
         })
