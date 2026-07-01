@@ -35,12 +35,22 @@ export async function GET(req: Request) {
       fs.mkdirSync(configDir1, { recursive: true });
       fs.mkdirSync(configDir2, { recursive: true });
       
-      let creds = { access_token: cliToken, refresh_token: cliRefresh || '' };
-      const { data: fileData, error: downloadError } = await supabase.storage.from('support-attachments').download('cli_credentials.json');
-      if (fileData && !downloadError) {
+      // Загружаем креды из базы данных Supabase
+      const cliTokenEnv = process.env.HIGGSFIELD_CLI_TOKEN;
+      const cliRefreshEnv = process.env.HIGGSFIELD_CLI_REFRESH;
+      let creds = { access_token: cliTokenEnv, refresh_token: cliRefreshEnv || '' };
+      
+      const { data: dbData, error: downloadError } = await supabase
+        .from('factory_generations')
+        .select('video_url')
+        .eq('prompt', 'cli_credentials')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (dbData && !downloadError) {
         try {
-          const text = await fileData.text();
-          creds = JSON.parse(text);
+          creds = JSON.parse(dbData.video_url);
         } catch (e) {}
       }
 
@@ -55,7 +65,10 @@ export async function GET(req: Request) {
       try {
         const newCredsText = fs.readFileSync(credPath1, 'utf8');
         if (newCredsText !== JSON.stringify(creds)) {
-          await supabase.storage.from('support-attachments').upload('cli_credentials.json', newCredsText, { upsert: true, contentType: 'application/json' });
+          await supabase.from('factory_generations').insert({
+            prompt: 'cli_credentials',
+            video_url: newCredsText
+          });
         }
       } catch (e) {}
 

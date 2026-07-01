@@ -43,15 +43,19 @@ async function sync() {
   console.log(`Найден локальный файл авторизации: ${credsPath}`);
   const credsText = fs.readFileSync(credsPath, 'utf8');
 
-  console.log("Синхронизация токена с облаком Supabase...");
-  const { data, error } = await supabase.storage
-    .from('support-attachments')
-    .upload('cli_credentials.json', credsText, { upsert: true, contentType: 'application/json' });
+  console.log("Синхронизация нового токена с базой данных Supabase...");
+  const { data, error } = await supabase
+    .from('factory_generations')
+    .insert({
+      prompt: 'cli_credentials',
+      video_url: credsText
+    })
+    .select();
 
   if (error) {
-    console.error("Ошибка загрузки:", error.message);
+    console.error("Ошибка сохранения в базу данных:", error.message);
   } else {
-    console.log("УСПЕХ! Авторизация ИИ Завода обновлена в облаке! 🎉");
+    console.log("УСПЕХ! Авторизация ИИ Завода обновлена в базе данных! 🎉");
   }
 }
 

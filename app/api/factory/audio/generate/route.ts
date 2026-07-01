@@ -33,13 +33,19 @@ export async function POST(req: Request) {
     fs.mkdirSync(configDir1, { recursive: true });
     fs.mkdirSync(configDir2, { recursive: true });
     
-    // Пытаемся скачать свежие креды из Supabase (чтобы обойти stateless природу Vercel)
+    // Пытаемся загрузить свежие креды из базы данных Supabase
     let creds = { access_token: cliToken, refresh_token: cliRefresh || '' };
-    const { data: fileData, error: downloadError } = await supabase.storage.from('support-attachments').download('cli_credentials.json');
-    if (fileData && !downloadError) {
+    const { data: dbData, error: downloadError } = await supabase
+      .from('factory_generations')
+      .select('video_url')
+      .eq('prompt', 'cli_credentials')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (dbData && !downloadError) {
       try {
-        const text = await fileData.text();
-        creds = JSON.parse(text);
+        creds = JSON.parse(dbData.video_url);
       } catch (e) {}
     }
 
@@ -59,8 +65,11 @@ export async function POST(req: Request) {
     try {
       const newCredsText = fs.readFileSync(credPath1, 'utf8');
       if (newCredsText !== JSON.stringify(creds)) {
-        // Загружаем обновленные креды в Supabase
-        await supabase.storage.from('support-attachments').upload('cli_credentials.json', newCredsText, { upsert: true, contentType: 'application/json' });
+        // Загружаем обновленные креды в базу данных Supabase
+        await supabase.from('factory_generations').insert({
+          prompt: 'cli_credentials',
+          video_url: newCredsText
+        });
       }
     } catch (e) {
       console.error('Failed to save refreshed credentials', e);
