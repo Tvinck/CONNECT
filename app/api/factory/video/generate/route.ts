@@ -3,20 +3,28 @@ import { createHiggsfieldClient } from '@higgsfield/client/v2';
 
 export async function POST(req: Request) {
   try {
-    const { script } = await req.json();
+    const { script, start_image, prompt: customPrompt } = await req.json();
 
-    if (!script) {
+    const finalPrompt = customPrompt || script;
+    if (!finalPrompt) {
       return NextResponse.json({ error: 'Сценарий не передан' }, { status: 400 });
     }
     const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
 
-    // Подписываемся на задачу генерации
-    const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
-      input: {
-        image_url: 'https://files.catbox.moe/d45nqz.png',
-        prompt: script,
-        duration: 5
-      },
+    // Если есть картинка - используем image-to-video, иначе text-to-video
+    const model = start_image ? 'kling-video/v2.1/pro/image-to-video' : 'kling-video/v2.1/pro/text-to-video';
+    const inputPayload: any = {
+      prompt: finalPrompt,
+      duration: 5
+    };
+    if (start_image) {
+      inputPayload.image_url = start_image;
+    } else {
+      inputPayload.aspect_ratio = '9:16';
+    }
+
+    const response = await client.subscribe(model, {
+      input: inputPayload,
       withPolling: false
     });
 
