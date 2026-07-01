@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 const execAsync = promisify(exec);
 
@@ -20,9 +21,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Добавьте HIGGSFIELD_CLI_TOKEN в настройки Vercel' }, { status: 500 });
     }
 
-    // Подготовка окружения для CLI (создаем временный auth.json в /tmp)
-    const configDir1 = '/tmp/.config/higgsfield';
-    const configDir2 = '/tmp/higgsfield';
+    // Подготовка окружения для CLI (создаем временный auth.json кроссплатформенно)
+    const tmpBase = os.tmpdir();
+    const configDir1 = path.join(tmpBase, '.config', 'higgsfield');
+    const configDir2 = path.join(tmpBase, 'higgsfield');
     fs.mkdirSync(configDir1, { recursive: true });
     fs.mkdirSync(configDir2, { recursive: true });
     
@@ -34,7 +36,7 @@ export async function POST(req: Request) {
     const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
     
     const { stdout } = await execAsync(command, { 
-      env: { ...process.env, HOME: '/tmp', XDG_CONFIG_HOME: '/tmp' } 
+      env: { ...process.env, HOME: tmpBase, XDG_CONFIG_HOME: tmpBase } 
     });
     
     const result = JSON.parse(stdout.trim());

@@ -19,7 +19,8 @@ const securityHeaders = [
       "font-src 'self' data:",
       "img-src 'self' data: blob: https://*.supabase.co https://*.suno.ai https://*.suno.co https://www.google.com https://t1.gstatic.com https://*.steamstatic.com https://*.akamaihd.net",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.suno.ai https://*.suno.co wss://*.suno.ai",
-      "media-src 'self' https://*.suno.ai https://*.suno.co",
+      "media-src 'self' https://*.suno.ai https://*.suno.co https://*.supabase.co https://catbox.moe https://*.catbox.moe blob: data:",
+
       "frame-ancestors 'none'",
     ].join('; '),
   },
