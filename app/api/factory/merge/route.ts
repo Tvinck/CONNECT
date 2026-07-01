@@ -112,7 +112,13 @@ export async function POST(req: Request) {
           .input(audioPath)
           .outputOptions([
             '-c:v libx264',
+            '-crf 28',
+            '-preset medium',
+            '-b:v 1.2M',
+            '-maxrate 1.5M',
+            '-bufsize 3M',
             '-c:a aac',
+            '-b:a 96k',
             '-map 0:v:0',
             '-map 1:a:0',
             '-shortest',
