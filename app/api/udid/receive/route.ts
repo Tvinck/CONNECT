@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     console.log(`Successfully extracted UDID: ${udid}, Product: ${product}`);
 
     // Bazzar Market URL
-    const marketUrl = process.env.NEXT_PUBLIC_MARKET_URL || 'https://bazzar-serts.vercel.app';
+    const marketUrl = process.env.NEXT_PUBLIC_MARKET_URL || 'https://bazzar-serts.shop';
     
     // Redirect the user back to the market with their UDID
     // Safari will follow this 301 redirect automatically
