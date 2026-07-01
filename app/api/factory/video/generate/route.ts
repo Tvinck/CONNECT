@@ -11,10 +11,14 @@ export async function POST(req: Request) {
 
     const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
     
+    const host = req.headers.get('host') || 'connect-4va6.vercel.app';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const imageUrl = `${protocol}://${host}/mascot.png`;
+
     // Подписываемся на задачу генерации
     const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
       input: {
-        image_url: 'https://connect-4va6.vercel.app/mascot.png',
+        image_url: imageUrl,
         prompt: script,
         duration: 5
       },
