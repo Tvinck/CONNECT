@@ -40,7 +40,7 @@ Return ONLY a JSON array of objects with the following format:
 No markdown blocks, just the raw JSON array.`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
       const response = await fetch(`${anthropicUrl}/v1/messages`, {
@@ -88,7 +88,7 @@ No markdown blocks, just the raw JSON array.`;
       clearTimeout(timeoutId);
       if (fetchErr.name === 'AbortError') {
         console.error('Claude API request timed out');
-        return NextResponse.json({ error: 'Запрос к Claude превысил лимит времени (15 сек)' }, { status: 504 });
+        return NextResponse.json({ error: 'Запрос к Claude превысил лимит времени (45 сек)' }, { status: 504 });
       }
       throw fetchErr;
     }

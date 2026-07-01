@@ -193,7 +193,7 @@ export function FactoryClient() {
     updateAgentStatus('director', 'active')
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    const timeoutId = setTimeout(() => controller.abort(), 50000);
     
     try {
       const planRes = await fetch('/api/factory/plan', {
