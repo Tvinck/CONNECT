@@ -11,8 +11,16 @@ export async function POST(req: Request) {
     }
     const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
 
-    // Всегда используем image-to-video с заглушкой, если нет маскота
-    const finalImage = start_image || 'https://placehold.co/1080x1920/333333/333333.png';
+    const host = req.headers.get('host') || 'connect-4va6.vercel.app';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const mascotUrl = `${protocol}://${host}/mascot.png`;
+
+    let finalImage = start_image || 'https://placehold.co/1080x1920/333333/333333.png';
+    // Если передан UUID маскота или не валидный URL, подменяем на абсолютную ссылку на mascot.png
+    if (finalImage === '1b2ef010-50b6-4a19-8db6-8707d03013b9' || !finalImage.startsWith('http')) {
+      finalImage = mascotUrl;
+    }
+
     const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
       input: {
         image_url: finalImage,
