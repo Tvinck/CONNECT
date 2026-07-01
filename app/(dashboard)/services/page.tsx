@@ -41,7 +41,7 @@ const CATS = [
 ]
 
 const SERVICES = [
-  { slug: 'bazzar-certs',   name: 'Bazzar Certs',        desc: 'Сертификаты Apple Developer', cat: 'dev', color: '#3b82f6', icon: 'Globe', url: 'https://bazzar-serts.vercel.app' },
+  { slug: 'bazzar-certs',   name: 'Bazzar Certs',        desc: 'Сертификаты Apple Developer', cat: 'dev', color: '#3b82f6', icon: 'Globe', url: 'https://bazzar-serts.shop' },
   { slug: 'bot-certs',      name: 'Бот @one_ibot',       desc: 'Telegram-бот сертификатов',   cat: 'dev', color: '#0ea5e9', icon: 'MessageSquare', url: 'https://t.me/one_ibot' },
   { slug: 'bazzar-market',  name: 'Bazzar Market',       desc: 'Маркетплейс товаров',         cat: 'dev', color: '#10b981', icon: 'Globe' },
   { slug: 'veil-vpn',       name: 'Veil VPN',            desc: 'VPN сервис',                  cat: 'dev', color: '#8b5cf6', icon: 'Globe' },
