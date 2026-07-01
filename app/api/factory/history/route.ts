@@ -6,7 +6,7 @@ const execAsync = promisify(exec);
 
 export async function GET() {
   try {
-    const { stdout } = await execAsync('npx higgsfield generate list --json');
+    const { stdout } = await execAsync('npx --yes -p @higgsfield/cli higgsfield generate list --json');
     const jobs = JSON.parse(stdout.trim());
     return NextResponse.json({ jobs });
   } catch (error: any) {

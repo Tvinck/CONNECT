@@ -13,7 +13,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }
 
-    const command = `npx higgsfield generate get ${taskId} --json`;
+    const command = `npx --yes -p @higgsfield/cli higgsfield generate get ${taskId} --json`;
     const { stdout } = await execAsync(command);
     const result = JSON.parse(stdout.trim());
     

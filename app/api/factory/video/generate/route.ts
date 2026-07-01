@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
     // Используем kling3_0_turbo с форматом 9:16 и эталонным Енотом
-    const command = `npx higgsfield generate create kling3_0_turbo --aspect_ratio 9:16 --start-image 1b2ef010-50b6-4a19-8db6-8707d03013b9 --prompt "${cleanScript}" --json`;
+    const command = `npx --yes -p @higgsfield/cli higgsfield generate create kling3_0_turbo --aspect_ratio 9:16 --start-image 1b2ef010-50b6-4a19-8db6-8707d03013b9 --prompt "${cleanScript}" --json`;
     
     const { stdout } = await execAsync(command);
     const result = JSON.parse(stdout.trim());
