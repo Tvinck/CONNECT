@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     
     // Пытаемся скачать свежие креды из Supabase (чтобы обойти stateless природу Vercel)
     let creds = { access_token: cliToken, refresh_token: cliRefresh || '' };
-    const { data: fileData, error: downloadError } = await supabase.storage.from('videos').download('cli_credentials.json');
+    const { data: fileData, error: downloadError } = await supabase.storage.from('support-attachments').download('cli_credentials.json');
     if (fileData && !downloadError) {
       try {
         const text = await fileData.text();
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       const newCredsText = fs.readFileSync(credPath1, 'utf8');
       if (newCredsText !== JSON.stringify(creds)) {
         // Загружаем обновленные креды в Supabase
-        await supabase.storage.from('videos').upload('cli_credentials.json', newCredsText, { upsert: true, contentType: 'application/json' });
+        await supabase.storage.from('support-attachments').upload('cli_credentials.json', newCredsText, { upsert: true, contentType: 'application/json' });
       }
     } catch (e) {
       console.error('Failed to save refreshed credentials', e);
