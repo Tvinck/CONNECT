@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server';
-import { createHiggsfieldClient } from '@higgsfield/client/v2';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { createClient } from '@supabase/supabase-js';
+
+const execAsync = promisify(exec);
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(req: Request) {
   try {
@@ -9,26 +20,70 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Промпт не передан' }, { status: 400 });
     }
 
-    const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
+    const cliToken = process.env.HIGGSFIELD_CLI_TOKEN;
+    const cliRefresh = process.env.HIGGSFIELD_CLI_REFRESH;
+    if (!cliToken) {
+      return NextResponse.json({ error: 'Добавьте HIGGSFIELD_CLI_TOKEN в настройки Vercel' }, { status: 500 });
+    }
 
-    // Запускаем генерацию изображения Flux.2
-    const response = await client.subscribe('flux_2', {
-      input: {
-        prompt: prompt,
-        aspect_ratio: '9:16',
-        model: 'pro',
-        resolution: '1k'
-      },
-      withPolling: false
+    // Подготовка окружения для CLI
+    const tmpBase = os.tmpdir();
+    const configDir1 = path.join(tmpBase, '.config', 'higgsfield');
+    const configDir2 = path.join(tmpBase, 'higgsfield');
+    fs.mkdirSync(configDir1, { recursive: true });
+    fs.mkdirSync(configDir2, { recursive: true });
+    
+    // Загружаем свежие креды из базы данных Supabase
+    let creds = { access_token: cliToken, refresh_token: cliRefresh || '' };
+    const { data: dbData, error: downloadError } = await supabase
+      .from('factory_generations')
+      .select('video_url')
+      .eq('prompt', 'cli_credentials')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (dbData && !downloadError) {
+      try {
+        creds = JSON.parse(dbData.video_url);
+      } catch (e) {}
+    }
+
+    const credPath1 = path.join(configDir1, 'credentials.json');
+    const credPath2 = path.join(configDir2, 'credentials.json');
+    fs.writeFileSync(credPath1, JSON.stringify(creds));
+    fs.writeFileSync(credPath2, JSON.stringify(creds));
+
+    const cleanPrompt = prompt.replace(/"/g, '\\"').replace(/\n/g, ' ');
+    const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create flux_2 --prompt "${cleanPrompt}" --aspect_ratio "9:16" --json`;
+    
+    const { stdout } = await execAsync(command, { 
+      env: { ...process.env, HOME: tmpBase, XDG_CONFIG_HOME: tmpBase } 
     });
+    
+    // Проверяем, обновил ли CLI токены (при рефреше сессии)
+    try {
+      const newCredsText = fs.readFileSync(credPath1, 'utf8');
+      if (newCredsText !== JSON.stringify(creds)) {
+        // Загружаем обновленные креды в базу данных Supabase
+        await supabase.from('factory_generations').insert({
+          prompt: 'cli_credentials',
+          video_url: newCredsText
+        });
+      }
+    } catch (e) {
+      console.error('Failed to save refreshed credentials', e);
+    }
 
-    if (response && response.request_id) {
-      return NextResponse.json({ taskId: response.request_id });
+    const result = JSON.parse(stdout.trim());
+    
+    if (Array.isArray(result) && result.length > 0) {
+      return NextResponse.json({ taskId: 'b2c:' + result[0] });
     }
     
     return NextResponse.json({ error: 'Не удалось получить ID задачи' }, { status: 500 });
   } catch (error: any) {
-    console.error('Image Gen Error:', error?.response?.data || error.message);
-    return NextResponse.json({ error: error?.response?.data?.detail || error.message }, { status: 500 });
+    console.error('Image Gen Error:', error.stderr || error.message);
+    return NextResponse.json({ error: error.stderr || error.message }, { status: 500 });
   }
 }
