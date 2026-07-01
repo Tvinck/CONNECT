@@ -83,15 +83,7 @@ export async function POST(req: Request) {
       const wrappedText = wrapText(text || '');
       fs.writeFileSync(textFilePath, wrappedText, 'utf8');
 
-      const fontFilePath = path.join(tmpDir, 'Montserrat-Bold.ttf');
-      if (!fs.existsSync(fontFilePath)) {
-        try {
-          console.log('Downloading font to /tmp/Montserrat-Bold.ttf...');
-          await downloadFile('https://github.com/JulietaUla/Montserrat/raw/master/fonts/ttf/Montserrat-Bold.ttf', fontFilePath);
-        } catch (fontErr) {
-          console.error('Failed to download font:', fontErr);
-        }
-      }
+      const fontFilePath = path.join(process.cwd(), 'public', 'fonts', 'Montserrat-Bold.ttf');
 
       // Готовим фильтр субтитров с чтением из файла
       const textFilter = text ? `,drawtext=textfile='${getFFmpegSafePath(textFilePath)}':fontfile='${getFFmpegSafePath(fontFilePath)}':fontcolor=yellow:fontsize=44:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-350` : '';
