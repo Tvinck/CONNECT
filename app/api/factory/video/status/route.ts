@@ -21,9 +21,12 @@ export async function GET(req: Request) {
       const b2cToken = process.env.HIGGSFIELD_B2C_TOKEN;
       if (!b2cToken) return NextResponse.json({ error: 'Нет B2C токена' }, { status: 500 });
       
-      const configDir = '/tmp/.config/higgsfield';
-      fs.mkdirSync(configDir, { recursive: true });
-      fs.writeFileSync(path.join(configDir, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
+      const configDir1 = '/tmp/.config/higgsfield';
+      const configDir2 = '/tmp/higgsfield';
+      fs.mkdirSync(configDir1, { recursive: true });
+      fs.mkdirSync(configDir2, { recursive: true });
+      fs.writeFileSync(path.join(configDir1, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
+      fs.writeFileSync(path.join(configDir2, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
       
       const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate get ${realId} --json`;
       const { stdout } = await execAsync(command, { env: { ...process.env, HOME: '/tmp', XDG_CONFIG_HOME: '/tmp' } });

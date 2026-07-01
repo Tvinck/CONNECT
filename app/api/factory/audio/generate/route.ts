@@ -20,9 +20,12 @@ export async function POST(req: Request) {
     }
 
     // Подготовка окружения для CLI (создаем временный auth.json в /tmp)
-    const configDir = '/tmp/.config/higgsfield';
-    fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(path.join(configDir, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
+    const configDir1 = '/tmp/.config/higgsfield';
+    const configDir2 = '/tmp/higgsfield';
+    fs.mkdirSync(configDir1, { recursive: true });
+    fs.mkdirSync(configDir2, { recursive: true });
+    fs.writeFileSync(path.join(configDir1, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
+    fs.writeFileSync(path.join(configDir2, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
 
     const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
     const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
