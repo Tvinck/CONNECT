@@ -18,9 +18,24 @@ async function downloadFile(url: string, dest: string) {
   fs.writeFileSync(dest, buffer);
 }
 
-// Экранирование текста для drawtext (если не используем textfile)
-function escapeDrawtext(text: string) {
-  return text.replace(/\\/g, '\\\\').replace(/:/g, '\\:').replace(/'/g, "\\'").replace(/%/g, '\\%');
+// Умный перенос слов для субтитров
+function wrapText(text: string, maxChars = 28) {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+  
+  for (const word of words) {
+    if ((currentLine + word).length > maxChars) {
+      lines.push(currentLine.trim());
+      currentLine = word + ' ';
+    } else {
+      currentLine += word + ' ';
+    }
+  }
+  if (currentLine) {
+    lines.push(currentLine.trim());
+  }
+  return lines.join('\n');
 }
 
 export async function POST(req: Request) {
@@ -28,49 +43,41 @@ export async function POST(req: Request) {
     const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
     ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
-    const { chunks, prompt, musicUrl } = await req.json();
-
-    if (!chunks || !Array.isArray(chunks) || chunks.length === 0) {
-      return NextResponse.json({ error: 'Требуется массив chunks' }, { status: 400 });
-    }
+    const body = await req.json();
+    const { action } = body;
 
     const tmpDir = '/tmp';
     if (!fs.existsSync(tmpDir)) {
       fs.mkdirSync(tmpDir, { recursive: true });
     }
 
-    const runId = randomUUID();
-    const outputFileName = `merged_${runId}.mp4`;
-    const finalOutputPath = path.join(tmpDir, `concat_${outputFileName}`);
-    const finalMusicOutputPath = path.join(tmpDir, outputFileName);
-    const concatListPath = path.join(tmpDir, `concat_${runId}.txt`);
-    const musicPath = path.join(tmpDir, `music_${runId}.mp3`);
-    
-    let concatFileContent = '';
-    const filesToCleanup: string[] = [concatListPath, finalOutputPath, finalMusicOutputPath, musicPath];
+    // --- Действие 1: Обработка отдельного чанка (Склейка видео+аудио + Автоперенос субтитров) ---
+    if (action === 'process_chunk') {
+      const { videoUrl, audioUrl, text, chunkIndex } = body;
+      if (!videoUrl || !audioUrl) {
+        return NextResponse.json({ error: 'Пропущен videoUrl или audioUrl' }, { status: 400 });
+      }
 
-    // Обрабатываем каждый чанк по очереди (скачиваем, склеиваем, накладываем сабы)
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      const videoPath = path.join(tmpDir, `video_${runId}_${i}.mp4`);
-      const audioPath = path.join(tmpDir, `audio_${runId}_${i}.mp4`);
-      const chunkOutputPath = path.join(tmpDir, `chunk_${runId}_${i}.mp4`);
-      
-      filesToCleanup.push(videoPath, audioPath, chunkOutputPath);
+      const runId = randomUUID();
+      const videoPath = path.join(tmpDir, `v_${runId}.mp4`);
+      const audioPath = path.join(tmpDir, `a_${runId}.mp3`);
+      const textFilePath = path.join(tmpDir, `t_${runId}.txt`);
+      const chunkOutputPath = path.join(tmpDir, `out_${runId}.mp4`);
 
-      // Скачиваем исходники
-      await downloadFile(chunk.videoUrl, videoPath);
-      await downloadFile(chunk.audioUrl, audioPath);
+      await downloadFile(videoUrl, videoPath);
+      await downloadFile(audioUrl, audioPath);
 
-      // Готовим фильтр субтитров (желтый текст, черная обводка по центру внизу)
-      const cleanText = chunk.text ? chunk.text.replace(/\n/g, ' ') : '';
-      const textFilter = cleanText ? `,drawtext=text='${escapeDrawtext(cleanText)}':fontcolor=yellow:fontsize=48:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-250` : '';
+      // Записываем перенесенный текст в файл для безопасного рендеринга в FFmpeg
+      const wrappedText = wrapText(text || '');
+      fs.writeFileSync(textFilePath, wrappedText, 'utf8');
 
-      // Объединяем видео и аудио, накладываем текст.
+      // Готовим фильтр субтитров с чтением из файла
+      const textFilter = text ? `,drawtext=textfile='${textFilePath.replace(/\\/g, '/')}':fontcolor=yellow:fontsize=44:borderw=3:bordercolor=black:x=(w-text_w)/2:y=h-350` : '';
+
       await new Promise<void>((resolve, reject) => {
         ffmpeg()
           .input(videoPath)
-          .inputOptions(['-stream_loop -1']) // Зациклить видео, если оно короче звука
+          .inputOptions(['-stream_loop -1']) // Зациклить видео, если оно короче аудио
           .input(audioPath)
           .outputOptions([
             '-c:v libx264',
@@ -86,87 +93,134 @@ export async function POST(req: Request) {
           .on('error', (err) => reject(err));
       });
 
-      concatFileContent += `file '${chunkOutputPath}'\n`;
-    }
-
-    // Записываем список файлов для конкатенации
-    fs.writeFileSync(concatListPath, concatFileContent);
-
-    // Склеиваем все чанки в один файл
-    await new Promise<void>((resolve, reject) => {
-      ffmpeg()
-        .input(concatListPath)
-        .inputOptions(['-f concat', '-safe 0'])
-        .outputOptions(['-c copy', '-y'])
-        .save(finalOutputPath)
-        .on('end', () => resolve())
-        .on('error', (err) => reject(err));
-    });
-
-    let renderPath = finalOutputPath;
-
-    // Если есть фоновая музыка - накладываем её на готовое видео
-    if (musicUrl) {
-      try {
-        await downloadFile(musicUrl, musicPath);
-        
-        await new Promise<void>((resolve, reject) => {
-          ffmpeg()
-            .input(finalOutputPath)
-            .input(musicPath)
-            .complexFilter([
-              // Голос берем на 100% громкости, музыку тише (12%), обрезаем по длине первого стрима (голоса)
-              '[0:a]volume=1.0[voice];[1:a]volume=0.12[bgmusic];[voice][bgmusic]amix=inputs=2:duration=first[a]'
-            ])
-            .outputOptions([
-              '-c:v copy',
-              '-c:a aac',
-              '-map 0:v:0',
-              '-map [a]',
-              '-y'
-            ])
-            .save(finalMusicOutputPath)
-            .on('end', () => {
-              renderPath = finalMusicOutputPath;
-              resolve();
-            })
-            .on('error', (err) => reject(err));
+      // Загружаем обработанный чанк в Supabase
+      const fileBuffer = fs.readFileSync(chunkOutputPath);
+      const storagePath = `chunks/processed_${runId}.mp4`;
+      const { error } = await supabase.storage
+        .from('support-attachments')
+        .upload(storagePath, fileBuffer, {
+          contentType: 'video/mp4',
+          upsert: true
         });
-      } catch (musicErr) {
-        console.error('Failed to overlay music:', musicErr);
-      }
-    }
 
-    // Загружаем финальный файл в Supabase
-    const fileBuffer = fs.readFileSync(renderPath);
-    const { data, error } = await supabase.storage
-      .from('support-attachments')
-      .upload(`renders/${outputFileName}`, fileBuffer, {
-        contentType: 'video/mp4',
-        upsert: false
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('support-attachments')
+        .getPublicUrl(storagePath);
+
+      // Чистим временные файлы
+      [videoPath, audioPath, textFilePath, chunkOutputPath].forEach(f => {
+        try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {}
       });
 
-    if (error) throw error;
+      return NextResponse.json({ processedUrl: publicUrl });
+    }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('support-attachments')
-      .getPublicUrl(`renders/${outputFileName}`);
-    
-    // Сохраняем в историю
-    await supabase.from('factory_generations').insert({
-      prompt: prompt || 'Динамичное видео v4',
-      video_url: publicUrl
-    });
+    // --- Действие 2: Финальное объединение (Concat) и наложение музыки ---
+    if (action === 'concat') {
+      const { processedUrls, musicUrl, prompt } = body;
+      if (!processedUrls || !Array.isArray(processedUrls) || processedUrls.length === 0) {
+        return NextResponse.json({ error: 'Не передан массив processedUrls' }, { status: 400 });
+      }
 
-    // Очистка мусора
-    filesToCleanup.forEach(f => {
-      try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch(e){}
-    });
+      const runId = randomUUID();
+      const outputFileName = `final_${runId}.mp4`;
+      const concatListPath = path.join(tmpDir, `list_${runId}.txt`);
+      const mergedPath = path.join(tmpDir, `merged_${runId}.mp4`);
+      const finalMusicPath = path.join(tmpDir, `final_${runId}.mp4`);
+      const musicPath = path.join(tmpDir, `m_${runId}.mp3`);
 
-    return NextResponse.json({ mergedUrl: publicUrl });
+      const downloadedPaths: string[] = [];
+      let concatContent = '';
+
+      // Скачиваем все обработанные чанки локально
+      for (let i = 0; i < processedUrls.length; i++) {
+        const localPath = path.join(tmpDir, `chunk_${runId}_${i}.mp4`);
+        await downloadFile(processedUrls[i], localPath);
+        downloadedPaths.push(localPath);
+        concatContent += `file '${localPath}'\n`;
+      }
+
+      fs.writeFileSync(concatListPath, concatContent, 'utf8');
+
+      // 1. Быстро склеиваем файлы
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg()
+          .input(concatListPath)
+          .inputOptions(['-f concat', '-safe 0'])
+          .outputOptions(['-c copy', '-y'])
+          .save(mergedPath)
+          .on('end', () => resolve())
+          .on('error', (err) => reject(err));
+      });
+
+      let renderPath = mergedPath;
+
+      // 2. Накладываем фоновую музыку, если передана
+      if (musicUrl) {
+        try {
+          await downloadFile(musicUrl, musicPath);
+          await new Promise<void>((resolve, reject) => {
+            ffmpeg()
+              .input(mergedPath)
+              .input(musicPath)
+              .complexFilter([
+                '[0:a]volume=1.0[voice];[1:a]volume=0.12[bgmusic];[voice][bgmusic]amix=inputs=2:duration=first[a]'
+              ])
+              .outputOptions([
+                '-c:v copy',
+                '-c:a aac',
+                '-map 0:v:0',
+                '-map [a]',
+                '-y'
+              ])
+              .save(finalMusicPath)
+              .on('end', () => {
+                renderPath = finalMusicPath;
+                resolve();
+              })
+              .on('error', (err) => reject(err));
+          });
+        } catch (musicErr) {
+          console.error('Failed to mix background music:', musicErr);
+        }
+      }
+
+      // 3. Загружаем финальный результат в Supabase
+      const finalBuffer = fs.readFileSync(renderPath);
+      const { error } = await supabase.storage
+        .from('support-attachments')
+        .upload(`renders/${outputFileName}`, finalBuffer, {
+          contentType: 'video/mp4',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('support-attachments')
+        .getPublicUrl(`renders/${outputFileName}`);
+
+      // Сохраняем в историю
+      await supabase.from('factory_generations').insert({
+        prompt: prompt || 'Динамичное видео v5',
+        video_url: publicUrl
+      });
+
+      // Очистка мусора
+      const filesToCleanup = [concatListPath, mergedPath, finalMusicPath, musicPath, ...downloadedPaths];
+      filesToCleanup.forEach(f => {
+        try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {}
+      });
+
+      return NextResponse.json({ mergedUrl: publicUrl });
+    }
+
+    return NextResponse.json({ error: 'Неизвестное действие' }, { status: 400 });
 
   } catch (error: any) {
-    console.error('Merge V4 Error:', error);
+    console.error('Segmented Merge Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
