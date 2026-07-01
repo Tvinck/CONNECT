@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = (cmd: string) => promisify(exec)(cmd, { env: { ...process.env, HOME: process.env.HOME || '/tmp' } });
+import { createHiggsfieldClient } from '@higgsfield/client/v2';
 
 export async function POST(req: Request) {
   try {
@@ -12,20 +9,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Сценарий не передан' }, { status: 400 });
     }
 
-    const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
-    // Используем kling3_0_turbo с форматом 9:16 и эталонным Енотом
-    const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create kling3_0_turbo --aspect_ratio 9:16 --start-image 1b2ef010-50b6-4a19-8db6-8707d03013b9 --prompt "${cleanScript}" --json`;
+    const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
     
-    const { stdout } = await execAsync(command);
-    const result = JSON.parse(stdout.trim());
-    
-    if (Array.isArray(result) && result.length > 0) {
-      return NextResponse.json({ taskId: result[0] });
+    // Подписываемся на задачу генерации
+    const response = await client.subscribe('kling3_0_turbo', {
+      input: {
+        aspect_ratio: '9:16',
+        prompt: script,
+        start_image: '1b2ef010-50b6-4a19-8db6-8707d03013b9'
+      },
+      withPolling: false
+    });
+
+    if (response && response.request_id) {
+      return NextResponse.json({ taskId: response.request_id });
     }
     
     return NextResponse.json({ error: 'Не удалось получить ID задачи' }, { status: 500 });
   } catch (error: any) {
-    console.error('Video Gen Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Video Gen Error:', error?.response?.data || error.message);
+    return NextResponse.json({ error: error?.response?.data?.detail || error.message }, { status: 500 });
   }
 }

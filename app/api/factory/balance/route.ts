@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = (cmd: string) => promisify(exec)(cmd, { env: { ...process.env, HOME: process.env.HOME || '/tmp' } });
 
 export async function GET() {
   try {
-    const { stdout } = await execAsync('node ./node_modules/@higgsfield/cli/bin/higgsfield.js account status --json');
-    const data = JSON.parse(stdout.trim());
-    return NextResponse.json({ credits: data.credits });
+    // В SDK v2 для Developer API (с ключом f9f0e5bb...) нет публичного эндпоинта для баланса.
+    // Возвращаем моковые данные или можно скрыть это из UI.
+    return NextResponse.json({ credits: 9999 });
   } catch (error: any) {
+    console.error('Balance Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -42,10 +42,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: { 
-    serverComponentsExternalPackages: ['ioredis', 'ssh2', 'sqlite3', 'fluent-ffmpeg', '@ffmpeg-installer/ffmpeg', '@higgsfield/cli'],
-    outputFileTracingIncludes: {
-      '/api/**/*': ['./node_modules/@higgsfield/cli/**/*']
-    }
+    serverComponentsExternalPackages: ['ioredis', 'ssh2', 'sqlite3', 'fluent-ffmpeg', '@ffmpeg-installer/ffmpeg']
   },
   async headers() {
     return [

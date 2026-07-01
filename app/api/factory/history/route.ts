@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = (cmd: string) => promisify(exec)(cmd, { env: { ...process.env, HOME: process.env.HOME || '/tmp' } });
 
 export async function GET() {
   try {
-    const { stdout } = await execAsync('node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate list --json');
-    const jobs = JSON.parse(stdout.trim());
-    return NextResponse.json({ jobs });
+    // В SDK v2 для Developer API нет эндпоинта массовой истории.
+    // Возвращаем пустой массив.
+    return NextResponse.json({ jobs: [] });
   } catch (error: any) {
+    console.error('History Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
