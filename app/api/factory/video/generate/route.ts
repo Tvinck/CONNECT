@@ -12,11 +12,11 @@ export async function POST(req: Request) {
     const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
     
     // Подписываемся на задачу генерации
-    const response = await client.subscribe('kling3_0_turbo', {
+    const response = await client.subscribe('kling-video/v2.1/pro/image-to-video', {
       input: {
-        aspect_ratio: '9:16',
+        image_url: '1b2ef010-50b6-4a19-8db6-8707d03013b9',
         prompt: script,
-        start_image: '1b2ef010-50b6-4a19-8db6-8707d03013b9'
+        duration: 5
       },
       withPolling: false
     });

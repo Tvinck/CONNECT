@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
-import { createHiggsfieldClient } from '@higgsfield/client/v2';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs';
+import path from 'path';
+
+const execAsync = promisify(exec);
 
 export async function POST(req: Request) {
   try {
@@ -9,24 +14,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Сценарий не передан' }, { status: 400 });
     }
 
-    const client = createHiggsfieldClient({ credentials: process.env.HIGGSFIELD_API_KEY });
-    
-    // Подписываемся на задачу генерации аудио
-    const response = await client.subscribe('inworld_text_to_speech', {
-      input: {
-        voice: "Dmitry (ru)",
-        prompt: script
-      },
-      withPolling: false
-    });
+    const b2cToken = process.env.HIGGSFIELD_B2C_TOKEN;
+    if (!b2cToken) {
+      return NextResponse.json({ error: 'Добавьте HIGGSFIELD_B2C_TOKEN (старый oat_...) в настройки Vercel' }, { status: 500 });
+    }
 
-    if (response && response.request_id) {
-      return NextResponse.json({ taskId: response.request_id });
+    // Подготовка окружения для CLI (создаем временный auth.json в /tmp)
+    const configDir = '/tmp/.config/higgsfield';
+    fs.mkdirSync(configDir, { recursive: true });
+    fs.writeFileSync(path.join(configDir, 'auth.json'), JSON.stringify({ access_token: b2cToken }));
+
+    const cleanScript = script.replace(/"/g, '\\"').replace(/\n/g, ' ');
+    const command = `node ./node_modules/@higgsfield/cli/bin/higgsfield.js generate create inworld_text_to_speech --voice "Dmitry (ru)" --prompt "${cleanScript}" --json`;
+    
+    const { stdout } = await execAsync(command, { 
+      env: { ...process.env, HOME: '/tmp', XDG_CONFIG_HOME: '/tmp' } 
+    });
+    
+    const result = JSON.parse(stdout.trim());
+    
+    if (Array.isArray(result) && result.length > 0) {
+      return NextResponse.json({ taskId: 'b2c:' + result[0] });
     }
     
     return NextResponse.json({ error: 'Не удалось получить ID задачи' }, { status: 500 });
   } catch (error: any) {
-    console.error('Audio Gen Error:', error?.response?.data || error.message);
-    return NextResponse.json({ error: error?.response?.data?.detail || error.message }, { status: 500 });
+    console.error('Audio Gen Error:', error.stderr || error.message);
+    return NextResponse.json({ error: error.stderr || error.message }, { status: 500 });
   }
 }
