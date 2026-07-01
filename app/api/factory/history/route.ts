@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const execAsync = (cmd: string) => promisify(exec)(cmd, { env: { ...process.env, HOME: process.env.HOME || '/tmp' } });
 
 export async function GET() {
   try {
