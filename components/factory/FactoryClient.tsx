@@ -180,46 +180,13 @@ export function FactoryClient() {
     }
   }
 
-  const startMusicGeneration = async (duration: number) => {
-    try {
-      setMusicStatus('PENDING')
-      const res = await fetch('/api/factory/music/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: 'cinematic lofi beat, soft background music, minimal synth, 85bpm', duration })
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setMusicTaskId(data.taskId)
-    } catch (e) {
-      console.error('Music trigger failed:', e)
-    }
-  }
-
-  useEffect(() => {
-    if (!musicTaskId || musicStatus === 'COMPLETED' || musicStatus === 'FAILED') return;
-    const interval = setInterval(() => {
-      fetch(`/api/factory/video/status?taskId=${musicTaskId}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 'COMPLETED' && data.videoUrl) {
-            setMusicUrl(data.videoUrl)
-            setMusicStatus('COMPLETED')
-          } else if (data.status === 'FAILED') {
-            setMusicStatus('FAILED')
-          }
-        }).catch(() => {})
-    }, 10000)
-    return () => clearInterval(interval)
-  }, [musicTaskId, musicStatus])
-
   const handleGenerateMedia = async () => {
     if (!script) return
     setIsPlanning(true)
     setError('')
     setChunks([])
     setMergedUrl('')
-    setMusicUrl('')
+    setMusicUrl('lofi') // Сразу используем стабильный локальный Lofi-трек
     setCurrentActiveIndex(null)
     
     setAgents(prev => prev.map(a => a.id === 'writer' ? { ...a, status: 'completed' } : { ...a, status: 'idle' }))
@@ -253,7 +220,6 @@ export function FactoryClient() {
       setIsPlanning(false)
       updateAgentStatus('director', 'completed')
       
-      startMusicGeneration(newChunks.length * 5)
       await processSceneQueue(newChunks)
       
     } catch (err: any) {

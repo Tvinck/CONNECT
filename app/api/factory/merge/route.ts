@@ -150,38 +150,47 @@ export async function POST(req: Request) {
           .input(concatListPath)
           .inputOptions(['-f concat', '-safe 0'])
           .outputOptions(['-c copy', '-y'])
-          .save(mergedPath)
+          .save(finalOutputPath)
           .on('end', () => resolve())
           .on('error', (err) => reject(err));
       });
 
-      let renderPath = mergedPath;
+      let renderPath = finalOutputPath;
 
       // 2. Накладываем фоновую музыку, если передана
       if (musicUrl) {
         try {
-          await downloadFile(musicUrl, musicPath);
-          await new Promise<void>((resolve, reject) => {
-            ffmpeg()
-              .input(mergedPath)
-              .input(musicPath)
-              .complexFilter([
-                '[0:a]volume=1.0[voice];[1:a]volume=0.12[bgmusic];[voice][bgmusic]amix=inputs=2:duration=first[a]'
-              ])
-              .outputOptions([
-                '-c:v copy',
-                '-c:a aac',
-                '-map 0:v:0',
-                '-map [a]',
-                '-y'
-              ])
-              .save(finalMusicPath)
-              .on('end', () => {
-                renderPath = finalMusicPath;
-                resolve();
-              })
-              .on('error', (err) => reject(err));
-          });
+          let localMusicPath = '';
+          if (musicUrl === 'lofi') {
+            localMusicPath = path.join(process.cwd(), 'public', 'music', 'lofi.mp3');
+          } else if (musicUrl.startsWith('http')) {
+            await downloadFile(musicUrl, musicPath);
+            localMusicPath = musicPath;
+          }
+
+          if (localMusicPath && fs.existsSync(localMusicPath)) {
+            await new Promise<void>((resolve, reject) => {
+              ffmpeg()
+                .input(finalOutputPath)
+                .input(localMusicPath)
+                .complexFilter([
+                  '[0:a]volume=1.0[voice];[1:a]volume=0.12[bgmusic];[voice][bgmusic]amix=inputs=2:duration=first[a]'
+                ])
+                .outputOptions([
+                  '-c:v copy',
+                  '-c:a aac',
+                  '-map 0:v:0',
+                  '-map [a]',
+                  '-y'
+                ])
+                .save(finalMusicOutputPath)
+                .on('end', () => {
+                  renderPath = finalMusicOutputPath;
+                  resolve();
+                })
+                .on('error', (err) => reject(err));
+            });
+          }
         } catch (musicErr) {
           console.error('Failed to mix background music:', musicErr);
         }
