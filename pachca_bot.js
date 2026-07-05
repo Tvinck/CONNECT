@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const cron = require('node-cron');
+const webpush = require('web-push');
 require('dotenv').config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -35,7 +36,55 @@ async function sendPachcaNotification(text) {
   }
 }
 
-console.log('🤖 Бот для уведомлений (Пачка) запущен...');
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+
+if (vapidPublicKey && vapidPrivateKey) {
+  webpush.setVapidDetails(
+    'mailto:support@tvinck.ru',
+    vapidPublicKey,
+    vapidPrivateKey
+  );
+} else {
+  console.log('Web Push VAPID keys not configured.');
+}
+
+async function sendWebPushNotification(title, body, url = '/') {
+  if (!vapidPublicKey || !vapidPrivateKey) return;
+
+  try {
+    const { data } = await supabase
+      .from('factory_generations')
+      .select('video_url')
+      .eq('prompt', 'web_push_subscriptions')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!data || !data.video_url) return;
+
+    const subscriptions = JSON.parse(data.video_url);
+    if (!Array.isArray(subscriptions)) return;
+
+    const payload = JSON.stringify({ title, body, url });
+
+    const promises = subscriptions.map(sub => 
+      webpush.sendNotification(sub, payload).catch(err => {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          console.log('Subscription expired or invalid.');
+        } else {
+          console.error('Web Push Error:', err);
+        }
+      })
+    );
+
+    await Promise.all(promises);
+  } catch (err) {
+    console.error('Error sending Web Push:', err.message);
+  }
+}
+
+console.log('🤖 Бот для уведомлений (Пачка + Web Push) запущен...');
 
 // 1. Слушаем изменения в таблице support_messages
 supabase
@@ -58,6 +107,7 @@ supabase
     if (msg.is_from_user) {
       const text = `📩 **Новое сообщение от:** ${clientName}\n\n**Текст:** ${msg.message}\n**Проект:** ${msg.project || 'Veil VPN'}\n\n[💬 Открыть чат в Connect](${SITE_URL}/support)`;
       await sendPachcaNotification(text);
+      await sendWebPushNotification('Новое сообщение в поддержку', `От: ${clientName}\n${msg.message}`, `${SITE_URL}/support`);
     } else {
       const operatorName = msg.sender_email ? msg.sender_email.split('@')[0] : 'Сотрудник';
       const text = `✅ **Сотрудник @${operatorName} ответил** клиенту ${clientName}:\n\n**Текст:** ${msg.message}`;
@@ -76,6 +126,7 @@ supabase
     const planName = cert.plan_id === 'vip' ? 'VIP Сертификат' : (cert.plan_id === 'base' ? 'Базовый Сертификат' : cert.plan_id);
     const text = `🍏 **Новая заявка на Apple Сертификат!**\n\n**Тариф:** ${planName}\n**Сумма:** ${cert.sale_price} ₽\n**Источник:** ${cert.source}\n**UDID:** \`${cert.udid}\`\n\n[💳 Открыть финансы](${SITE_URL}/finances)`;
     await sendPachcaNotification(text);
+    await sendWebPushNotification('Новая заявка на сертификат!', `Тариф: ${planName}\nСумма: ${cert.sale_price} ₽`, `${SITE_URL}/crm`);
   })
   .subscribe((status) => {
     console.log(`🔌 Статус Realtime-подключения (Bazzar Certs): ${status}`);
