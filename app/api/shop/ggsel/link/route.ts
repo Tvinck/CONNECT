@@ -22,12 +22,26 @@ export async function POST(request: Request) {
     // Placeholder: In a real integration, we'd check if uniquecode is valid and not already linked
     // and then update bazzar_users / apple_certificates in DB
 
+    // 1. Получаем заказ
+    const { data: order } = await supabase.from('bazzar_orders').select('*').eq('uniquecode', uniquecode).maybeSingle();
+
     await supabase.from('bazzar_users').upsert({
       udid: udid,
       status: 'bought',
       last_purchase: new Date().toISOString(),
-      plan: 'Сертификат GGSel'
+      plan: order?.item_name || 'Сертификат GGSel'
     }, { onConflict: 'udid' })
+
+    // 2. Меняем статус заказа
+    await supabase.from('bazzar_orders').update({ status: 'linked', udid: udid }).eq('uniquecode', uniquecode)
+
+    // 3. Отправляем в apple_certificates для CRM и Pachca бота
+    await supabase.from('apple_certificates').insert({
+      udid: udid,
+      plan_id: order?.item_name || 'base',
+      source: 'GGSel',
+      sale_price: order?.amount || 0
+    });
 
     return NextResponse.json({ success: true }, { headers })
   } catch (err: any) {
