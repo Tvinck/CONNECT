@@ -279,20 +279,28 @@ export function SupportClient() {
   const handleSend = async () => {
     if (!text.trim() || !selectedUser) return
     setSending(true)
-    const { data, error } = await supabase
-      .from('support_messages')
-      .insert({
-        user_id: selectedUser.userId,
-        message: text.trim(),
-        is_from_user: false,
-        is_read: true,
-        project: selectedUser.project || 'Veil VPN',
-        sender_email: user?.email || 'unknown'
-      } as any)
-      .select()
-      .single()
+    
     try {
+      const response = await fetch('/api/shop/ggsel/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedUser.userId,
+          message: text.trim(),
+          project: selectedUser.project || 'Veil VPN',
+          senderEmail: user?.email || 'unknown'
+        })
+      });
+      
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Ошибка отправки');
+      }
+      
       setText('')
+    } catch (err: any) {
+      console.error(err);
+      alert('Ошибка отправки: ' + err.message);
     } finally {
       setSending(false)
     }
