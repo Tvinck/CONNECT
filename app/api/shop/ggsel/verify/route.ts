@@ -67,7 +67,7 @@ export async function GET(request: Request) {
        return NextResponse.json({
          success: false,
          error: verifyData.retdesc || 'Заказ не найден или недействителен'
-       }, { status: 404, headers })
+       }, { status: 200, headers })
     }
 
     const amount = verifyData.amount || 0;
