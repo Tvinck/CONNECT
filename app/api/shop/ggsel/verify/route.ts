@@ -14,31 +14,112 @@ export async function GET(request: Request) {
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'mock-key'
   const { createClient } = require('@supabase/supabase-js')
   const supabase = createClient(supabaseUrl, supabaseKey)
+  const crypto = require('crypto');
 
   if (!uniquecode) {
     return NextResponse.json({ success: false, error: 'Код заказа не указан' }, { status: 400, headers })
   }
 
-  // 1. Пытаемся найти заказ в базе, который был создан вебхуком
-  const { data: order, error } = await supabase
-    .from('bazzar_orders')
-    .select('*')
-    .eq('uniquecode', uniquecode)
-    .maybeSingle()
+  try {
+    const sellerId = process.env.GGSEL_SELLER_ID;
+    const apiKey = process.env.GGSEL_API_KEY;
 
-  if (order) {
+    if (!sellerId || !apiKey) {
+      console.error("Missing GGSel credentials");
+      return NextResponse.json({ success: false, error: 'Настройки сервера (API Key) не заданы' }, { status: 500, headers })
+    }
+
+    // 1. Получаем токен GGSel
+    const timestamp = Date.now().toString();
+    const sign = crypto.createHash('sha256').update(apiKey + timestamp).digest('hex');
+
+    const loginRes = await fetch('https://seller.ggsel.com/api_sellers/api/apilogin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        seller_id: parseInt(sellerId, 10),
+        timestamp: timestamp,
+        sign: sign
+      })
+    });
+    
+    if (!loginRes.ok) throw new Error('Ошибка авторизации GGSel');
+    const loginData = await loginRes.json();
+    
+    if (!loginData.token) {
+       console.error("GGSel auth error:", loginData);
+       throw new Error('Не удалось получить токен GGSel');
+    }
+
+    const token = loginData.token;
+
+    // 2. Проверяем код
+    const verifyRes = await fetch(`https://seller.ggsel.com/api_sellers/api/purchases/unique-code/${uniquecode}?token=${token}`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+    
+    const verifyData = await verifyRes.json();
+
+    if (verifyData.retval !== 0) {
+       // Код не найден или ошибка
+       return NextResponse.json({
+         success: false,
+         error: verifyData.retdesc || 'Заказ не найден или недействителен'
+       }, { status: 404, headers })
+    }
+
+    const amount = verifyData.amount || 0;
+    const email = verifyData.email || 'unknown@ggsel.com';
+    const itemName = verifyData.name_invoice || 'Сертификат Apple ESign';
+
+    // 3. Сохраняем в финансы (чтобы вы видели прибыль), если заказа еще нет в базе
+    const { data: existingOrder } = await supabase
+      .from('bazzar_orders')
+      .select('id')
+      .eq('uniquecode', uniquecode)
+      .maybeSingle();
+
+    if (!existingOrder) {
+      // Сохраняем в финансы
+      await supabase.from('transactions').insert({
+        date: new Date().toISOString(),
+        description: `Покупка GGSel: ${itemName} (${uniquecode})`,
+        category: 'Продажи',
+        type: 'income',
+        amount: Number(amount)
+      });
+
+      // Сохраняем в базу заказов
+      await supabase.from('bazzar_orders').upsert({
+        uniquecode: uniquecode,
+        item_name: itemName,
+        amount: Number(amount),
+        email: email,
+        status: 'pending_udid',
+        created_at: new Date().toISOString()
+      }, { onConflict: 'uniquecode' });
+
+      // Уведомление в Пачку
+      await supabase.from('notifications').insert({
+        user_id: 'ggsel-system',
+        type: 'mention',
+        title: 'Упомянул',
+        body: `💳 **Новая оплата на GGSel (API)!**\nТовар: ${itemName}\nСумма: ${amount} ₽\nКод: \`${uniquecode}\`\nКлиент скоро привяжет UDID.`,
+        link: '/finances'
+      });
+    }
+
     return NextResponse.json({
       success: true,
-      item_name: order.item_name || 'Сертификат Apple ESign',
+      item_name: itemName,
       uniquecode: uniquecode,
-      status: order.status || 'paid'
+      status: 'paid'
     }, { headers })
-  } else {
-    // Если заказ еще не долетел от вебхука
-    return NextResponse.json({
-      success: false,
-      error: 'Заказ еще не обработан системой или не существует. Ожидайте...'
-    }, { status: 404, headers })
+
+  } catch (err: any) {
+    console.error('Verify GGSel Error:', err);
+    return NextResponse.json({ success: false, error: 'Ошибка связи с GGSel' }, { status: 500, headers })
   }
 }
 
