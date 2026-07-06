@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const { token } = await loginRes.json();
     if (!token) throw new Error('No token');
 
-    const chatsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${token}&filter_new=1`, {
+    const chatsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${token}&filter_new=0`, {
       headers: { 'Accept': 'application/json' }
     });
     
