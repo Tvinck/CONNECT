@@ -203,69 +203,19 @@ cron.schedule('0 0 * * *', async () => {
 console.log('⏰ Планировщик ежедневной сводки (Cron) запущен (каждый день в 00:00 МСК)');
 
 // 6. GGSel Чаты: Поллинг непрочитанных сообщений (каждую минуту)
-const crypto = require('crypto');
-
 cron.schedule('* * * * *', async () => {
-  const sellerId = process.env.GGSEL_SELLER_ID;
-  const apiKey = process.env.GGSEL_API_KEY;
-  if (!sellerId || !apiKey) return;
-
   try {
-    const timestamp = Date.now().toString();
-    const sign = crypto.createHash('sha256').update(apiKey + timestamp).digest('hex');
-
-    const loginRes = await fetch('https://seller.ggsel.com/api_sellers/api/apilogin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ seller_id: parseInt(sellerId, 10), timestamp, sign })
-    });
-    
-    if (!loginRes.ok) return;
-    const { token } = await loginRes.json();
-    if (!token) return;
-
-    // Получаем чаты
-    const chatsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${token}&filter_new=1`, {
-      headers: { 'Accept': 'application/json' }
-    });
-    
-    if (!chatsRes.ok) return;
-    const chatsData = await chatsRes.json();
-    if (!chatsData.items || chatsData.items.length === 0) return;
-
-    for (const chat of chatsData.items) {
-       const msgsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2?token=${token}&id_i=${chat.id_i}`, {
-         headers: { 'Accept': 'application/json' }
-       });
-       if (!msgsRes.ok) continue;
-       const msgsData = await msgsRes.json();
-       if (!Array.isArray(msgsData)) continue;
-
-       // Находим новые сообщения от покупателя
-       for (const msg of msgsData) {
-         if (msg.buyer === 1) {
-            // Проверяем дубликат по тексту и user_id
-            const { data: existing } = await supabase
-              .from('support_messages')
-              .select('id')
-              .eq('user_id', `ggsel-${chat.id_i}`)
-              .eq('message', msg.message)
-              .maybeSingle();
-
-            if (!existing) {
-               await supabase.from('support_messages').insert({
-                 user_id: `ggsel-${chat.id_i}`,
-                 message: msg.message,
-                 is_from_user: true,
-                 project: 'GGSel (Заказ ' + chat.id_i + ')'
-               });
-               console.log(`Новое сообщение из GGSel сохранено: ${msg.message.substring(0, 50)}...`);
-            }
-         }
-       }
+    const res = await fetch(`${SITE_URL}/api/shop/ggsel/sync-chats`, { method: 'POST' });
+    if (!res.ok) {
+      console.error('Ошибка Cron GGSel Chats API:', await res.text());
+      return;
+    }
+    const data = await res.json();
+    if (data.success && data.inserted > 0) {
+      console.log(`Скачано новых сообщений из GGSel: ${data.inserted}`);
     }
   } catch(e) {
-    console.error('Ошибка Cron GGSel Chats:', e.message);
+    console.error('Ошибка вызова GGSel Sync API:', e.message);
   }
 });
 
