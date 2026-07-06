@@ -24,24 +24,25 @@ export async function POST(request: Request) {
       body: JSON.stringify({ seller_id: parseInt(sellerId, 10), timestamp, sign })
     });
     
-    if (!loginRes.ok) throw new Error('GGSel Auth Failed');
-    const { token } = await loginRes.json();
-    if (!token) throw new Error('No token');
+    if (!loginRes.ok) throw new Error('GGSel Auth Failed: ' + await loginRes.text());
+    const loginData = await loginRes.json();
+    if (!loginData.token) throw new Error('No token: ' + JSON.stringify(loginData));
 
-    const chatsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${token}&filter_new=0`, {
+    const chatsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${loginData.token}&filter_new=0`, {
       headers: { 'Accept': 'application/json' }
     });
     
-    if (!chatsRes.ok) throw new Error('Failed to fetch chats');
+    if (!chatsRes.ok) throw new Error('Failed to fetch chats: ' + await chatsRes.text());
     const chatsData = await chatsRes.json();
     if (!chatsData.items || chatsData.items.length === 0) {
-      return NextResponse.json({ success: true, message: 'No new chats' });
+      return NextResponse.json({ success: true, message: 'No new chats', rawData: chatsData });
     }
 
     let insertedCount = 0;
+    let errors: any[] = [];
 
     for (const chat of chatsData.items) {
-       const msgsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2?token=${token}&id_i=${chat.id_i}`, {
+       const msgsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2?token=${loginData.token}&id_i=${chat.id_i}`, {
          headers: { 'Accept': 'application/json' }
        });
        if (!msgsRes.ok) continue;
@@ -67,16 +68,18 @@ export async function POST(request: Request) {
                  is_from_user: true,
                  project: 'GGSel (Заказ ' + chat.id_i + ')'
                });
-               if (!error) insertedCount++;
-               else console.error('Insert error:', error);
+               if (!error) {
+                 insertedCount++;
+               } else {
+                 errors.push({ id_i: chat.id_i, error });
+               }
             }
          }
        }
     }
 
-    return NextResponse.json({ success: true, inserted: insertedCount });
+    return NextResponse.json({ success: true, inserted: insertedCount, errors, totalChats: chatsData.items.length });
   } catch (err: any) {
-    console.error('GGSel Sync Error:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: err.message, stack: err.stack }, { status: 500 })
   }
 }
