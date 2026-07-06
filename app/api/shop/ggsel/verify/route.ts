@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server'
 
+import { createAdminClient } from '@/lib/supabase/admin'
+import crypto from 'crypto'
+
+export const dynamic = 'force-dynamic' // No caching
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const uniquecode = searchParams.get('uniquecode')
@@ -10,11 +15,7 @@ export async function GET(request: Request) {
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mock.supabase.co'
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'mock-key'
-  const { createClient } = require('@supabase/supabase-js')
-  const supabase = createClient(supabaseUrl, supabaseKey)
-  const crypto = require('crypto');
+  const supabase = createAdminClient()
 
   if (!uniquecode) {
     return NextResponse.json({ success: false, error: 'Код заказа не указан' }, { status: 400, headers })

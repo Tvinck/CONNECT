@@ -4,12 +4,12 @@ const webpush = require('web-push');
 require('dotenv').config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const webhookUrl = process.env.PACHCA_WEBHOOK_URL;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://connect.tvinck.ru';
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Ошибка: Не найдены переменные для подключения к Supabase.');
+  console.error('Ошибка: Не найдены переменные для подключения к Supabase (убедитесь, что задан SUPABASE_SERVICE_ROLE_KEY).');
   process.exit(1);
 }
 if (!webhookUrl) {
