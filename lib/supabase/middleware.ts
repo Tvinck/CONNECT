@@ -15,6 +15,22 @@ const PUBLIC_PATHS = ['/login', '/forgot-password']
  * @returns {Promise<NextResponse>} HTTP-ответ с обновленными cookie или редирект.
  */
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname
+  const isApi = path.startsWith('/api')
+
+  // Handle CORS preflight OPTIONS requests for API routes
+  if (isApi && request.method === 'OPTIONS') {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } })
 
   const supabase = createServerClient(
@@ -43,8 +59,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const path = request.nextUrl.pathname
-  const isPublic = PUBLIC_PATHS.includes(path) || path.startsWith('/auth') || path.startsWith('/api')
+  const isPublic = PUBLIC_PATHS.includes(path) || path.startsWith('/auth') || isApi
 
   // Unauthenticated visitor on a protected page -> login
   if (!user && !isPublic) {
@@ -58,6 +73,13 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
+  }
+
+  // Append CORS headers for other API methods
+  if (isApi) {
+    response.headers.set('Access-Control-Allow-Origin', '*')
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   }
 
   return response
