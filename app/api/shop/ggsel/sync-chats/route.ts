@@ -52,6 +52,35 @@ export async function POST(request: Request) {
        // UUID формат: 00000000-0000-0000-0000-XXXXXXXXXXXX
        const fakeUuid = `00000000-0000-0000-0000-${String(chat.id_i).padStart(12, '0')}`;
 
+       // Проверяем существование подписки для обхода fk_user
+       const { data: existingSub, error: subCheckErr } = await supabase
+         .from('vpn_subscriptions')
+         .select('id')
+         .eq('id', fakeUuid)
+         .maybeSingle();
+
+       if (subCheckErr) {
+         errors.push({ id_i: chat.id_i, step: 'sub_check', error: subCheckErr });
+         continue;
+       }
+
+       if (!existingSub) {
+         const randomHex = crypto.randomBytes(4).toString('hex');
+         const { error: subInsertErr } = await supabase.from('vpn_subscriptions').insert({
+           id: fakeUuid,
+           username: `GGSel Заказ ${chat.id_i}`,
+           status: 'active',
+           traffic_limit: 0,
+           token: `ggsel_${chat.id_i}_${randomHex}`,
+           subscription_key: `ggsel_${chat.id_i}_${randomHex}`
+         });
+
+         if (subInsertErr) {
+           errors.push({ id_i: chat.id_i, step: 'sub_insert', error: subInsertErr });
+           continue;
+         }
+       }
+
        for (const msg of msgsData) {
          if (msg.buyer === 1) {
             const { data: existing } = await supabase
@@ -71,7 +100,7 @@ export async function POST(request: Request) {
                if (!error) {
                  insertedCount++;
                } else {
-                 errors.push({ id_i: chat.id_i, error });
+                 errors.push({ id_i: chat.id_i, step: 'msg_insert', error });
                }
             }
          }
