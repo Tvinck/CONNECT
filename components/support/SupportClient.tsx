@@ -34,6 +34,15 @@ export function SupportClient() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
+  // Support panel extension states
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderError, setOrderError] = useState('')
+  const [orderDetails, setOrderDetails] = useState<any | null>(null)
+  const [procedures, setProcedures] = useState<any[]>([])
+  const [proceduresLoading, setProceduresLoading] = useState(false)
+  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean[]>>({})
+  const [dbTemplates, setDbTemplates] = useState<any[]>([])
+
   /**
    * Загружает уникальные чаты (пользователей) из БД.
    * Выбирает последние сообщения и группирует их на стороне клиента,
@@ -234,6 +243,53 @@ export function SupportClient() {
     fetchDetails()
   }, [selectedUser])
 
+  // Fetch GGSel order details, procedures, and templates
+  useEffect(() => {
+    if (!selectedUser) {
+      setOrderDetails(null)
+      setProcedures([])
+      setCheckedSteps({})
+      setDbTemplates([])
+      return
+    }
+
+    setCheckedSteps({})
+    const isGgsel = selectedUser.project?.toLowerCase().includes('ggsel')
+    const p = isGgsel ? 'ggsel'
+      : selectedUser.project?.toLowerCase().includes('veil') ? 'veil'
+      : 'all'
+
+    // Load order details
+    if (isGgsel) {
+      setOrderLoading(true)
+      setOrderError('')
+      fetch(`/api/shop/ggsel/order-details?userId=${encodeURIComponent(selectedUser.userId)}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.success) setOrderDetails(d.data)
+          else setOrderError(d.error || 'Не удалось загрузить')
+        })
+        .catch(() => setOrderError('Ошибка сети'))
+        .finally(() => setOrderLoading(false))
+    } else {
+      setOrderDetails(null)
+    }
+
+    // Load procedures
+    setProceduresLoading(true)
+    fetch(`/api/support/procedures?platform=${p}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setProcedures(d.data || []) })
+      .catch(err => console.error(err))
+      .finally(() => setProceduresLoading(false))
+
+    // Load templates
+    fetch(`/api/support/quick-replies?platform=${p}`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setDbTemplates(d.data || []) })
+      .catch(err => console.error(err))
+  }, [selectedUser])
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -353,7 +409,16 @@ export function SupportClient() {
     }
   }
 
-  const filteredTemplates = QUICK_TEMPLATES.filter(
+  const allTemplatesMap = new Map()
+  dbTemplates.forEach(t => allTemplatesMap.set(t.title.toLowerCase(), { title: t.title, text: t.body }))
+  QUICK_TEMPLATES.forEach(t => {
+    if (!allTemplatesMap.has(t.title.toLowerCase())) {
+      allTemplatesMap.set(t.title.toLowerCase(), t)
+    }
+  })
+  const allTemplates = Array.from(allTemplatesMap.values())
+
+  const filteredTemplates = allTemplates.filter(
     t => t.title.toLowerCase().includes(templateSearch.toLowerCase()) || 
          t.text.toLowerCase().includes(templateSearch.toLowerCase())
   )
@@ -548,6 +613,126 @@ export function SupportClient() {
               )}
             </div>
 
+            {/* GGSel Order Details Card */}
+            {selectedUser?.project?.toLowerCase().includes('ggsel') && (
+              <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
+                <div className="flex justify-between items-center mb-1">
+                  <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2">
+                    <Info size={15} /> Детали заказа GGSel
+                  </h3>
+                  {orderDetails?.orderUrl && (
+                    <a 
+                      href={orderDetails.orderUrl} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-[11px] text-[#BFF128] hover:underline"
+                    >
+                      В панель GGSel ↗
+                    </a>
+                  )}
+                </div>
+
+                {orderLoading && (
+                  <div className="flex items-center justify-center py-4 text-[#8E92BC] text-[12px] gap-2">
+                    <Loader2 size={16} className="animate-spin" /> Загрузка данных заказа...
+                  </div>
+                )}
+
+                {orderError && (
+                  <div className="text-[12px] text-red-500 py-2 text-center bg-red-500/10 rounded-xl border border-red-500/20">
+                    {orderError}
+                  </div>
+                )}
+
+                {!orderLoading && !orderError && orderDetails && (
+                  <div className="space-y-3 text-[13px]">
+                    <div className="flex justify-between">
+                      <span className="text-[#8E92BC]">Статус:</span>
+                      <span 
+                        className={clsx(
+                          "font-semibold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide",
+                          orderDetails.statusColor === 'green' && "bg-green-500/10 text-green-500",
+                          orderDetails.statusColor === 'yellow' && "bg-yellow-500/10 text-yellow-500",
+                          orderDetails.statusColor === 'red' && "bg-red-500/10 text-red-500",
+                          orderDetails.statusColor === 'gray' && "bg-white/5 text-[#8E92BC]"
+                        )}
+                      >
+                        {orderDetails.status}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-baseline gap-2">
+                      <span className="text-[#8E92BC] shrink-0">Товар:</span>
+                      <span className="text-white text-right font-medium max-w-[240px] truncate" title={orderDetails.productName}>
+                        {orderDetails.productName}
+                      </span>
+                    </div>
+                    {orderDetails.options && orderDetails.options.length > 0 && (
+                      <div className="pt-2 border-t border-white/[0.04] space-y-1.5">
+                        <span className="text-[#8E92BC] text-[11px] block">Параметры:</span>
+                        <div className="text-[12px] text-white/80 bg-[#1C1D2A] p-2.5 rounded-lg border border-white/[0.02] space-y-1">
+                          {orderDetails.options.map((o: any, idx: number) => (
+                            <div key={idx} className="flex justify-between">
+                              <span className="text-[#8E92BC]">{o.name}:</span>
+                              <span className="font-medium text-right text-white/90">{o.user_data}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-[#8E92BC]">Заказ ID:</span>
+                      <span className="text-white font-mono">{orderDetails.orderId}</span>
+                    </div>
+                    {orderDetails.productId && (
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Товар ID:</span>
+                        <span className="text-white font-mono">{orderDetails.productId}</span>
+                      </div>
+                    )}
+                    {orderDetails.createdAt && (
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Создан:</span>
+                        <span className="text-white">
+                          {new Date(orderDetails.createdAt).toLocaleString('ru-RU', {
+                            day: '2-digit', month: '2-digit', year: '2-digit',
+                            hour: '2-digit', minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                    )}
+                    {orderDetails.buyerEmail && (
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Покупатель:</span>
+                        <span className="text-white font-mono">{orderDetails.buyerEmail}</span>
+                      </div>
+                    )}
+                    {orderDetails.paymentMethod && (
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Оплата:</span>
+                        <span className="text-white">{orderDetails.paymentMethod}</span>
+                      </div>
+                    )}
+                    {orderDetails.amount !== undefined && (
+                      <div className="flex justify-between pt-1 border-t border-white/[0.04]">
+                        <span className="text-[#8E92BC]">Сумма:</span>
+                        <span className="text-white font-semibold">
+                          {orderDetails.amount} {orderDetails.currency}
+                        </span>
+                      </div>
+                    )}
+                    {orderDetails.profit !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-[#8E92BC]">Доход:</span>
+                        <span className="text-[#BFF128] font-bold">
+                          +{orderDetails.profit} {orderDetails.currency}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Registration & Connect Info */}
             <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
               <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 mb-1">
@@ -631,6 +816,35 @@ export function SupportClient() {
                 )}
               </div>
             </div>
+
+            {/* Procedures Checklist */}
+            {procedures.length > 0 && (
+              <div className="space-y-3.5">
+                <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 px-1">
+                  <Check className="text-[#BFF128]" size={15} /> Чеклисты процедур
+                </h3>
+                {procedures.map((proc) => {
+                  const checked = checkedSteps[proc.id] || new Array(proc.steps.length).fill(false)
+                  const toggleStep = (idx: number) => {
+                    const next = [...checked]
+                    next[idx] = !next[idx]
+                    setCheckedSteps(prev => ({
+                      ...prev,
+                      [proc.id]: next
+                    }))
+                  }
+
+                  return (
+                    <ProcedureItem 
+                      key={proc.id} 
+                      proc={proc} 
+                      checked={checked} 
+                      onToggle={toggleStep} 
+                    />
+                  )
+                })}
+              </div>
+            )}
 
             {/* Быстрые ответы */}
             <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
@@ -736,6 +950,73 @@ export function SupportClient() {
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+function ProcedureItem({ proc, checked, onToggle }: { proc: any; checked: boolean[]; onToggle: (idx: number) => void }) {
+  const [open, setOpen] = useState(false)
+  const doneCount = checked?.filter(Boolean).length || 0
+  const isAllDone = doneCount === proc.steps.length
+
+  return (
+    <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl overflow-hidden shadow-sm">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-4 bg-transparent border-none text-left focus:outline-none hover:bg-white/[0.01] transition-colors"
+      >
+        <div className="space-y-1">
+          <span className="text-[13px] font-bold text-white block">{proc.title}</span>
+          <span className="text-[11px] text-[#8E92BC]">
+            {doneCount} из {proc.steps.length} выполнено
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {doneCount > 0 && (
+            <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[#BFF128] transition-all duration-300" 
+                style={{ width: `${(doneCount / proc.steps.length) * 100}%` }}
+              />
+            </div>
+          )}
+          <span className={clsx("text-white/40 transition-transform duration-200 text-[10px]", open && "rotate-180")}>
+            ▼
+          </span>
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-white/[0.04] p-4 space-y-2.5 bg-[#1C1D2A]/40">
+          {proc.steps.map((step: any, idx: number) => {
+            const isChecked = checked?.[idx] || false
+            return (
+              <label 
+                key={idx} 
+                className="flex items-start gap-3 cursor-pointer text-[12.5px] select-none py-1 group"
+              >
+                <input 
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={() => onToggle(idx)}
+                  className="mt-0.5 rounded border-white/10 bg-[#1C1D2A] text-[#BFF128] focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
+                />
+                <span className={clsx("transition-colors leading-relaxed", isChecked ? "text-[#8E92BC] line-through" : "text-white/80 group-hover:text-white")}>
+                  {step.text}
+                  {step.note && (
+                    <span className="block text-[11px] text-[#8E92BC]/60 mt-0.5 no-underline">{step.note}</span>
+                  )}
+                </span>
+              </label>
+            )
+          })}
+          {isAllDone && proc.steps.length > 0 && (
+            <div className="text-center text-[12px] text-[#BFF128] font-semibold pt-2 border-t border-white/[0.02]">
+              ✓ Процедура завершена
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
