@@ -20,13 +20,35 @@ export async function POST(request: Request) {
     // and then update bazzar_users / apple_certificates in DB
 
     // 1. Получаем заказ
-    const { data: order } = await supabase.from('bazzar_orders').select('*').eq('uniquecode', uniquecode).maybeSingle();
+    const { data: order, error: orderErr } = await supabase
+      .from('bazzar_orders')
+      .select('*')
+      .eq('uniquecode', uniquecode)
+      .maybeSingle();
+
+    if (orderErr) {
+      return NextResponse.json({ success: false, error: 'Database error checking order' }, { status: 500, headers })
+    }
+
+    if (!order) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Заказ не найден. Убедитесь, что вы правильно ввели уникальный код.' 
+      }, { status: 404, headers })
+    }
+
+    if (order.status === 'linked') {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Этот уникальный код уже привязан к другому устройству.' 
+      }, { status: 400, headers })
+    }
 
     await supabase.from('bazzar_users').upsert({
       udid: udid,
       status: 'bought',
       last_purchase: new Date().toISOString(),
-      plan: order?.item_name || 'Сертификат GGSel'
+      plan: order.item_name || 'Сертификат GGSel'
     }, { onConflict: 'udid' })
 
     // 2. Меняем статус заказа
