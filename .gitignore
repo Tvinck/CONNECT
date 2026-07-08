@@ -33,3 +33,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local databases and sensitive credentials
+x-ui.db
+x-ui.db.b64
+cookies.txt
+
+# local temporary folders
+tmp-formats/
+tmp-home/
