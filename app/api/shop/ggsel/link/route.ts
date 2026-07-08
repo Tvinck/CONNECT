@@ -62,6 +62,37 @@ export async function POST(request: Request) {
       sale_price: order?.amount || 0
     });
 
+    // 4. Фиксируем в финансах если транзакция ещё не записана (verify мог провалиться)
+    //    Используем description с uniquecode как идентификатор дубликата
+    const { data: existingTx } = await supabase
+      .from('transactions')
+      .select('id')
+      .ilike('description', `%${uniquecode}%`)
+      .maybeSingle();
+
+    if (!existingTx && order.amount) {
+      const txAmount = Math.max(Number(order.amount) || 0, 0.01);
+      const { error: txErr } = await supabase.from('transactions').insert({
+        date: new Date().toISOString().slice(0, 10),
+        description: `GGSel: ${order.item_name || 'Сертификат'} (код: ${uniquecode})`,
+        category: 'revenue',
+        type: 'income',
+        amount: txAmount,
+      });
+      if (txErr) console.error('[GGSel link] transactions insert failed:', txErr.message);
+    }
+
+    // 5. Уведомление в Пачку об успешной привязке
+    await supabase.from('notifications').insert({
+      user_id: 'ggsel-system',
+      type: 'mention',
+      title: 'GGSel: UDID привязан',
+      body: `✅ **UDID привязан!**\nТовар: ${order.item_name || '—'}\nUDID: \`${udid.slice(0, 8)}...\`\nКод: \`${uniquecode}\``,
+      link: '/finances'
+    }).then(({ error: notifErr }) => {
+      if (notifErr) console.error('[GGSel link] notifications insert failed:', notifErr.message);
+    });
+
     return NextResponse.json({ success: true }, { headers })
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500, headers })

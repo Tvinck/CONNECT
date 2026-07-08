@@ -82,24 +82,27 @@ export async function GET(request: Request) {
       .maybeSingle();
 
     if (!existingOrder) {
-      // Сохраняем в финансы
-      await supabase.from('transactions').insert({
-        date: new Date().toISOString(),
-        description: `Покупка GGSel: ${itemName} (${uniquecode})`,
-        category: 'Продажи',
+      // Сохраняем в финансы (category должна быть из CHECK constraint: revenue/client_payment/salary/marketing/development/infrastructure/other)
+      const txAmount = Math.max(Number(amount) || 0, 0.01); // guard against 0/null — DB requires amount > 0
+      const { error: txErr } = await supabase.from('transactions').insert({
+        date: new Date().toISOString().slice(0, 10), // date-only, not full ISO
+        description: `GGSel: ${itemName} (код: ${uniquecode})`,
+        category: 'revenue',   // FIX: 'Продажи' не входит в CHECK constraint
         type: 'income',
-        amount: Number(amount)
+        amount: txAmount,
       });
+      if (txErr) console.error('[GGSel verify] transactions insert failed:', txErr.message);
 
       // Сохраняем в базу заказов
-      await supabase.from('bazzar_orders').upsert({
+      const { error: orderErr } = await supabase.from('bazzar_orders').upsert({
         uniquecode: uniquecode,
         item_name: itemName,
-        amount: Number(amount),
+        amount: Number(amount) || 0,
         email: email,
         status: 'pending_udid',
         created_at: new Date().toISOString()
       }, { onConflict: 'uniquecode' });
+      if (orderErr) console.error('[GGSel verify] bazzar_orders upsert failed:', orderErr.message);
 
       // Уведомление в Пачку
       await supabase.from('notifications').insert({
@@ -108,6 +111,8 @@ export async function GET(request: Request) {
         title: 'Упомянул',
         body: `💳 **Новая оплата на GGSel (API)!**\nТовар: ${itemName}\nСумма: ${amount} ₽\nКод: \`${uniquecode}\`\nКлиент скоро привяжет UDID.`,
         link: '/finances'
+      }).then(({ error: notifErr }) => {
+        if (notifErr) console.error('[GGSel verify] notifications insert failed:', notifErr.message);
       });
     }
 

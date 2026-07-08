@@ -4,6 +4,16 @@ import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic' // No caching
 
+// GET handler for Vercel Cron (crons only support GET)
+export async function GET(request: Request) {
+  // Basic cron auth — Vercel cron sends Authorization: Bearer <CRON_SECRET>
+  const authHeader = request.headers.get('authorization')
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  return POST(request)
+}
+
 export async function POST(request: Request) {
   const supabase = createAdminClient()
 
