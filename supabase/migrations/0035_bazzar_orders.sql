@@ -6,6 +6,8 @@
 --       → customer provides UDID → calls /api/shop/ggsel/link (links order)
 -- ============================================================================
 
+DROP TABLE IF EXISTS public.bazzar_orders CASCADE;
+
 CREATE TABLE IF NOT EXISTS public.bazzar_orders (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   uniquecode   text        NOT NULL UNIQUE,      -- GGSel unique purchase code
