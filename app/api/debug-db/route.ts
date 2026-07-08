@@ -21,7 +21,7 @@ export async function GET() {
         username: 'ggsel_test_user',
         token: 'testtoken' + Date.now().toString(),
         subscription_key: 'testkey' + Date.now().toString(),
-        status: 'inactive', // Неактивный статус, чтобы не занимать ресурсы
+        status: 'active', // 'active' passes vpn_subscriptions_status_check
         traffic_limit: 0
       })
       .select()
