@@ -66,12 +66,13 @@ export async function POST(request: Request) {
             const { token } = await loginRes.json();
             if (token) {
               // Отправляем сообщение в чат
-              // Формат Digiseller API (debates/v2/message)
-              const sendRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/message?token=${token}`, {
+              // Согласно документации GGSel API:
+              // POST /api_sellers/api/debates/v2?token=...&id_i=...
+              // body: { message: "..." }  (id_i — query param, НЕ в body)
+              const sendRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2?token=${token}&id_i=${id_i}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({
-                  id_i: id_i,
                   message: message.trim()
                 })
               });
