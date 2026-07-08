@@ -4,6 +4,16 @@ import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders })
+}
+
 export async function POST(request: Request) {
   const supabase = createAdminClient()
 
@@ -11,7 +21,7 @@ export async function POST(request: Request) {
     const { userId, message, senderEmail, project } = await request.json()
 
     if (!userId || !message) {
-      return NextResponse.json({ success: false, error: 'Missing userId or message' }, { status: 400 })
+      return NextResponse.json({ success: false, error: 'Missing userId or message' }, { status: 400, headers: corsHeaders })
     }
 
     // 1. Сначала всегда сохраняем сообщение в нашей базе (Supabase)
@@ -76,9 +86,10 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, data: dbData })
+    return NextResponse.json({ success: true, data: dbData }, { headers: corsHeaders })
   } catch (err: any) {
     console.error('Send message error:', err)
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: corsHeaders })
   }
 }
+
