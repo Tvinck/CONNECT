@@ -1,6 +1,6 @@
 const http = require('https');
 
-http.get('https://connect-three-green.vercel.app/api/monitoring/status', (res) => {
+http.get('https://connect-4va6.vercel.app/api/monitoring/status', (res) => {
   let body = '';
   res.on('data', (chunk) => body += chunk);
   res.on('end', () => {
