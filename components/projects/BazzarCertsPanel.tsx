@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
-import { toast } from 'sonner'
-import { SupportTabs } from '../support/SupportTabs'
+import { useUIStore } from '@/store/ui'
 
 export function BazzarCertsPanel() {
   const supabase = createClient()
+  const addToast = useUIStore(s => s.addToast)
   const [tickets, setTickets] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [replyText, setReplyText] = useState<Record<string, string>>({})
@@ -48,9 +48,9 @@ export function BazzarCertsPanel() {
       .eq('id', id)
 
     if (error) {
-      toast.error('Ошибка при отправке ответа')
+      addToast('Ошибка', 'Не удалось отправить ответ', 'err')
     } else {
-      toast.success('Ответ отправлен')
+      addToast('Успешно', 'Ответ отправлен', 'ok')
       setReplyText(prev => ({ ...prev, [id]: '' }))
       loadTickets()
     }
