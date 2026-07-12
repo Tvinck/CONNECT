@@ -51,6 +51,7 @@ import { BazzarProductsPanel } from './ProjectDetail/BazzarProductsPanel'
 import { BazzarUsersPanel } from './ProjectDetail/BazzarUsersPanel'
 import { BazzarAnalyticsPanel } from './ProjectDetail/BazzarAnalyticsPanel'
 import { BazzarReviewsPanel } from './ProjectDetail/BazzarReviewsPanel'
+import { BazzarTicketsPanel } from './ProjectDetail/BazzarTicketsPanel'
 
 // ─── local types ──────────────────────────────────────────────────────────────
 
@@ -620,6 +621,12 @@ export function ProjectDetail({
             }`}>
             <MessageSquare size={14} /> Отзывы
           </button>
+          <button onClick={() => setActiveTab('bazzar-tickets')}
+            className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
+              activeTab === 'bazzar-tickets' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+            }`}>
+            <MessageSquare size={14} /> Претензии и предложения
+          </button>
         </div>
       )}
 
@@ -784,6 +791,8 @@ export function ProjectDetail({
         <BazzarAnalyticsPanel />
       ) : activeTab === 'bazzar-reviews' && isBazzarCerts ? (
         <BazzarReviewsPanel />
+      ) : activeTab === 'bazzar-tickets' && isBazzarCerts ? (
+        <BazzarTicketsPanel />
       ) : activeTab === 'servers' ? (
         <div className="card p-5">
           <div className="flex flex-col gap-4 mb-6 border-b border-line pb-5">

@@ -6,7 +6,7 @@ import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { useUIStore } from '@/store/ui'
 
-export function BazzarCertsPanel() {
+export function BazzarTicketsPanel() {
   const supabase = createClient()
   const addToast = useUIStore(s => s.addToast)
   const [tickets, setTickets] = useState<any[]>([])
