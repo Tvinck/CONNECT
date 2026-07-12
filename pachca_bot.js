@@ -220,3 +220,22 @@ cron.schedule('* * * * *', async () => {
 });
 
 console.log('⏰ Планировщик GGSel Чатов (Cron) запущен (каждую минуту)');
+
+// 7. Слушаем новые тикеты Bazzar Serts
+supabase
+  .channel('pachca_bazzar_tickets')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bazzar_tickets' }, async (payload) => {
+    const ticket = payload.new;
+    const ticketType = ticket.type === 'claim' ? '⚠️ Претензия' : '💡 Предложение';
+    let subTypeStr = '';
+    if (ticket.sub_type === 'site') subTypeStr = ' (По сайту)';
+    if (ticket.sub_type === 'apps') subTypeStr = ' (По приложениям)';
+    if (ticket.sub_type === 'collab') subTypeStr = ' (Сотрудничество)';
+
+    const text = `📬 **Новое обращение Bazzar Serts**\n\n**Тип:** ${ticketType}${subTypeStr}\n**UDID:** \`${ticket.udid}\`\n\n**Сообщение:**\n${ticket.message}\n${ticket.image_url ? `\n[🖼 Смотреть скриншот](${ticket.image_url})\n` : ''}\n[🔍 Открыть в Connect](${SITE_URL}/projects/bazzar-certs)`;
+    await sendPachcaNotification(text);
+  })
+  .subscribe((status) => {
+    console.log(`🔌 Статус Realtime-подключения (Bazzar Tickets): ${status}`);
+  });
+
