@@ -275,9 +275,9 @@ export default function AppleCertsPage() {
                   <tr key={cert.id} className="hover:bg-zinc-800/20 transition-colors group">
                     <td className="py-4 px-6">
                       <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 font-mono text-zinc-300">
-                          <Smartphone className="w-4 h-4 text-zinc-600" />
-                          {cert.udid.substring(0, 15)}...
+                        <div className="flex items-center gap-2 font-mono text-zinc-300 text-xs">
+                          <Smartphone className="w-4 h-4 text-zinc-600 shrink-0" />
+                          <span className="break-all" title={cert.udid}>{cert.udid}</span>
                         </div>
                         <div className="text-zinc-500 text-xs flex items-center gap-2">
                           <span>{cert.plan_id}</span>
