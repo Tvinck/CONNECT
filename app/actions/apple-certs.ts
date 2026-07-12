@@ -172,8 +172,8 @@ export async function updateCertStatus(certId: string, status: string, comment?:
     return { success: false, error: error.message };
   }
 
-  // Если сертификат одобрен, источник GGSel и есть комментарий — отправляем автоматически в чат GGSel
-  if (status === 'approved' && cert && cert.source === 'GGSel' && comment) {
+  // Если сертификат одобрен, источник GGSel или Digiseller и есть комментарий — отправляем автоматически в чат
+  if (status === 'approved' && cert && (cert.source === 'GGSel' || cert.source === 'Digiseller') && comment) {
     try {
       // Ищем заказ по udid, чтобы получить uniquecode
       const { data: order } = await supabase
@@ -184,33 +184,39 @@ export async function updateCertStatus(certId: string, status: string, comment?:
         .maybeSingle();
 
       if (order && order.uniquecode) {
-        const sellerId = process.env.GGSEL_SELLER_ID;
-        const apiKey = process.env.GGSEL_API_KEY;
+        const isDigiseller = cert.source === 'Digiseller';
+        const sellerId = isDigiseller ? process.env.DIGISELLER_SELLER_ID : process.env.GGSEL_SELLER_ID;
+        const apiKey = isDigiseller ? process.env.DIGISELLER_API_KEY : process.env.GGSEL_API_KEY;
+        const apiBaseUrl = isDigiseller ? 'https://api.digiseller.com/api' : 'https://seller.ggsel.com/api_sellers/api';
 
         if (sellerId && apiKey) {
-          const timestamp = Date.now().toString();
           const crypto = require('crypto');
+          const timestamp = isDigiseller ? Math.floor(Date.now() / 1000).toString() : Date.now().toString();
           const sign = crypto.createHash('sha256').update(apiKey + timestamp).digest('hex');
 
-          // Авторизация на GGSel
-          const loginRes = await fetch('https://seller.ggsel.com/api_sellers/api/apilogin', {
+          // Авторизация
+          const loginRes = await fetch(`${apiBaseUrl}/apilogin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ seller_id: parseInt(sellerId, 10), timestamp, sign })
+            body: JSON.stringify({ 
+              seller_id: parseInt(sellerId, 10), 
+              timestamp: isDigiseller ? parseInt(timestamp, 10) : timestamp, 
+              sign 
+            })
           });
           
           if (loginRes.ok) {
             const loginData = await loginRes.json();
             if (loginData.token) {
-              // Получаем детали покупки, чтобы узнать id_i (инвойс/чат)
-              const verifyRes = await fetch(`https://seller.ggsel.com/api_sellers/api/purchases/unique-code/${order.uniquecode}?token=${loginData.token}`);
+              // Получаем детали покупки, чтобы узнать id_i / inv (инвойс/чат)
+              const verifyRes = await fetch(`${apiBaseUrl}/purchases/unique-code/${order.uniquecode}?token=${loginData.token}`);
               if (verifyRes.ok) {
                 const verifyData = await verifyRes.json();
-                const id_i = verifyData.id_i;
+                const id_i = verifyData.inv || verifyData.id_i;
 
                 if (id_i) {
-                  // Отправляем инструкцию покупателю в чат GGSel
-                  await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/message?token=${loginData.token}`, {
+                  // Отправляем инструкцию покупателю в чат
+                  await fetch(`${apiBaseUrl}/debates/v2/message?token=${loginData.token}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify({
@@ -218,7 +224,7 @@ export async function updateCertStatus(certId: string, status: string, comment?:
                       message: comment.trim()
                     })
                   });
-                  console.log(`Successfully auto-sent CRM comment to GGSel chat for order ${order.uniquecode}`);
+                  console.log(`Successfully auto-sent CRM comment to ${cert.source} chat for order ${order.uniquecode}`);
                 }
               }
             }
@@ -226,7 +232,7 @@ export async function updateCertStatus(certId: string, status: string, comment?:
         }
       }
     } catch (sendErr) {
-      console.error('Failed to auto-send GGSel notification:', sendErr);
+      console.error(`Failed to auto-send ${cert.source} notification:`, sendErr);
     }
   }
 
