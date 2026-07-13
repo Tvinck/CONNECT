@@ -163,7 +163,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true }, { headers })
   } catch (err: any) {
     console.error('[GGSel link] Error:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers })
+    return NextResponse.json({ success: false, error: 'Внутренняя ошибка сервера' }, { status: 500, headers })
   }
 }
 

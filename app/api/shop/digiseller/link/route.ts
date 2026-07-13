@@ -36,9 +36,9 @@ export async function POST(request: Request) {
 
     if (order.status === 'linked') {
       return NextResponse.json({ 
-        success: false, 
-        error: 'Этот уникальный код уже привязан к другому устройству.' 
-      }, { status: 400, headers })
+        success: true, 
+        message: 'Этот код уже привязан.' 
+      }, { headers })
     }
 
     await supabase.from('bazzar_users').upsert({
@@ -90,8 +90,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ success: true }, { headers })
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers })
+    console.error('[Digiseller link] Error:', err);
+    return NextResponse.json({ success: false, error: 'Внутренняя ошибка сервера' }, { status: 500, headers })
   }
 }
 

@@ -119,6 +119,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, inserted: insertedCount, errors, totalChats: chatsData.items.length });
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message, stack: err.stack }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
