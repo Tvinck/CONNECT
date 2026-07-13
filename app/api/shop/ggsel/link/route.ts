@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { validateShopRequest } from '@/lib/shop-auth'
 import crypto from 'crypto'
 
 export async function POST(request: Request) {
@@ -10,11 +11,21 @@ export async function POST(request: Request) {
     'Access-Control-Allow-Headers': 'Content-Type',
   }
 
+  // Auth check
+  const authError = validateShopRequest(request)
+  if (authError) return authError
+
   try {
     const { uniquecode, udid } = await request.json()
 
     if (!uniquecode || !udid) {
       return NextResponse.json({ success: false, error: 'Missing data' }, { status: 400, headers })
+    }
+
+    // Валидация формата UDID (25-40 hex chars с дефисами)
+    const udidPattern = /^[0-9a-fA-F-]{25,40}$/;
+    if (!udidPattern.test(udid)) {
+      return NextResponse.json({ success: false, error: 'Неверный формат UDID' }, { status: 400, headers })
     }
 
     // 1. Получаем заказ из базы
@@ -133,7 +144,7 @@ export async function POST(request: Request) {
     const { data: existingTx } = await supabase
       .from('transactions')
       .select('id')
-      .ilike('description', `%${uniquecode}%`)
+      .ilike('description', `%${uniquecode.replace(/[%_]/g, '\\$&')}%`)
       .maybeSingle();
 
     if (!existingTx && order.amount) {

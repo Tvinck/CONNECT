@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic' // No caching
 export async function GET(request: Request) {
   // Basic cron auth — Vercel cron sends Authorization: Bearer <CRON_SECRET>
   const authHeader = request.headers.get('authorization')
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   return POST(request)
@@ -117,7 +117,10 @@ export async function POST(request: Request) {
        }
     }
 
-    return NextResponse.json({ success: true, inserted: insertedCount, errors, totalChats: chatsData.items.length });
+    if (errors.length > 0) {
+      console.error('[sync-chats] Errors during sync:', JSON.stringify(errors));
+    }
+    return NextResponse.json({ success: true, inserted: insertedCount, errorCount: errors.length, totalChats: chatsData.items.length });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }

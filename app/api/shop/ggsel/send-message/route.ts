@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { validateShopRequest } from '@/lib/shop-auth'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
@@ -16,6 +17,10 @@ export async function OPTIONS() {
 
 export async function POST(request: Request) {
   const supabase = createAdminClient()
+
+  // Auth check
+  const authError = validateShopRequest(request)
+  if (authError) return authError
 
   try {
     const { userId, message, senderEmail, project } = await request.json()
@@ -90,7 +95,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, data: dbData }, { headers: corsHeaders })
   } catch (err: any) {
     console.error('Send message error:', err)
-    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: corsHeaders })
+    return NextResponse.json({ success: false, error: 'Внутренняя ошибка сервера' }, { status: 500, headers: corsHeaders })
   }
 }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { validateShopRequest } from '@/lib/shop-auth'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
@@ -29,6 +29,10 @@ function mapInvoiceState(state: number): { label: string; color: 'green' | 'yell
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get('userId')
+
+  // Auth check
+  const authError = validateShopRequest(request)
+  if (authError) return authError
 
   if (!userId) {
     return NextResponse.json({ success: false, error: 'userId required' }, { status: 400, headers: corsHeaders })
@@ -123,6 +127,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, data: details }, { headers: corsHeaders })
   } catch (err: any) {
     console.error('Order details error:', err)
-    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: corsHeaders })
+    return NextResponse.json({ success: false, error: 'Внутренняя ошибка сервера' }, { status: 500, headers: corsHeaders })
   }
 }
