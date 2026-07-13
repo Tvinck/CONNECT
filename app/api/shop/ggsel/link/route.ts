@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import crypto from 'crypto'
 
 export async function POST(request: Request) {
   const supabase = createAdminClient()
@@ -16,20 +17,84 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Missing data' }, { status: 400, headers })
     }
 
-    // Placeholder: In a real integration, we'd check if uniquecode is valid and not already linked
-    // and then update bazzar_users / apple_certificates in DB
-
-    // 1. Получаем заказ
-    const { data: order, error: orderErr } = await supabase
+    // 1. Получаем заказ из базы
+    let { data: order, error: orderErr } = await supabase
       .from('bazzar_orders')
       .select('*')
       .eq('uniquecode', uniquecode)
       .maybeSingle();
 
     if (orderErr) {
-      return NextResponse.json({ success: false, error: 'Database error checking order' }, { status: 500, headers })
+      console.error('[GGSel link] DB error:', orderErr.message);
     }
 
+    // 2. Если заказа нет — пробуем создать его из GGSel API (verify мог не сработать)
+    if (!order) {
+      console.log(`[GGSel link] Order not found for ${uniquecode}, trying GGSel API...`);
+      
+      const sellerId = process.env.GGSEL_SELLER_ID;
+      const apiKey = process.env.GGSEL_API_KEY;
+
+      if (sellerId && apiKey) {
+        try {
+          const timestamp = Date.now().toString();
+          const sign = crypto.createHash('sha256').update(apiKey + timestamp).digest('hex');
+
+          const loginRes = await fetch('https://seller.ggsel.com/api_sellers/api/apilogin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+              seller_id: parseInt(sellerId, 10),
+              timestamp: timestamp,
+              sign: sign
+            })
+          });
+
+          const loginData = await loginRes.json();
+          
+          if (loginData.token) {
+            const verifyRes = await fetch(
+              `https://seller.ggsel.com/api_sellers/api/purchases/unique-code/${uniquecode}?token=${loginData.token}`,
+              { headers: { 'Accept': 'application/json' } }
+            );
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.retval === 0) {
+              const itemName = verifyData.name_invoice || verifyData.name_goods || 'Сертификат Apple ESign';
+              const amount = verifyData.amount || 0;
+              const email = verifyData.email || '';
+
+              // Создаём заказ
+              const { data: newOrder, error: insertErr } = await supabase
+                .from('bazzar_orders')
+                .upsert({
+                  uniquecode,
+                  item_name: itemName,
+                  amount: Number(amount) || 0,
+                  email,
+                  status: 'pending_udid',
+                  created_at: new Date().toISOString()
+                }, { onConflict: 'uniquecode' })
+                .select()
+                .maybeSingle();
+
+              if (insertErr) {
+                console.error('[GGSel link] Failed to create order:', insertErr.message);
+              } else {
+                order = newOrder;
+                console.log(`[GGSel link] Created order from API: ${uniquecode}`);
+              }
+            } else {
+              console.log(`[GGSel link] GGSel API says code invalid: ${verifyData.retdesc}`);
+            }
+          }
+        } catch (apiErr: any) {
+          console.error('[GGSel link] GGSel API call failed:', apiErr.message);
+        }
+      }
+    }
+
+    // 3. Если заказ всё равно не найден — ошибка
     if (!order) {
       return NextResponse.json({ 
         success: false, 
@@ -37,13 +102,15 @@ export async function POST(request: Request) {
       }, { status: 404, headers })
     }
 
+    // 4. Если уже привязан
     if (order.status === 'linked') {
       return NextResponse.json({ 
-        success: false, 
-        error: 'Этот уникальный код уже привязан к другому устройству.' 
-      }, { status: 400, headers })
+        success: true, 
+        message: 'Этот код уже привязан.'
+      }, { headers })
     }
 
+    // 5. Привязываем UDID к пользователю
     await supabase.from('bazzar_users').upsert({
       udid: udid,
       status: 'bought',
@@ -51,10 +118,10 @@ export async function POST(request: Request) {
       plan: order.item_name || 'Сертификат GGSel'
     }, { onConflict: 'udid' })
 
-    // 2. Меняем статус заказа
+    // 6. Меняем статус заказа
     await supabase.from('bazzar_orders').update({ status: 'linked', udid: udid }).eq('uniquecode', uniquecode)
 
-    // 3. Отправляем в apple_certificates для CRM и Pachca бота
+    // 7. Отправляем в apple_certificates для CRM
     await supabase.from('apple_certificates').insert({
       udid: udid,
       plan_id: order?.item_name || 'base',
@@ -62,8 +129,7 @@ export async function POST(request: Request) {
       sale_price: order?.amount || 0
     });
 
-    // 4. Фиксируем в финансах если транзакция ещё не записана (verify мог провалиться)
-    //    Используем description с uniquecode как идентификатор дубликата
+    // 8. Фиксируем в финансах
     const { data: existingTx } = await supabase
       .from('transactions')
       .select('id')
@@ -82,7 +148,7 @@ export async function POST(request: Request) {
       if (txErr) console.error('[GGSel link] transactions insert failed:', txErr.message);
     }
 
-    // 5. Уведомление в Пачку об успешной привязке
+    // 9. Уведомление
     await supabase.from('notifications').insert({
       user_id: 'ggsel-system',
       type: 'mention',
@@ -93,8 +159,10 @@ export async function POST(request: Request) {
       if (notifErr) console.error('[GGSel link] notifications insert failed:', notifErr.message);
     });
 
+    console.log(`[GGSel link] Successfully linked ${uniquecode} → ${udid}`);
     return NextResponse.json({ success: true }, { headers })
   } catch (err: any) {
+    console.error('[GGSel link] Error:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500, headers })
   }
 }
