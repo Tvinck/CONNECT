@@ -1,17 +1,12 @@
 import { NextResponse } from 'next/server'
+import { getShopCorsHeaders } from '@/lib/cors'
 import { validateShopRequest } from '@/lib/shop-auth'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-}
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
+export async function OPTIONS(request: Request) {
+  return NextResponse.json({}, { headers: getShopCorsHeaders(request.headers.get('origin')) })
 }
 
 // Маппинг invoice_state → читаемый статус
@@ -27,6 +22,7 @@ function mapInvoiceState(state: number): { label: string; color: 'green' | 'yell
 }
 
 export async function GET(request: Request) {
+  const corsHeaders = getShopCorsHeaders(request.headers.get('origin'))
   const { searchParams } = new URL(request.url)
   const userId = searchParams.get('userId')
 

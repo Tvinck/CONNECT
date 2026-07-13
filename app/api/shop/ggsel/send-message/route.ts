@@ -1,21 +1,17 @@
 import { NextResponse } from 'next/server'
+import { getShopCorsHeaders } from '@/lib/cors'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateShopRequest } from '@/lib/shop-auth'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders })
+export async function OPTIONS(request: Request) {
+  return NextResponse.json({}, { headers: getShopCorsHeaders(request.headers.get('origin')) })
 }
 
 export async function POST(request: Request) {
+  const corsHeaders = getShopCorsHeaders(request.headers.get('origin'))
   const supabase = createAdminClient()
 
   // Auth check

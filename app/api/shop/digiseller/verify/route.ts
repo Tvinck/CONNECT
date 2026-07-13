@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getShopCorsHeaders, getCorsOrigin } from '@/lib/cors'
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import crypto from 'crypto'
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
 
   // CORS headers for bazzar-certs
   const headers = {
-    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
+    'Access-Control-Allow-Origin': getCorsOrigin(request?.headers?.get('origin') || null),
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   }
 
@@ -129,11 +130,8 @@ export async function GET(request: Request) {
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(request: Request) {
   return new NextResponse(null, {
-    headers: {
-      'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    }
+    headers: getShopCorsHeaders(null)
   })
 }

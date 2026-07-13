@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getCorsOrigin } from '@/lib/cors'
 
 const PUBLIC_PATHS = ['/login', '/forgot-password']
 
@@ -20,10 +21,7 @@ export async function updateSession(request: NextRequest) {
 
   // Handle CORS preflight OPTIONS requests for API routes
   if (isApi && request.method === 'OPTIONS') {
-    const origin = request.headers.get('origin') || ''
-    const allowedOrigins = ['https://bazzar-serts.shop']
-    if (process.env.NODE_ENV !== 'production') allowedOrigins.push('http://localhost:5173', 'http://localhost:3000')
-    const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
+    const corsOrigin = getCorsOrigin(request.headers.get('origin'))
     return new NextResponse(null, {
       status: 204,
       headers: {
@@ -81,10 +79,7 @@ export async function updateSession(request: NextRequest) {
 
   // Append CORS headers for other API methods
   if (isApi) {
-    const origin = request.headers.get('origin') || ''
-    const allowedOrigins = ['https://bazzar-serts.shop']
-    if (process.env.NODE_ENV !== 'production') allowedOrigins.push('http://localhost:5173', 'http://localhost:3000')
-    const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
+    const corsOrigin = getCorsOrigin(request.headers.get('origin'))
     response.headers.set('Access-Control-Allow-Origin', corsOrigin)
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')

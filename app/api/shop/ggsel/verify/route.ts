@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getShopCorsHeaders } from '@/lib/cors'
 import crypto from 'crypto'
 
 export const dynamic = 'force-dynamic' // No caching
@@ -22,11 +23,8 @@ export async function GET(request: Request) {
   const uniquecode = searchParams.get('uniquecode')
   const formatParam = searchParams.get('format') // explicit format override
 
-  // CORS headers for bazzar-certs
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  }
+  // CORS headers — dynamic origin for bazzar-serts.shop + vercel.app
+  const corsHeaders = getShopCorsHeaders(request.headers.get('origin'))
 
   // Determine if this is a Digiseller background check or our frontend
   const acceptHeader = request.headers.get('Accept') || ''
@@ -171,11 +169,8 @@ export async function GET(request: Request) {
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(request: Request) {
   return new NextResponse(null, {
-    headers: {
-      'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    }
+    headers: getShopCorsHeaders(null)
   })
 }

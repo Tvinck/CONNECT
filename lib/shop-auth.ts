@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
+import { isAllowedOrigin, getShopCorsHeaders } from './cors'
 
 /**
  * Validates incoming requests to shop API endpoints.
  * Allows requests that match any of:
  * 1. Authorization: Bearer <SHOP_API_KEY>
- * 2. Origin exactly matches bazzar-serts.shop (frontend)
+ * 2. Origin exactly matches allowed frontend origins
  * 3. Vercel Cron secret (for scheduled tasks)
  */
 export function validateShopRequest(request: Request): NextResponse | null {
@@ -22,14 +23,8 @@ export function validateShopRequest(request: Request): NextResponse | null {
     return null
   }
   
-  // Allow requests from our frontend (exact origin match to prevent subdomain spoofing)
-  const allowedOrigins = ['https://bazzar-serts.shop']
-  if (process.env.NODE_ENV !== 'production') {
-    allowedOrigins.push('http://localhost:5173', 'http://localhost:3000')
-  }
-  
-  // Check origin header (exact match — NOT startsWith to prevent bazzar-serts.shop.evil.com bypass)
-  if (origin && allowedOrigins.includes(origin)) {
+  // Check origin header (exact match — prevents subdomain spoofing)
+  if (origin && isAllowedOrigin(origin)) {
     return null
   }
   
@@ -37,20 +32,14 @@ export function validateShopRequest(request: Request): NextResponse | null {
   if (referer) {
     try {
       const refererOrigin = new URL(referer).origin
-      if (allowedOrigins.includes(refererOrigin)) return null
+      if (isAllowedOrigin(refererOrigin)) return null
     } catch { /* invalid referer URL — deny */ }
   }
   
   // Deny — include full CORS headers so browser can display the error
+  const corsHeaders = getShopCorsHeaders(request.headers.get('origin'))
   return NextResponse.json(
     { success: false, error: 'Unauthorized' },
-    { 
-      status: 401, 
-      headers: { 
-        'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      } 
-    }
+    { status: 401, headers: corsHeaders }
   )
 }

@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
+import { getShopCorsHeaders, getCorsOrigin } from '@/lib/cors'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { validateShopRequest } from '@/lib/shop-auth'
 
 export async function POST(request: Request) {
   const supabase = createAdminClient()
-  const headers = {
-    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  }
+  const headers = getShopCorsHeaders(request.headers.get('origin'))
 
   // Auth check
   const authError = validateShopRequest(request)
@@ -107,9 +104,9 @@ export async function POST(request: Request) {
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(request: Request) {
   return new NextResponse(null, { headers: {
-    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
+    'Access-Control-Allow-Origin': getCorsOrigin(request?.headers?.get('origin') || null),
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   } })
