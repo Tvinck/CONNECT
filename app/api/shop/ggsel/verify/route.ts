@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
   // CORS headers for bazzar-certs
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
   }
 
@@ -174,7 +174,7 @@ export async function GET(request: Request) {
 export async function OPTIONS() {
   return new NextResponse(null, {
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
     }
   })

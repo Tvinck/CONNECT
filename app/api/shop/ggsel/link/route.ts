@@ -6,7 +6,7 @@ import crypto from 'crypto'
 export async function POST(request: Request) {
   const supabase = createAdminClient()
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   }
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
 
 export async function OPTIONS() {
   return new NextResponse(null, { headers: {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': 'https://bazzar-serts.shop',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   } })

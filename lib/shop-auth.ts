@@ -23,7 +23,11 @@ export function validateShopRequest(request: Request): NextResponse | null {
   }
   
   // Allow requests from our frontend
-  const allowedOrigins = ['https://bazzar-serts.shop', 'http://localhost:5173', 'http://localhost:3000']
+  const allowedOrigins = ['https://bazzar-serts.shop']
+  // Allow localhost only in development
+  if (process.env.NODE_ENV !== 'production') {
+    allowedOrigins.push('http://localhost:5173', 'http://localhost:3000')
+  }
   if (allowedOrigins.some(o => origin.startsWith(o) || referer.startsWith(o))) {
     return null
   }
