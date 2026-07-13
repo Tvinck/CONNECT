@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl!, supabaseKey!);
 export async function GET(req: Request) {
   // Vercel Cron sends a special header that you can check
   const authHeader = req.headers.get('authorization');
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
