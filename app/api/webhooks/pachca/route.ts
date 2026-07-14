@@ -82,6 +82,13 @@ export async function POST(req: Request) {
       }
     }
 
+    if (table === 'bazzar_orders') {
+      const order = record;
+      const statusLabel = order.status === 'linked' ? '✅ Привязан' : '⏳ Ожидает UDID';
+      const text = `💳 **Новый заказ Bazzar Serts**\n\n**Товар:** ${order.item_name || '—'}\n**Сумма:** ${order.amount || 0} ₽\n**Код:** \`${order.uniquecode}\`\n**Email:** ${order.email || '—'}\n**Статус:** ${statusLabel}\n\n[📊 Открыть финансы](${SITE_URL}/finances)`;
+      await sendPachcaNotification(text);
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error('Webhook processing error:', err.message);

@@ -239,3 +239,55 @@ supabase
     console.log(`🔌 Статус Realtime-подключения (Bazzar Tickets): ${status}`);
   });
 
+// 8. Слушаем новые заказы Bazzar Serts (GGSel/Digiseller)
+supabase
+  .channel('pachca_bazzar_orders')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bazzar_orders' }, async (payload) => {
+    try {
+      const order = payload.new;
+      const statusLabel = order.status === 'linked' ? '✅ Привязан' : '⏳ Ожидает UDID';
+      const source = order.source === 'ggsel_sync' ? ' (автосинк)' : '';
+      const text = `💳 **Новый заказ Bazzar Serts${source}**\n\n**Товар:** ${order.item_name || '—'}\n**Сумма:** ${order.amount || 0} ₽\n**Код:** \`${order.uniquecode}\`\n**Email:** ${order.email || '—'}\n**Статус:** ${statusLabel}\n\n[📊 Открыть финансы](${SITE_URL}/finances)`;
+      await sendPachcaNotification(text);
+      await sendWebPushNotification(
+        'Новый заказ Bazzar Serts!',
+        `${order.item_name || 'Сертификат'} — ${order.amount || 0} ₽`,
+        `${SITE_URL}/projects/bazzar-certs`
+      );
+    } catch (err) {
+      console.error('[Pachca Bot] Error processing bazzar_orders INSERT:', err.message);
+    }
+  })
+  .subscribe((status) => {
+    console.log(`🔌 Статус Realtime-подключения (Bazzar Orders): ${status}`);
+  });
+
+// 9. Слушаем привязку UDID (UPDATE bazzar_orders status -> linked)
+supabase
+  .channel('pachca_bazzar_orders_linked')
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bazzar_orders' }, async (payload) => {
+    try {
+      const order = payload.new;
+      const oldOrder = payload.old || {};
+
+      // Уведомляем только при смене статуса на linked
+      // old может быть пустым если replica identity не FULL — проверяем наличие udid в new
+      const wasNotLinked = !oldOrder.status || oldOrder.status !== 'linked';
+      if (order.status === 'linked' && wasNotLinked && order.udid) {
+        const text = `✅ **UDID привязан к заказу!**\n\n**Товар:** ${order.item_name || '—'}\n**UDID:** \`${(order.udid || '').slice(0, 12)}...\`\n**Код:** \`${order.uniquecode}\`\n\n⚡ Можно подписывать сертификат!\n\n[🔧 Открыть CRM](${SITE_URL}/projects/bazzar-certs)`;
+        await sendPachcaNotification(text);
+        await sendWebPushNotification(
+          'UDID привязан!',
+          `${order.item_name || 'Сертификат'} — UDID привязан, можно подписывать`,
+          `${SITE_URL}/projects/bazzar-certs`
+        );
+      }
+    } catch (err) {
+      console.error('[Pachca Bot] Error processing bazzar_orders UPDATE:', err.message);
+    }
+  })
+  .subscribe((status) => {
+    console.log(`🔌 Статус Realtime-подключения (Bazzar Orders Linked): ${status}`);
+  });
+
+

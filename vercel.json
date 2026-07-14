@@ -15,6 +15,10 @@
     {
       "path": "/api/shop/ggsel/sync-chats",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/ggsel-sync-orders",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

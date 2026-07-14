@@ -102,31 +102,42 @@ export async function GET(request: Request) {
     const invoiceId = verifyData.inv || verifyData.id_invoice || null;
 
     // 3. Сохраняем заказ и финансы, если заказа еще нет в базе
+    // Проверяем и по uniquecode, и по invoice_id (cron сохраняет invoice_id)
     const { data: existingOrder } = await supabase
       .from('bazzar_orders')
       .select('id')
-      .eq('uniquecode', uniquecode)
+      .or(`uniquecode.eq.${uniquecode},invoice_id.eq.${uniquecode}`)
       .maybeSingle();
 
     if (!existingOrder) {
-      // Сохраняем в финансы
-      const txAmount = Math.max(Number(amount) || 0, 0.01);
-      const { error: txErr } = await supabase.from('transactions').insert({
-        date: new Date().toISOString().slice(0, 10),
-        description: `GGSel: ${itemName} (код: ${uniquecode})`,
-        category: 'revenue',
-        type: 'income',
-        amount: txAmount,
-      });
-      if (txErr) console.error('[GGSel verify] transactions insert failed:', txErr.message);
+      // Проверяем нет ли уже транзакции с этим кодом
+      const { data: existingTx } = await supabase
+        .from('transactions')
+        .select('id')
+        .ilike('description', `%${uniquecode.replace(/[%_]/g, '\\$&')}%`)
+        .maybeSingle();
+
+      if (!existingTx) {
+        const txAmount = Math.max(Number(amount) || 0, 0.01);
+        const { error: txErr } = await supabase.from('transactions').insert({
+          date: new Date().toISOString().slice(0, 10),
+          description: `GGSel: ${itemName} (код: ${uniquecode})`,
+          category: 'revenue',
+          type: 'income',
+          amount: txAmount,
+        });
+        if (txErr) console.error('[GGSel verify] transactions insert failed:', txErr.message);
+      }
 
       // Сохраняем в базу заказов
       const { error: orderErr } = await supabase.from('bazzar_orders').upsert({
         uniquecode: uniquecode,
+        invoice_id: invoiceId ? String(invoiceId) : null,
         item_name: itemName,
         amount: Number(amount) || 0,
         email: email,
         status: 'pending_udid',
+        source: 'ggsel_verify',
         created_at: new Date().toISOString()
       }, { onConflict: 'uniquecode' });
       if (orderErr) console.error('[GGSel verify] bazzar_orders upsert failed:', orderErr.message);
