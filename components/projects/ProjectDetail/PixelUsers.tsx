@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Search, Zap, Loader2, X, Save, User } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useUIStore } from '@/store/ui'
 import { useAuthStore } from '@/store/auth'
 import { updatePixelUserBalance } from '@/app/actions/pixelActions'
@@ -75,14 +76,13 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
 
       <div className="space-y-2">
         {filteredUsers.length === 0 ? (
-          <div className="text-center py-8 text-mute text-[13px]">
-            Пользователи не найдены
-          </div>
+          <EmptyState icon={User} title="Пользователи не найдены" description="Попробуйте изменить поисковый запрос." />
+
         ) : (
           filteredUsers.map(u => (
             <div
               key={u.id}
-              className="p-3.5 rounded-xl border border-line/50 bg-white/[0.01] hover:bg-white/[0.02] transition-colors flex items-center justify-between gap-3 flex-wrap"
+              className="p-3.5 rounded-xl border border-line/50 bg-bg hover:bg-black/[0.02] transition-colors flex items-center justify-between gap-3 flex-wrap"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar
@@ -92,10 +92,10 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
                   src={u.avatar_url}
                 />
                 <div className="min-w-0">
-                  <div className="font-semibold text-[13.5px] text-white flex items-center gap-2">
+                  <div className="font-semibold text-[13.5px] text-slate-800 flex items-center gap-2">
                     <span>{u.first_name || 'Пользователь'} {u.last_name || ''}</span>
                     {u.is_premium && (
-                      <span className="text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">
+                      <span className="text-[9px] bg-accent/20 text-accent px-1.5 py-0.5 rounded-lg font-bold uppercase tracking-wider">
                         Premium
                       </span>
                     )}
@@ -112,11 +112,11 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
 
               <div className="flex items-center gap-2">
                 {editingUserId === u.id && canEdit ? (
-                  <div className="flex items-center gap-1 bg-white/[0.02] border border-line rounded-lg p-1">
+                  <div className="flex items-center gap-1 bg-bg border border-line rounded-lg p-1">
                     <input
                       type="number"
                       autoFocus
-                      className="w-16 h-8 px-2 bg-transparent text-right outline-none text-[13px] text-white font-mono font-bold"
+                      className="w-16 h-8 px-2 bg-transparent text-right outline-none text-[13px] text-slate-800 font-mono font-bold"
                       value={newBalance}
                       disabled={updating}
                       onChange={e => setNewBalance(e.target.value)}
@@ -139,7 +139,7 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
                     <button
                       onClick={() => setEditingUserId(null)}
                       disabled={updating}
-                      className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-mute hover:text-white transition-colors flex items-center justify-center"
+                      className="w-8 h-8 rounded-lg bg-black/[0.04] hover:bg-black/[0.08] text-mute hover:text-slate-800 transition-colors flex items-center justify-center"
                     >
                       <X size={13} />
                     </button>
@@ -156,7 +156,7 @@ export function PixelUsers({ initialUsers }: PixelUsersProps) {
                   </button>
                 ) : (
                   <div
-                    className="flex items-center gap-1.5 bg-white/[0.04] px-3 py-1.5 rounded-lg border border-line/40 text-mute2 cursor-default"
+                    className="flex items-center gap-1.5 bg-black/[0.04] px-3 py-1.5 rounded-lg border border-line/40 text-mute2 cursor-default"
                   >
                     <Zap size={13} className="text-mute2" />
                     <span className="text-[12.5px] font-bold font-mono text-mute">

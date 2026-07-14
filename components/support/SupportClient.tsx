@@ -429,22 +429,22 @@ export function SupportClient() {
   return (
     <div className="flex h-[calc(100vh-80px)] gap-5 overflow-hidden w-full">
       {/* Left Column: Chats */}
-      <div className="w-[320px] shrink-0 flex flex-col bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-hidden shadow-2xl relative">
-        <div className="p-4 border-b border-white/[0.04] bg-white/[0.01]">
+      <div className="w-[320px] shrink-0 flex flex-col bg-card border border-line rounded-2xl overflow-hidden shadow-2xl relative">
+        <div className="p-4 border-b border-line bg-bg">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8E92BC]" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" size={16} />
             <input 
               type="text" 
               placeholder="Поиск..." 
-              className="w-full bg-[#13141C] border border-white/[0.04] rounded-xl pl-9 pr-3 py-2 text-[13px] outline-none placeholder:text-[#8E92BC]/60 focus:border-[#BFF128]/50 transition-colors"
+              className="w-full bg-bg border border-line rounded-xl pl-9 pr-3 py-2 text-[13px] outline-none placeholder:text-mute2 focus:border-[#BFF128]/50 transition-colors"
             />
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center h-full text-[#8E92BC]"><Loader2 className="animate-spin" size={20} /></div>
+            <div className="flex items-center justify-center h-full text-mute"><Loader2 className="animate-spin" size={20} /></div>
           ) : chats.length === 0 ? (
-            <div className="p-4 text-center text-[12px] text-[#8E92BC]">
+            <div className="p-4 text-center text-[12px] text-mute">
               Нет сообщений <br/>
               <span className="text-[10px] text-red-500">{debugText}</span>
             </div>
@@ -473,20 +473,20 @@ export function SupportClient() {
                     whileHover={{ scale: 1.01, x: 2 }}
                     onClick={() => setSelectedUser(chat)}
                     className={clsx(
-                      "px-4 py-3 cursor-pointer border-b border-white/[0.02] transition-colors flex gap-3",
-                      isActive ? "bg-white/[0.04]" : "hover:bg-white/[0.02]"
+                      "px-4 py-3 cursor-pointer border-b border-line transition-colors flex gap-3",
+                      isActive ? "bg-black/[0.04]" : "hover:bg-black/[0.02]"
                     )}
                   >
                     <Avatar initials={getInitials(name)} color={colorFor(name)} size={40} />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline mb-1">
-                        <h4 className="text-[13px] font-semibold truncate text-white">{name}</h4>
-                        <span className="text-[10px] text-[#8E92BC]">
+                        <h4 className="text-[13px] font-semibold truncate text-slate-800">{name}</h4>
+                        <span className="text-[10px] text-mute">
                           {format(new Date(chat.time), 'HH:mm')}
                         </span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
-                        <p className={clsx("text-[12px] truncate flex-1", !chat.isRead ? "text-white font-medium" : "text-[#8E92BC]")}>
+                        <p className={clsx("text-[12px] truncate flex-1", !chat.isRead ? "text-slate-800 font-medium" : "text-mute")}>
                           {chat.lastMessage}
                         </p>
                         {!chat.isRead && (
@@ -504,14 +504,14 @@ export function SupportClient() {
       </div>
 
       {/* Middle Column: Chat */}
-      <div className="flex-1 flex flex-col bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-hidden shadow-2xl relative">
+      <div className="flex-1 flex flex-col bg-card border border-line rounded-2xl overflow-hidden shadow-2xl relative">
         {!selectedUser ? (
-          <div className="flex-1 flex items-center justify-center text-[#8E92BC] text-[13px]">
+          <div className="flex-1 flex items-center justify-center text-mute text-[13px]">
             Выберите чат слева
           </div>
         ) : (
           <>
-            <div className="h-[60px] border-b border-white/[0.04] flex items-center px-6 justify-between bg-white/[0.01]">
+            <div className="h-[60px] border-b border-line flex items-center px-6 justify-between bg-bg">
               <div className="flex items-center gap-3">
                 <Avatar 
                   initials={getInitials(displayName)} 
@@ -519,8 +519,8 @@ export function SupportClient() {
                   size={32} 
                 />
                 <div>
-                  <h3 className="text-[14px] font-bold text-white">{displayName}</h3>
-                  <p className="text-[11px] text-[#8E92BC]">Проект: <span className="text-white font-medium">{selectedUser.project}</span></p>
+                  <h3 className="text-[14px] font-bold text-slate-800">{displayName}</h3>
+                  <p className="text-[11px] text-mute">Проект: <span className="text-slate-800 font-medium">{selectedUser.project}</span></p>
                 </div>
               </div>
             </div>
@@ -539,7 +539,7 @@ export function SupportClient() {
                     >
                       <div className={clsx(
                         "px-4 py-2.5 rounded-2xl text-[13.5px] leading-[1.4] shadow-sm",
-                        isMine ? "bg-[#BFF128] text-black rounded-tr-none" : "bg-[#252736] text-white rounded-tl-none border border-white/[0.02]"
+                        isMine ? "bg-[#BFF128] text-black rounded-tr-none" : "bg-line2 text-slate-800 rounded-tl-none border border-line"
                       )}>
                         {msg.message.startsWith('📷 [Изображение]:') ? (
                           <div className="space-y-1">
@@ -554,7 +554,7 @@ export function SupportClient() {
                           msg.message
                         )}
                       </div>
-                      <span className="text-[10px] text-[#8E92BC] mt-1.5 flex items-center gap-1">
+                      <span className="text-[10px] text-mute mt-1.5 flex items-center gap-1">
                         {format(new Date(msg.created_at), 'HH:mm')}
                         {isMine && <CheckCheck size={12} className="text-[#BFF128]" />}
                       </span>
@@ -565,14 +565,14 @@ export function SupportClient() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 border-t border-white/[0.04] bg-white/[0.01]">
+            <div className="p-4 border-t border-line bg-bg">
               <div className="flex gap-2 relative">
                 <textarea 
                   value={text}
                   onChange={e => setText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Напишите сообщение..." 
-                  className="w-full bg-[#13141C] border border-white/[0.06] rounded-xl pl-4 pr-12 py-3 text-[13px] text-white placeholder-[#8E92BC]/60 outline-none focus:border-[#BFF128]/50 transition-colors resize-none max-h-[120px] min-h-[44px]"
+                  className="w-full bg-bg border border-line rounded-xl pl-4 pr-12 py-3 text-[13px] text-slate-800 placeholder-mute2 outline-none focus:border-[#BFF128]/50 transition-colors resize-none max-h-[120px] min-h-[44px]"
                   rows={1}
                 />
                 <button 
@@ -583,16 +583,16 @@ export function SupportClient() {
                   {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="ml-0.5" />}
                 </button>
               </div>
-              <p className="text-[10px] text-[#8E92BC] text-center mt-2">Enter для отправки, Shift+Enter для переноса</p>
+              <p className="text-[10px] text-mute text-center mt-2">Enter для отправки, Shift+Enter для переноса</p>
             </div>
           </>
         )}
       </div>
 
       {/* Right Column: User Info */}
-      <div className="w-[480px] shrink-0 bg-[#1C1D2A] border border-white/[0.04] rounded-2xl overflow-y-auto shadow-2xl p-6 space-y-7 relative">
+      <div className="w-[480px] shrink-0 bg-card border border-line rounded-2xl overflow-y-auto shadow-2xl p-6 space-y-7 relative">
         {!selectedUser ? (
-          <div className="flex h-full items-center justify-center text-[#8E92BC] text-[14px] text-center px-4">
+          <div className="flex h-full items-center justify-center text-mute text-[14px] text-center px-4">
             Выберите чат для просмотра деталей клиента
           </div>
         ) : (
@@ -603,9 +603,9 @@ export function SupportClient() {
                 initials={getInitials(displayName)} 
                 color={colorFor(displayName)} 
                 size={96} 
-                className="mx-auto mb-4 shadow-lg ring-4 ring-white/[0.02]"
+                className="mx-auto mb-4 shadow-lg ring-4 ring-line"
               />
-              <h2 className="text-[18px] font-bold text-white mb-1.5 tracking-tight">
+              <h2 className="text-[18px] font-bold text-slate-800 mb-1.5 tracking-tight">
                 {displayName}
               </h2>
               {tgName && (
@@ -615,9 +615,9 @@ export function SupportClient() {
 
             {/* GGSel Order Details Card */}
             {selectedUser?.project?.toLowerCase().includes('ggsel') && (
-              <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
+              <div className="bg-bg border border-line rounded-2xl p-5 space-y-4 shadow-sm">
                 <div className="flex justify-between items-center mb-1">
-                  <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2">
+                  <h3 className="text-[12px] uppercase tracking-wider text-mute font-bold flex items-center gap-2">
                     <Info size={15} /> Детали заказа GGSel
                   </h3>
                   {orderDetails?.orderUrl && (
@@ -633,7 +633,7 @@ export function SupportClient() {
                 </div>
 
                 {orderLoading && (
-                  <div className="flex items-center justify-center py-4 text-[#8E92BC] text-[12px] gap-2">
+                  <div className="flex items-center justify-center py-4 text-mute text-[12px] gap-2">
                     <Loader2 size={16} className="animate-spin" /> Загрузка данных заказа...
                   </div>
                 )}
@@ -647,52 +647,52 @@ export function SupportClient() {
                 {!orderLoading && !orderError && orderDetails && (
                   <div className="space-y-3 text-[13px]">
                     <div className="flex justify-between">
-                      <span className="text-[#8E92BC]">Статус:</span>
+                      <span className="text-mute">Статус:</span>
                       <span 
                         className={clsx(
                           "font-semibold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide",
                           orderDetails.statusColor === 'green' && "bg-green-500/10 text-green-500",
                           orderDetails.statusColor === 'yellow' && "bg-yellow-500/10 text-yellow-500",
                           orderDetails.statusColor === 'red' && "bg-red-500/10 text-red-500",
-                          orderDetails.statusColor === 'gray' && "bg-white/5 text-[#8E92BC]"
+                          orderDetails.statusColor === 'gray' && "bg-mute/10 text-mute"
                         )}
                       >
                         {orderDetails.status}
                       </span>
                     </div>
                     <div className="flex justify-between items-baseline gap-2">
-                      <span className="text-[#8E92BC] shrink-0">Товар:</span>
-                      <span className="text-white text-right font-medium max-w-[240px] truncate" title={orderDetails.productName}>
+                      <span className="text-mute shrink-0">Товар:</span>
+                      <span className="text-slate-800 text-right font-medium max-w-[240px] truncate" title={orderDetails.productName}>
                         {orderDetails.productName}
                       </span>
                     </div>
                     {orderDetails.options && orderDetails.options.length > 0 && (
-                      <div className="pt-2 border-t border-white/[0.04] space-y-1.5">
-                        <span className="text-[#8E92BC] text-[11px] block">Параметры:</span>
-                        <div className="text-[12px] text-white/80 bg-[#1C1D2A] p-2.5 rounded-lg border border-white/[0.02] space-y-1">
+                      <div className="pt-2 border-t border-line space-y-1.5">
+                        <span className="text-mute text-[11px] block">Параметры:</span>
+                        <div className="text-[12px] text-slate-600 bg-card p-2.5 rounded-lg border border-line space-y-1">
                           {orderDetails.options.map((o: any, idx: number) => (
                             <div key={idx} className="flex justify-between">
-                              <span className="text-[#8E92BC]">{o.name}:</span>
-                              <span className="font-medium text-right text-white/90">{o.user_data}</span>
+                              <span className="text-mute">{o.name}:</span>
+                              <span className="font-medium text-right text-slate-700">{o.user_data}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-[#8E92BC]">Заказ ID:</span>
-                      <span className="text-white font-mono">{orderDetails.orderId}</span>
+                      <span className="text-mute">Заказ ID:</span>
+                      <span className="text-slate-800 font-mono">{orderDetails.orderId}</span>
                     </div>
                     {orderDetails.productId && (
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Товар ID:</span>
-                        <span className="text-white font-mono">{orderDetails.productId}</span>
+                        <span className="text-mute">Товар ID:</span>
+                        <span className="text-slate-800 font-mono">{orderDetails.productId}</span>
                       </div>
                     )}
                     {orderDetails.createdAt && (
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Создан:</span>
-                        <span className="text-white">
+                        <span className="text-mute">Создан:</span>
+                        <span className="text-slate-800">
                           {new Date(orderDetails.createdAt).toLocaleString('ru-RU', {
                             day: '2-digit', month: '2-digit', year: '2-digit',
                             hour: '2-digit', minute: '2-digit',
@@ -702,27 +702,27 @@ export function SupportClient() {
                     )}
                     {orderDetails.buyerEmail && (
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Покупатель:</span>
-                        <span className="text-white font-mono">{orderDetails.buyerEmail}</span>
+                        <span className="text-mute">Покупатель:</span>
+                        <span className="text-slate-800 font-mono">{orderDetails.buyerEmail}</span>
                       </div>
                     )}
                     {orderDetails.paymentMethod && (
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Оплата:</span>
-                        <span className="text-white">{orderDetails.paymentMethod}</span>
+                        <span className="text-mute">Оплата:</span>
+                        <span className="text-slate-800">{orderDetails.paymentMethod}</span>
                       </div>
                     )}
                     {orderDetails.amount !== undefined && (
-                      <div className="flex justify-between pt-1 border-t border-white/[0.04]">
-                        <span className="text-[#8E92BC]">Сумма:</span>
-                        <span className="text-white font-semibold">
+                      <div className="flex justify-between pt-1 border-t border-line">
+                        <span className="text-mute">Сумма:</span>
+                        <span className="text-slate-800 font-semibold">
                           {orderDetails.amount} {orderDetails.currency}
                         </span>
                       </div>
                     )}
                     {orderDetails.profit !== undefined && (
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Доход:</span>
+                        <span className="text-mute">Доход:</span>
                         <span className="text-[#BFF128] font-bold">
                           +{orderDetails.profit} {orderDetails.currency}
                         </span>
@@ -734,37 +734,37 @@ export function SupportClient() {
             )}
 
             {/* Registration & Connect Info */}
-            <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
-              <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 mb-1">
+            <div className="bg-bg border border-line rounded-2xl p-5 space-y-4 shadow-sm">
+              <h3 className="text-[12px] uppercase tracking-wider text-mute font-bold flex items-center gap-2 mb-1">
                 <Info size={15} /> Учетная запись
               </h3>
               <div className="space-y-3 text-[13px]">
                 <div className="flex justify-between items-baseline gap-2">
-                  <span className="text-[#8E92BC] shrink-0">Email / Логин:</span>
-                  <span className="text-white font-mono truncate max-w-[200px] text-right" title={userDetails?.email || 'не указан'}>
+                  <span className="text-mute shrink-0">Email / Логин:</span>
+                  <span className="text-slate-800 font-mono truncate max-w-[200px] text-right" title={userDetails?.email || 'не указан'}>
                     {userDetails?.email || 'не указан'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#8E92BC]">Veil VPN:</span>
-                  <span className={clsx("font-semibold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide", activeSub ? "bg-green-500/10 text-green-500" : "bg-white/5 text-[#8E92BC]")}>
+                  <span className="text-mute">Veil VPN:</span>
+                  <span className={clsx("font-semibold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide", activeSub ? "bg-green-500/10 text-green-500" : "bg-mute/10 text-mute")}>
                     {activeSub ? 'Зарегистрирован' : 'Нет подписки'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#8E92BC]">Аккаунт Connect:</span>
-                  <span className={clsx("font-semibold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide", userDetails?.connectUser ? "bg-[#BFF128]/10 text-[#BFF128]" : "bg-white/5 text-[#8E92BC]")}>
+                  <span className="text-mute">Аккаунт Connect:</span>
+                  <span className={clsx("font-semibold px-2 py-0.5 rounded text-[11px] uppercase tracking-wide", userDetails?.connectUser ? "bg-[#BFF128]/10 text-[#BFF128]" : "bg-mute/10 text-mute")}>
                     {userDetails?.connectUser ? 'Да' : 'Нет'}
                   </span>
                 </div>
                 {userDetails?.connectUser && (
                   <>
-                    <div className="flex justify-between items-baseline gap-2 pt-2 border-t border-white/[0.04]">
-                      <span className="text-[#8E92BC] shrink-0">ФИО:</span>
-                      <span className="text-white text-right truncate max-w-[220px] font-medium">{userDetails.connectUser.full_name || '—'}</span>
+                    <div className="flex justify-between items-baseline gap-2 pt-2 border-t border-line">
+                      <span className="text-mute shrink-0">ФИО:</span>
+                      <span className="text-slate-800 text-right truncate max-w-[220px] font-medium">{userDetails.connectUser.full_name || '—'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#8E92BC]">Роль:</span>
+                      <span className="text-mute">Роль:</span>
                       <span className="text-[#BFF128] uppercase text-[11px] font-bold bg-[#BFF128]/10 px-2 py-0.5 rounded">
                         {userDetails.connectUser.role || 'user'}
                       </span>
@@ -772,11 +772,11 @@ export function SupportClient() {
                   </>
                 )}
                 {userDetails?.projects && userDetails.projects.length > 0 && (
-                  <div className="pt-3 border-t border-white/[0.04]">
-                    <span className="text-[#8E92BC] block mb-2">Доступ к проектам:</span>
+                  <div className="pt-3 border-t border-line">
+                    <span className="text-mute block mb-2">Доступ к проектам:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {userDetails.projects.map((p: any) => (
-                        <span key={p.projects?.slug} className="text-[11px] font-medium bg-[#1C1D2A] border border-white/10 text-white px-2.5 py-1 rounded-md">
+                        <span key={p.projects?.slug} className="text-[11px] font-medium bg-card border border-line2 text-slate-800 px-2.5 py-1 rounded-lg">
                           {p.projects?.name || p.projects?.slug}
                         </span>
                       ))}
@@ -784,30 +784,30 @@ export function SupportClient() {
                   </div>
                 )}
                 {userDetails?.connectClient && (
-                  <div className="pt-3 border-t border-white/[0.04]">
-                    <span className="text-[#8E92BC] block mb-2">Профиль CRM-Клиента:</span>
-                    <div className="space-y-2 text-[12px] bg-[#1C1D2A] p-3 rounded-xl border border-white/[0.02]">
+                  <div className="pt-3 border-t border-line">
+                    <span className="text-mute block mb-2">Профиль CRM-Клиента:</span>
+                    <div className="space-y-2 text-[12px] bg-card p-3 rounded-xl border border-line">
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Имя в CRM:</span>
-                        <span className="text-white font-semibold">{userDetails.connectClient.name || '—'}</span>
+                        <span className="text-mute">Имя в CRM:</span>
+                        <span className="text-slate-800 font-semibold">{userDetails.connectClient.name || '—'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Источник:</span>
-                        <span className="text-white">{userDetails.connectClient.source || '—'}</span>
+                        <span className="text-mute">Источник:</span>
+                        <span className="text-slate-800">{userDetails.connectClient.source || '—'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#8E92BC]">Статус:</span>
-                        <span className="text-white font-semibold">{userDetails.connectClient.status || '—'}</span>
+                        <span className="text-mute">Статус:</span>
+                        <span className="text-slate-800 font-semibold">{userDetails.connectClient.status || '—'}</span>
                       </div>
                       {userDetails.connectClient.manager?.full_name && (
                         <div className="flex justify-between">
-                          <span className="text-[#8E92BC]">Менеджер:</span>
-                          <span className="text-white">{userDetails.connectClient.manager.full_name}</span>
+                          <span className="text-mute">Менеджер:</span>
+                          <span className="text-slate-800">{userDetails.connectClient.manager.full_name}</span>
                         </div>
                       )}
                       {userDetails.connectClient.total_spent !== undefined && (
-                        <div className="flex justify-between pt-1 border-t border-white/[0.04]">
-                          <span className="text-[#8E92BC]">Потрачено:</span>
+                        <div className="flex justify-between pt-1 border-t border-line">
+                          <span className="text-mute">Потрачено:</span>
                           <span className="text-[#BFF128] font-bold text-[13px]">{userDetails.connectClient.total_spent} руб.</span>
                         </div>
                       )}
@@ -820,7 +820,7 @@ export function SupportClient() {
             {/* Procedures Checklist */}
             {procedures.length > 0 && (
               <div className="space-y-3.5">
-                <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 px-1">
+                <h3 className="text-[12px] uppercase tracking-wider text-mute font-bold flex items-center gap-2 px-1">
                   <Check className="text-[#BFF128]" size={15} /> Чеклисты процедур
                 </h3>
                 {procedures.map((proc) => {
@@ -847,19 +847,19 @@ export function SupportClient() {
             )}
 
             {/* Быстрые ответы */}
-            <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
-              <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 mb-1">
+            <div className="bg-bg border border-line rounded-2xl p-5 space-y-4 shadow-sm">
+              <h3 className="text-[12px] uppercase tracking-wider text-mute font-bold flex items-center gap-2 mb-1">
                 <Info size={15} /> Быстрые ответы
               </h3>
               
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8E92BC]" size={14} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" size={14} />
                 <input 
                   type="text"
                   placeholder="Поиск шаблона..."
                   value={templateSearch}
                   onChange={e => setTemplateSearch(e.target.value)}
-                  className="w-full bg-[#1C1D2A] border border-white/[0.06] rounded-xl pl-9 pr-3 py-2 text-[13px] text-white placeholder-[#8E92BC]/50 outline-none focus:border-[#BFF128]/50 transition-colors"
+                  className="w-full bg-card border border-line rounded-xl pl-9 pr-3 py-2 text-[13px] text-slate-800 placeholder-mute2 outline-none focus:border-[#BFF128]/50 transition-colors"
                 />
               </div>
 
@@ -868,67 +868,67 @@ export function SupportClient() {
                   <button
                     key={idx}
                     onClick={() => setText(tpl.text)}
-                    className="w-full text-left p-3 rounded-xl bg-[#1C1D2A] hover:bg-white/[0.04] border border-white/[0.02] transition-colors text-[12.5px] group"
+                    className="w-full text-left p-3 rounded-xl bg-card hover:bg-black/[0.04] border border-line transition-colors text-[12.5px] group"
                   >
                     <span className="font-bold text-[#BFF128] group-hover:text-[#d3f766] transition-colors block mb-1">{tpl.title}</span>
-                    <span className="text-white/60 line-clamp-2 leading-relaxed">{tpl.text}</span>
+                    <span className="text-mute line-clamp-2 leading-relaxed">{tpl.text}</span>
                   </button>
                 ))}
                 {filteredTemplates.length === 0 && (
-                  <p className="text-[13px] text-[#8E92BC] text-center py-4">Шаблоны не найдены</p>
+                  <p className="text-[13px] text-mute text-center py-4">Шаблоны не найдены</p>
                 )}
               </div>
             </div>
 
             {/* Referrals */}
-            <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 flex justify-between items-center shadow-sm">
+            <div className="bg-bg border border-line rounded-2xl p-5 flex justify-between items-center shadow-sm">
               <div>
-                <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 mb-1">
+                <h3 className="text-[12px] uppercase tracking-wider text-mute font-bold flex items-center gap-2 mb-1">
                   <Users size={15} /> Рефералы
                 </h3>
-                <p className="text-[12px] text-[#8E92BC]">Приглашенных друзей</p>
+                <p className="text-[12px] text-mute">Приглашенных друзей</p>
               </div>
-              <div className="text-[28px] font-black text-white bg-[#1C1D2A] px-4 py-2 rounded-xl border border-white/[0.02]">
+              <div className="text-[28px] font-black text-slate-800 bg-card px-4 py-2 rounded-xl border border-line">
                 {userDetails?.refCount || 0}
               </div>
             </div>
 
             {/* Subscriptions */}
-            <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl p-5 space-y-4 shadow-sm">
-              <h3 className="text-[12px] uppercase tracking-wider text-[#8E92BC] font-bold flex items-center gap-2 mb-1">
+            <div className="bg-bg border border-line rounded-2xl p-5 space-y-4 shadow-sm">
+              <h3 className="text-[12px] uppercase tracking-wider text-mute font-bold flex items-center gap-2 mb-1">
                 <Shield size={15} /> Подписки
               </h3>
               
               {!userDetails ? (
-                <Loader2 size={18} className="animate-spin text-[#8E92BC]" />
+                <Loader2 size={18} className="animate-spin text-mute" />
               ) : userDetails.subs?.length === 0 ? (
-                <p className="text-[13px] text-[#8E92BC] text-center py-4">Нет активных подписок</p>
+                <p className="text-[13px] text-mute text-center py-4">Нет активных подписок</p>
               ) : (
                 <div className="space-y-3.5">
                   {userDetails.subs.map((sub: any, i: number) => {
                     const isActive = sub.status === 'active'
                     return (
-                      <div key={sub.id} className="bg-[#1C1D2A] border border-white/[0.04] rounded-xl p-4 relative overflow-hidden transition-all hover:border-white/[0.08]">
+                      <div key={sub.id} className="bg-card border border-line rounded-xl p-4 relative overflow-hidden transition-all hover:border-line2">
                         <div className={clsx(
                           "absolute top-0 left-0 w-1.5 h-full", 
                           isActive ? "bg-[#BFF128]" : "bg-[#e63950]"
                         )} />
                         <div className="pl-3">
                           <div className="flex justify-between items-start mb-3">
-                            <div className="text-[13.5px] font-semibold text-white">Устройство {i + 1}</div>
+                            <div className="text-[13.5px] font-semibold text-slate-800">Устройство {i + 1}</div>
                             <span className={clsx("text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider", isActive ? "bg-[#BFF128]/10 text-[#BFF128]" : "bg-[#e63950]/10 text-[#e63950]")}>
                               {isActive ? 'Active' : 'Expired'}
                             </span>
                           </div>
                           
-                          <div className="space-y-2 text-[12.5px] text-[#8E92BC]">
+                          <div className="space-y-2 text-[12.5px] text-mute">
                             <div className="flex justify-between">
                               <span>Трафик:</span>
-                              <span className="text-white font-medium">{sub.traffic_limit ? Math.round(sub.traffic_limit / 1073741824) + ' ГБ' : 'Безлимит'}</span>
+                              <span className="text-slate-800 font-medium">{sub.traffic_limit ? Math.round(sub.traffic_limit / 1073741824) + ' ГБ' : 'Безлимит'}</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Истекает:</span>
-                              <span className="text-white font-medium">{sub.expires_at ? format(new Date(sub.expires_at), 'dd.MM.yyyy') : 'Бессрочно'}</span>
+                              <span className="text-slate-800 font-medium">{sub.expires_at ? format(new Date(sub.expires_at), 'dd.MM.yyyy') : 'Бессрочно'}</span>
                             </div>
                           </div>
 
@@ -960,34 +960,34 @@ function ProcedureItem({ proc, checked, onToggle }: { proc: any; checked: boolea
   const isAllDone = doneCount === proc.steps.length
 
   return (
-    <div className="bg-[#13141C] border border-white/[0.04] rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-bg border border-line rounded-2xl overflow-hidden shadow-sm">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-4 bg-transparent border-none text-left focus:outline-none hover:bg-white/[0.01] transition-colors"
+        className="w-full flex items-center justify-between p-4 bg-transparent border-none text-left focus:outline-none hover:bg-black/[0.02] transition-colors"
       >
         <div className="space-y-1">
-          <span className="text-[13px] font-bold text-white block">{proc.title}</span>
-          <span className="text-[11px] text-[#8E92BC]">
+          <span className="text-[13px] font-bold text-slate-800 block">{proc.title}</span>
+          <span className="text-[11px] text-mute">
             {doneCount} из {proc.steps.length} выполнено
           </span>
         </div>
         <div className="flex items-center gap-3">
           {doneCount > 0 && (
-            <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="w-16 h-1.5 bg-mute/10 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-[#BFF128] transition-all duration-300" 
                 style={{ width: `${(doneCount / proc.steps.length) * 100}%` }}
               />
             </div>
           )}
-          <span className={clsx("text-white/40 transition-transform duration-200 text-[10px]", open && "rotate-180")}>
+          <span className={clsx("text-mute2 transition-transform duration-200 text-[10px]", open && "rotate-180")}>
             ▼
           </span>
         </div>
       </button>
 
       {open && (
-        <div className="border-t border-white/[0.04] p-4 space-y-2.5 bg-[#1C1D2A]/40">
+        <div className="border-t border-line p-4 space-y-2.5 bg-card/40">
           {proc.steps.map((step: any, idx: number) => {
             const isChecked = checked?.[idx] || false
             return (
@@ -999,19 +999,19 @@ function ProcedureItem({ proc, checked, onToggle }: { proc: any; checked: boolea
                   type="checkbox"
                   checked={isChecked}
                   onChange={() => onToggle(idx)}
-                  className="mt-0.5 rounded border-white/10 bg-[#1C1D2A] text-[#BFF128] focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
+                  className="mt-0.5 rounded border-line2 bg-card text-[#BFF128] focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer"
                 />
-                <span className={clsx("transition-colors leading-relaxed", isChecked ? "text-[#8E92BC] line-through" : "text-white/80 group-hover:text-white")}>
+                <span className={clsx("transition-colors leading-relaxed", isChecked ? "text-mute line-through" : "text-slate-600 group-hover:text-slate-800")}>
                   {step.text}
                   {step.note && (
-                    <span className="block text-[11px] text-[#8E92BC]/60 mt-0.5 no-underline">{step.note}</span>
+                    <span className="block text-[11px] text-mute2 mt-0.5 no-underline">{step.note}</span>
                   )}
                 </span>
               </label>
             )
           })}
           {isAllDone && proc.steps.length > 0 && (
-            <div className="text-center text-[12px] text-[#BFF128] font-semibold pt-2 border-t border-white/[0.02]">
+            <div className="text-center text-[12px] text-[#BFF128] font-semibold pt-2 border-t border-line">
               ✓ Процедура завершена
             </div>
           )}

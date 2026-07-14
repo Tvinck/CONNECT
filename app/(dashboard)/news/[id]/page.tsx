@@ -42,7 +42,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
           <ArrowLeft size={16} /> Назад к новостям
         </Link>
         
-        <div className="bg-card border border-line rounded-[2rem] p-8 shadow-sm">
+        <div className="bg-card border border-line rounded-card p-8 shadow-sm">
           {news.tags && news.tags.length > 0 && (
             <div className="flex gap-2 mb-4">
               {news.tags.map((tag: string) => (

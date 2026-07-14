@@ -26,11 +26,13 @@ interface AuthState {
   role: UserRole
   /** Cached permission levels for the role. */
   permissions: Record<string, number>
+  /** Cached action-level capabilities ("скиллы") — union of role + personal grants. */
+  capabilities: string[]
   /** True while AuthProvider is hydrating the store from the server session. */
   isLoading: boolean
 
-  /** Set or clear the current user profile. Also updates `role` and `permissions` from parameters. */
-  setUser: (user: User | null, permissions?: Record<string, number>) => void
+  /** Set or clear the current user profile. Also updates `role`, `permissions` and `capabilities`. */
+  setUser: (user: User | null, permissions?: Record<string, number>, capabilities?: string[]) => void
   /** Override the role independently (rarely needed outside AuthProvider). */
   setRole: (role: UserRole) => void
   /** Toggle the loading spinner shown during initial auth check. */
@@ -45,17 +47,18 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       role: 'dev',
       permissions: {},
+      capabilities: [],
       isLoading: true,
 
-      setUser: (user, permissions) => set({ user, role: user?.role ?? 'dev', permissions: permissions ?? {} }),
+      setUser: (user, permissions, capabilities) => set({ user, role: user?.role ?? 'dev', permissions: permissions ?? {}, capabilities: capabilities ?? [] }),
       setRole: (role) => set({ role }),
       setLoading: (isLoading) => set({ isLoading }),
-      logout: () => set({ user: null, role: 'dev', permissions: {} }),
+      logout: () => set({ user: null, role: 'dev', permissions: {}, capabilities: [] }),
     }),
     {
       name: 'connect-auth',
       // Persist the role and permissions — user data is always re-fetched from the server.
-      partialize: (state) => ({ role: state.role, permissions: state.permissions }),
+      partialize: (state) => ({ role: state.role, permissions: state.permissions, capabilities: state.capabilities }),
     }
   )
 )

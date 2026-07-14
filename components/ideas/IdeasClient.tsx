@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getInitials, colorFor, timeAgo } from '@/lib/utils'
 import { CreateIdeaModal } from './CreateIdeaModal'
 import { IdeaDetailsModal } from './IdeaDetailsModal'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export type IdeaVote = {
   user_id: string
@@ -226,7 +227,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
   }, [ideas, searchQuery, activeCategory, selectedTag, sortBy])
 
   return (
-    <div className="bg-card text-[#171821] rounded-[24px] border border-line p-6 lg:p-8 min-h-[85vh] relative overflow-hidden shadow-2xl">
+    <div className="bg-card text-[#171821] rounded-card border border-line p-6 lg:p-8 min-h-[85vh] relative overflow-hidden shadow-2xl">
       {/* Decorative Blur Blobs */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan/5 rounded-full blur-[100px] pointer-events-none" />
@@ -259,7 +260,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Поиск по идеям…"
-            className="w-full h-11 pl-10 pr-4 bg-white/[0.025] border border-line rounded-xl text-[13.5px] text-[#171821] placeholder:text-mute2 focus:border-accent focus:bg-white/[0.04] outline-none transition-all"
+            className="w-full h-11 pl-10 pr-4 bg-bg border border-line rounded-xl text-[13.5px] text-[#171821] placeholder:text-mute2 focus:border-accent focus:bg-black/[0.02] outline-none transition-all"
           />
         </div>
       </div>
@@ -269,13 +270,12 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
         {/* Left Column: Ideas List */}
         <div className="lg:col-span-3 space-y-4">
           {filteredIdeas.length === 0 ? (
-            <div className="bg-[#141622]/30 border border-white/[0.03] rounded-2xl p-12 text-center flex flex-col items-center justify-center">
-              <Lightbulb size={40} className="text-slate-600 mb-3" />
-              <div className="text-slate-400 font-medium text-[14px]">Идей пока нет</div>
-              <p className="text-slate-600 text-[12px] mt-1 max-w-xs">
-                Похоже, по заданным фильтрам ничего не найдено. Напишите вашу идею первой!
-              </p>
-            </div>
+            <EmptyState
+              className="bg-bg border border-line rounded-2xl"
+              icon={Lightbulb}
+              title="Идей пока нет"
+              description="По заданным фильтрам ничего не найдено. Напишите свою идею первой!"
+            />
           ) : (
             filteredIdeas.map(idea => {
               const score = idea.votes.reduce((sum, v) => sum + v.value, 0)
@@ -297,7 +297,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                   >
                     <button
                       onClick={() => handleVote(idea.id, 'up')}
-                      className={`p-1 rounded-md transition-all hover:bg-white/[0.05] ${
+                      className={`p-1 rounded-lg transition-all hover:bg-black/[0.05] ${
                         userVote === 1 ? 'text-accent scale-110' : 'text-mute2 hover:text-mute'
                       }`}
                     >
@@ -308,7 +308,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                     </span>
                     <button
                       onClick={() => handleVote(idea.id, 'down')}
-                      className={`p-1 rounded-md transition-all hover:bg-white/[0.05] ${
+                      className={`p-1 rounded-lg transition-all hover:bg-black/[0.05] ${
                         userVote === -1 ? 'text-warn scale-110' : 'text-mute2 hover:text-mute'
                       }`}
                     >
@@ -352,7 +352,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                         <>
                           <span className="text-line2">|</span>
                           <span
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-semibold text-[10.5px]"
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg font-semibold text-[10.5px]"
                             style={{ backgroundColor: `${project.color}15`, color: project.color }}
                           >
                             <span>{project.emoji ?? '📁'}</span>
@@ -369,7 +369,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                             {idea.idea_tags.map(it => it.tag && (
                               <span
                                 key={it.tag.id}
-                                className="px-1.5 py-0.5 bg-bg border border-line rounded-md text-[10px] text-mute hover:text-[#171821] hover:border-line2 transition-colors"
+                                className="px-1.5 py-0.5 bg-bg border border-line rounded-lg text-[10px] text-mute hover:text-[#171821] hover:border-line2 transition-colors"
                               >
                                 {it.tag.name}
                               </span>
@@ -438,7 +438,7 @@ export function IdeasClient({ initialIdeas, projects, allTags, users, currentUse
                     className={`w-full flex items-center justify-between px-3 h-9 rounded-xl text-[12.5px] font-medium transition-all ${
                       isActive
                         ? 'bg-accent/10 text-accent border border-accent/25 font-bold'
-                        : 'text-mute hover:text-[#171821] hover:bg-white/[0.04] border border-transparent'
+                        : 'text-mute hover:text-[#171821] hover:bg-black/[0.04] border border-transparent'
                     }`}
                   >
                     <span className="flex items-center gap-2">

@@ -24,7 +24,7 @@ export default function Loading() {
       {/* Article cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[...Array(9)].map((_, i) => (
-          <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 space-y-3">
+          <div key={i} className="rounded-2xl border border-line bg-card p-5 space-y-3">
             <div className="flex items-center justify-between">
               <Skeleton className="h-6 w-20 rounded-full" />
               <Skeleton className="h-4 w-16" />

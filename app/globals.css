@@ -35,7 +35,7 @@ a:focus-visible {
 @layer components {
   /* Card */
   .card {
-    @apply bg-card border border-line rounded-[24px] transition-all duration-200 shadow-[0_2px_12px_rgba(0,0,0,0.01)];
+    @apply bg-card border border-line rounded-card transition-all duration-200 shadow-[0_2px_12px_rgba(0,0,0,0.01)];
   }
   .card:hover {
     border-color: var(--color-line2);
@@ -113,8 +113,8 @@ a:focus-visible {
   }
   .lift:hover {
     transform: translateY(-3px);
-    border-color: #2C3463;
-    box-shadow: 0 12px 32px -16px rgba(0,0,0,0.5), 0 0 0 1px rgba(20,114,245,0.15);
+    border-color: var(--color-line2);
+    box-shadow: 0 12px 28px -16px rgba(0,0,0,0.14), 0 0 0 1px rgba(20,114,245,0.12);
   }
 
   /* Achievement locked */
@@ -123,10 +123,11 @@ a:focus-visible {
     opacity: 0.45;
   }
 
-  /* Consistent select/input dark styling — override browser defaults */
+  /* Consistent select styling — override browser defaults.
+     color-scheme is light so the native dropdown list matches the light UI. */
   select {
-    color-scheme: dark;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B92B4' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    color-scheme: light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237D81A0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 10px center;
     padding-right: 2rem;
@@ -134,8 +135,11 @@ a:focus-visible {
     -webkit-appearance: none;
   }
 
-  input[type="date"] {
-    color-scheme: dark;
+  /* Light so the native calendar popup renders light, not dark. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    color-scheme: light;
   }
 
   /* Smooth page transitions — targets PageContainer, not the layout <main> */
@@ -151,9 +155,21 @@ a:focus-visible {
     box-shadow: 0 0 24px -4px rgba(20,114,245,0.45);
   }
 
-  /* Table hover rows */
+  /* Table hover rows — subtle dark tint reads on the light surface */
   tbody tr:hover td {
-    background: rgba(255,255,255,0.015);
+    background: rgba(0,0,0,0.02);
+  }
+}
+
+/* Respect users who prefer reduced motion — disable animations/transitions */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

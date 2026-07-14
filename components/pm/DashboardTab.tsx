@@ -127,7 +127,7 @@ export function DashboardTab({ orders, products }: Props) {
                     <div className="text-[11px] text-mute">{data.count} зак. · {fmtRub(data.revenue)}</div>
                   </div>
                 </div>
-                <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div className="h-1.5 bg-black/[0.06] rounded-full overflow-hidden">
                   <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -144,7 +144,7 @@ export function DashboardTab({ orders, products }: Props) {
             const data = byProduct[p.id] ?? { count: 0, revenue: 0 }
             const cost = data.count * p.cost
             return (
-              <div key={p.id} className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+              <div key={p.id} className="rounded-xl bg-bg border border-line p-3.5">
                 <div className="text-[16px] mb-1">{p.emoji}</div>
                 <div className="text-[11px] text-mute2 mb-0.5">{p.name}</div>
                 <div className="text-[16px] font-bold text-err tabular-nums">−{fmtRub(cost)}</div>

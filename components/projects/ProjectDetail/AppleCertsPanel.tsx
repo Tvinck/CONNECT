@@ -5,11 +5,11 @@ import { Apple, Wallet, History, Plus, RefreshCw, Smartphone, TrendingUp, CheckC
 import { checkBalance, getCertificates, updateCertStatus, deleteCertificate } from '@/app/actions/apple-certs';
 import CreateCertModal from '@/components/apple-certs/CreateCertModal';
 import { useAuthStore } from '@/store/auth';
-
-const ARTEM_ID = '99fc4e1a-e44c-40e1-b2ef-cddb6ec94bf6';
+import { can } from '@/lib/can';
 
 export function AppleCertsPanel() {
-  const { user } = useAuthStore();
+  const { user, capabilities } = useAuthStore();
+  const canApprove = can(capabilities, 'apple_certs.approve', user?.role);
   const [balance, setBalance] = useState<number | null>(null);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export function AppleCertsPanel() {
   );
 
   const handleStatusChange = async (certId: string, newStatus: string) => {
-    if (user?.id !== ARTEM_ID) return;
+    if (!canApprove) return;
     
     let comment = '';
     if (newStatus === 'approved') {
@@ -100,23 +100,23 @@ export function AppleCertsPanel() {
   };
 
   const getCrmStatusBadge = (cert: any) => {
-    const isArtem = user?.id === ARTEM_ID;
+    const isArtem = canApprove;
     const isUpdating = updatingId === cert.id;
     
     let badgeClass = '';
     let label = '';
     
     if (cert.crm_status === 'pending') {
-      badgeClass = 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20';
+      badgeClass = 'bg-mute/10 text-mute border-line';
       label = 'На рассмотрении';
     } else if (cert.crm_status === 'in_progress') {
-      badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      badgeClass = 'bg-warn/10 text-warn border-warn/20';
       label = 'В работе';
     } else if (cert.crm_status === 'approved') {
-      badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      badgeClass = 'bg-ok/10 text-ok border-ok/20';
       label = 'Согласовано';
     } else {
-      badgeClass = 'bg-zinc-800 text-zinc-400 border-zinc-700';
+      badgeClass = 'bg-mute/10 text-mute border-line';
       label = cert.crm_status;
     }
 
@@ -141,9 +141,9 @@ export function AppleCertsPanel() {
           backgroundSize: '1.25em 1.25em'
         }}
       >
-        <option value="pending" className="bg-zinc-900 text-zinc-300">На рассмотрении</option>
-        <option value="in_progress" className="bg-zinc-900 text-zinc-300">В работе</option>
-        <option value="approved" className="bg-zinc-900 text-zinc-300">Согласовано</option>
+        <option value="pending" className="bg-card text-slate-800">На рассмотрении</option>
+        <option value="in_progress" className="bg-card text-slate-800">В работе</option>
+        <option value="approved" className="bg-card text-slate-800">Согласовано</option>
       </select>
     );
   };
@@ -168,7 +168,7 @@ export function AppleCertsPanel() {
           </button>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-accent hover:bg-accent/80 text-white text-[13px] font-medium rounded-xl transition-all"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-brand hover:bg-brand/90 text-[#171821] text-[13px] font-medium rounded-xl transition-all"
           >
             <Plus className="w-4 h-4" />
             Регистрация
@@ -262,7 +262,7 @@ export function AppleCertsPanel() {
                         </div>
                         <div className="text-mute text-[10.5px] flex items-center gap-1.5">
                           <span>{cert.plan_id}</span>
-                          <span className="px-1 py-0.5 rounded text-[9px] uppercase font-bold bg-white/[0.06] text-mute2">{cert.source}</span>
+                          <span className="px-1 py-0.5 rounded text-[9px] uppercase font-bold bg-black/[0.06] text-mute2">{cert.source}</span>
                         </div>
                       </div>
                     </td>
@@ -306,7 +306,7 @@ export function AppleCertsPanel() {
                     <td className="py-3 px-3 text-right">
                       <button 
                         onClick={() => handleDelete(cert.id)}
-                        className="p-1.5 text-mute2 hover:text-err hover:bg-err/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-1.5 text-mute2 hover:text-err hover:bg-err/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

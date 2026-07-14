@@ -273,7 +273,7 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                     <div className="w-2 h-2 rounded-full" style={{ background: col.color }} />
                     <span className="text-[13px] font-semibold tracking-tight">{col.label}</span>
                   </div>
-                  <span className="text-[11px] text-mute font-mono bg-[#E8E9F3]/60 px-2 h-5 rounded-md inline-flex items-center">
+                  <span className="text-[11px] text-mute font-mono bg-[#E8E9F3]/60 px-2 h-5 rounded-lg inline-flex items-center">
                     {colTasks.length}
                   </span>
                 </div>
@@ -335,7 +335,7 @@ export function TasksBoard({ initialTasks, projects, users }: Props) {
                                 onClick={e => { e.stopPropagation(); changeStatus(task.id, c.key) }}
                                 onMouseDown={e => e.stopPropagation()}
                                 onTouchStart={e => e.stopPropagation()}
-                                className="text-[10.5px] px-2 h-5 rounded-md border border-line hover:border-line2 text-mute hover:text-[#171821] hover:bg-bg transition-all"
+                                className="text-[10.5px] px-2 h-5 rounded-lg border border-line hover:border-line2 text-mute hover:text-[#171821] hover:bg-bg transition-all"
                               >
                                 → {c.label}
                               </button>

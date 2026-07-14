@@ -77,7 +77,7 @@ export function EmployeesClient({ employees: initialEmployees }: { employees: Em
                 </div>
                 <button
                   onClick={ev => { ev.stopPropagation(); router.push('/chats') }}
-                  className="w-8 h-8 rounded-lg border border-line bg-white/[0.02] hover:bg-accent/15 hover:text-accent hover:border-accent/30 text-mute inline-flex items-center justify-center transition-all">
+                  className="w-8 h-8 rounded-lg border border-line bg-bg hover:bg-accent/15 hover:text-accent hover:border-accent/30 text-mute inline-flex items-center justify-center transition-all">
                   <MessageSquare size={14} />
                 </button>
               </div>

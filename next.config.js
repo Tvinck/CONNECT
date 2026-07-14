@@ -27,6 +27,10 @@ const securityHeaders = [
 ]
 
 const nextConfig = {
+  // Strip console.* in production bundles (keep error/warn for observability).
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },
@@ -42,7 +46,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: { 
+  experimental: {
+    // Per-icon/function imports instead of pulling whole libraries into each chunk.
+    optimizePackageImports: ['lucide-react', 'date-fns'],
     serverComponentsExternalPackages: ['ioredis', 'ssh2', 'sqlite3', 'fluent-ffmpeg', '@ffmpeg-installer/ffmpeg', '@higgsfield/cli'],
     outputFileTracingIncludes: {
       '/api/**/*': ['./node_modules/@higgsfield/cli/**/*']

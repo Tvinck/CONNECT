@@ -38,7 +38,7 @@ export function ProfileClient({ profile, achievements, tasksDone, daysIn, levelD
                 <Avatar initials={initials} color={color} size={80} status={user.status} />
                 <button
                   onClick={() => setShowEdit(true)}
-                  className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-accent border-2 border-bg text-white inline-flex items-center justify-center hover:bg-accent/80 transition-all"
+                  className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-brand border-2 border-bg text-[#171821] inline-flex items-center justify-center hover:bg-brand/90 transition-all"
                 >
                   <Pencil size={12} />
                 </button>
@@ -144,11 +144,11 @@ export function ProfileClient({ profile, achievements, tasksDone, daysIn, levelD
           <div className="card p-6">
             <h3 className="text-[17px] font-semibold tracking-tight mb-4">Сводка</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl bg-white/[0.025] border border-line p-4">
+              <div className="rounded-xl bg-bg border border-line p-4">
                 <div className="text-[12px] text-mute2 mb-1">Роль</div>
                 <div className="text-[15px] font-semibold capitalize">{user.role}</div>
               </div>
-              <div className="rounded-xl bg-white/[0.025] border border-line p-4">
+              <div className="rounded-xl bg-bg border border-line p-4">
                 <div className="text-[12px] text-mute2 mb-1">Статус</div>
                 <div className="flex items-center gap-2 text-[15px] font-semibold">
                   <span className="w-2.5 h-2.5 rounded-full"
@@ -157,11 +157,11 @@ export function ProfileClient({ profile, achievements, tasksDone, daysIn, levelD
                   {user.status === 'online' ? 'Онлайн' : user.status === 'busy' ? 'Занят' : 'Офлайн'}
                 </div>
               </div>
-              <div className="rounded-xl bg-white/[0.025] border border-line p-4">
+              <div className="rounded-xl bg-bg border border-line p-4">
                 <div className="text-[12px] text-mute2 mb-1">Email</div>
                 <div className="text-[13px] font-medium truncate">{user.email}</div>
               </div>
-              <div className="rounded-xl bg-white/[0.025] border border-line p-4">
+              <div className="rounded-xl bg-bg border border-line p-4">
                 <div className="text-[12px] text-mute2 mb-1">Должность</div>
                 <div className="text-[15px] font-semibold">{user.position ?? '—'}</div>
               </div>

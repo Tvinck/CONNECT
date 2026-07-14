@@ -31,6 +31,8 @@ interface UIState {
   toasts: Toast[]
   /** Whether the mobile sidebar drawer is open. */
   sidebarOpen: boolean
+  /** Whether the desktop sidebar is collapsed to an icon-only rail. */
+  sidebarCollapsed: boolean
 
   /**
    * Creates and queues a toast notification.
@@ -47,11 +49,19 @@ interface UIState {
 
   /** Opens or closes the mobile sidebar drawer. */
   setSidebarOpen: (open: boolean) => void
+
+  /** Sets the collapsed state of the desktop sidebar (persists to localStorage). */
+  setSidebarCollapsed: (collapsed: boolean) => void
+  /** Toggles the desktop sidebar between full and icon-rail (persists). */
+  toggleSidebarCollapsed: () => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
   toasts: [],
   sidebarOpen: false,
+  // Always starts false to match server render; hydrated from localStorage
+  // by the Sidebar after mount to avoid a hydration mismatch.
+  sidebarCollapsed: false,
 
   addToast: (title, desc, tone = 'ok') => {
     const id = Math.random().toString(36).slice(2)
@@ -66,4 +76,20 @@ export const useUIStore = create<UIState>((set) => ({
     set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
+
+  setSidebarCollapsed: (collapsed) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar_collapsed', collapsed ? '1' : '0')
+    }
+    set({ sidebarCollapsed: collapsed })
+  },
+
+  toggleSidebarCollapsed: () =>
+    set((state) => {
+      const next = !state.sidebarCollapsed
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sidebar_collapsed', next ? '1' : '0')
+      }
+      return { sidebarCollapsed: next }
+    }),
 }))

@@ -121,9 +121,9 @@ export function GGSelDisputes() {
                 </div>
                 <div className="text-[14px] font-semibold mb-1">{d.reason}</div>
                 <div className="text-[12.5px] text-mute flex items-center gap-2">
-                  <span>Заказ: <span className="text-white">{d.order_id}</span></span>
+                  <span>Заказ: <span className="text-slate-800">{d.order_id}</span></span>
                   <span>•</span>
-                  <span>Товар: <span className="text-white">{d.item_name}</span></span>
+                  <span>Товар: <span className="text-slate-800">{d.item_name}</span></span>
                   <span>•</span>
                   <span>Клиент: {d.client}</span>
                 </div>
@@ -132,7 +132,7 @@ export function GGSelDisputes() {
               <div>
                 <button 
                   onClick={() => setSelectedDispute(d)}
-                  className="h-9 px-4 rounded-lg bg-white/[0.04] border border-line text-[13px] font-semibold hover:bg-white/[0.08] hover:text-white transition-all w-full md:w-auto"
+                  className="h-9 px-4 rounded-lg bg-black/[0.04] border border-line text-[13px] font-semibold hover:bg-black/[0.07] hover:text-slate-800 transition-all w-full md:w-auto"
                 >
                   {isClosed ? 'Просмотр' : 'Открыть спор'}
                 </button>
@@ -166,14 +166,14 @@ export function GGSelDisputes() {
           }
         >
           <div className="space-y-6">
-            <div className="bg-white/[0.02] border border-line rounded-xl p-4">
+            <div className="bg-bg border border-line rounded-xl p-4">
               <div className="flex justify-between items-start mb-2">
                 <span className="text-[13px] text-mute">Причина спора</span>
-                <span className="text-[13px] font-bold text-white">{selectedDispute.reason}</span>
+                <span className="text-[13px] font-bold text-slate-800">{selectedDispute.reason}</span>
               </div>
               <div className="flex justify-between items-start">
                 <span className="text-[13px] text-mute">Товар</span>
-                <span className="text-[13px] text-white">{selectedDispute.item_name}</span>
+                <span className="text-[13px] text-slate-800">{selectedDispute.item_name}</span>
               </div>
             </div>
 
@@ -186,13 +186,13 @@ export function GGSelDisputes() {
                 {selectedDispute.messages.map((msg, i) => (
                   <div key={i} className={`flex flex-col ${msg.isSeller ? 'items-end' : 'items-start'}`}>
                     <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-[11.5px] font-semibold text-white/80">{msg.author}</span>
+                      <span className="text-[11.5px] font-semibold text-slate-600">{msg.author}</span>
                       <span className="text-[10px] text-mute">{msg.time}</span>
                     </div>
                     <div className={`px-4 py-2.5 rounded-xl text-[13px] max-w-[85%] ${
-                      msg.isSeller 
-                        ? 'bg-accent/20 text-white border border-accent/30 rounded-tr-sm' 
-                        : 'bg-[#252736] text-white border border-white/[0.04] rounded-tl-sm'
+                      msg.isSeller
+                        ? 'bg-accent/15 text-slate-800 border border-accent/30 rounded-tr-sm'
+                        : 'bg-line2 text-slate-800 border border-line rounded-tl-sm'
                     }`}>
                       {msg.text}
                     </div>
@@ -207,7 +207,7 @@ export function GGSelDisputes() {
                   value={replyText}
                   onChange={e => setReplyText(e.target.value)}
                   placeholder="Ваш ответ клиенту..." 
-                  className="w-full h-24 bg-[#13141C] border border-white/[0.06] rounded-xl p-3 text-[13px] text-white placeholder-[#8E92BC]/60 outline-none focus:border-accent/50 transition-colors resize-none"
+                  className="w-full h-24 bg-bg border border-line rounded-xl p-3 text-[13px] text-slate-800 placeholder-mute2 outline-none focus:border-accent/50 transition-colors resize-none"
                 />
                 <div className="text-[11.5px] text-mute mt-2 flex items-start gap-1.5">
                   <AlertCircle size={14} className="shrink-0 mt-0.5" />

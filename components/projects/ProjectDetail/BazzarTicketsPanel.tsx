@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { useUIStore } from '@/store/ui'
+import { Inbox } from 'lucide-react'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export function BazzarTicketsPanel() {
   const supabase = createClient()
@@ -60,18 +62,18 @@ export function BazzarTicketsPanel() {
   return (
     <div className="flex flex-col h-full space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight text-white">Bazzar Serts - Претензии и предложения</h1>
-        
-        <div className="flex gap-2 p-1 bg-white/[0.02] border border-line rounded-xl">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-800">Bazzar Serts - Претензии и предложения</h1>
+
+        <div className="flex gap-2 p-1 bg-bg border border-line rounded-xl">
           <button
             onClick={() => setFilter('open')}
-            className={`h-9 px-4 rounded-lg text-sm font-medium transition-all ${filter === 'open' ? 'bg-accent text-white shadow-sm' : 'text-mute hover:text-white'}`}
+            className={`h-9 px-4 rounded-lg text-sm font-medium transition-all ${filter === 'open' ? 'bg-brand text-[#171821] shadow-sm' : 'text-mute hover:text-slate-800'}`}
           >
             Открытые
           </button>
           <button
             onClick={() => setFilter('answered')}
-            className={`h-9 px-4 rounded-lg text-sm font-medium transition-all ${filter === 'answered' ? 'bg-accent text-white shadow-sm' : 'text-mute hover:text-white'}`}
+            className={`h-9 px-4 rounded-lg text-sm font-medium transition-all ${filter === 'answered' ? 'bg-brand text-[#171821] shadow-sm' : 'text-mute hover:text-slate-800'}`}
           >
             Отвеченные
           </button>
@@ -82,7 +84,7 @@ export function BazzarTicketsPanel() {
         {loading ? (
           <div className="text-mute text-sm text-center py-10">Загрузка...</div>
         ) : tickets.length === 0 ? (
-          <div className="text-mute text-sm text-center py-10 border border-dashed border-white/10 rounded-xl bg-white/[0.01]">Нет тикетов</div>
+          <EmptyState icon={Inbox} title="Нет тикетов" description="Обращения и претензии пользователей появятся здесь." />
         ) : (
           <div className="grid grid-cols-1 gap-4">
             {tickets.map(t => (
@@ -99,7 +101,7 @@ export function BazzarTicketsPanel() {
                   </span>
                 </div>
 
-                <div className="text-sm text-white whitespace-pre-wrap leading-relaxed">
+                <div className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
                   {t.message}
                 </div>
 
@@ -112,7 +114,7 @@ export function BazzarTicketsPanel() {
                 {t.admin_reply ? (
                   <div className="p-3 bg-accent/10 border-l-2 border-accent rounded-r-lg mt-2">
                     <div className="text-xs text-accent font-bold mb-1">Ваш ответ:</div>
-                    <div className="text-sm text-white/90">{t.admin_reply}</div>
+                    <div className="text-sm text-slate-700">{t.admin_reply}</div>
                   </div>
                 ) : (
                   <div className="mt-2 flex gap-3">
@@ -120,13 +122,13 @@ export function BazzarTicketsPanel() {
                       value={replyText[t.id] || ''}
                       onChange={(e) => setReplyText(prev => ({ ...prev, [t.id]: e.target.value }))}
                       placeholder="Написать ответ клиенту..."
-                      className="flex-1 min-h-[80px] bg-dark border border-line rounded-lg p-3 text-sm text-white placeholder:text-mute focus:outline-none focus:border-accent resize-y"
+                      className="flex-1 min-h-[80px] bg-bg border border-line rounded-lg p-3 text-sm text-slate-800 placeholder:text-mute focus:outline-none focus:border-accent resize-y"
                     />
                     <div className="flex flex-col justify-end">
                       <button 
                         onClick={() => handleReply(t.id)}
                         disabled={replying[t.id] || !replyText[t.id]?.trim()}
-                        className="h-10 px-6 bg-accent hover:bg-accent-light disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+                        className="h-10 px-6 bg-brand hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed text-[#171821] text-sm font-semibold rounded-lg transition-colors"
                       >
                         {replying[t.id] ? '...' : 'Ответить'}
                       </button>

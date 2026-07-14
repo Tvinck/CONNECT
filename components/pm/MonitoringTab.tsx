@@ -111,7 +111,7 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
             const color  = status === 'ok' ? '#22C55E' : status === 'warn' ? '#F59E0B' : '#EF4444'
             const label  = status === 'ok' ? 'OK'      : status === 'warn' ? 'Предупр.' : 'Ошибка'
             return (
-              <div key={svc.id} className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+              <div key={svc.id} className="rounded-xl bg-bg border border-line p-3.5">
                 <div className="text-[20px] mb-2">{svc.product}</div>
                 <div className="text-[13px] font-semibold">{svc.name}</div>
                 <div className="text-[11px] text-mute mb-2">{svc.desc}</div>
@@ -139,7 +139,7 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`h-7 px-2.5 rounded-lg text-[11px] font-semibold border transition-colors
-                    ${filter === f ? 'bg-accent/20 border-accent/40 text-accent' : 'border-line text-mute hover:text-white'}`}
+                    ${filter === f ? 'bg-accent/20 border-accent/40 text-accent' : 'border-line text-mute hover:text-slate-800'}`}
                 >
                   {f === 'all' ? 'Все' : f.toUpperCase()}
                   <span className="ml-1 opacity-60">
@@ -163,7 +163,7 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
             {visibleLogs.map(log => (
               <div
                 key={log.id}
-                className="flex items-start gap-3 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-line hover:bg-white/[0.03] group"
+                className="flex items-start gap-3 px-3 py-2.5 rounded-xl bg-bg border border-line hover:bg-black/[0.03] group"
               >
                 <div className="shrink-0 mt-0.5">{LOG_ICON[log.level]}</div>
                 <div className="flex-1 min-w-0">
@@ -174,7 +174,7 @@ export function MonitoringTab({ logs: initialLogs, orders }: Props) {
                     >
                       {LOG_LABEL[log.level]}
                     </span>
-                    <span className="text-[11px] font-bold text-white/80">{log.service}</span>
+                    <span className="text-[11px] font-bold text-slate-600">{log.service}</span>
                     <span className="text-[10.5px] text-mute2">{timeAgo(log.created_at)}</span>
                   </div>
                   <div className="text-[12px] text-mute break-all">{log.message}</div>

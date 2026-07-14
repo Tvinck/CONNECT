@@ -576,7 +576,7 @@ export function IdeaDetailsModal({ idea, projects, users = [], currentUser, onCl
                 <button
                   onClick={postComment}
                   disabled={sendingComment || (!commentText.trim() && !attachedFile)}
-                  className="bg-accent hover:bg-accent/80 text-white font-semibold text-[12px] px-3.5 h-8.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-glow-sm"
+                  className="bg-brand hover:bg-brand/90 text-[#171821] font-semibold text-[12px] px-3.5 h-8.5 rounded-lg transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-glow-lime-sm"
                 >
                   {sendingComment ? (
                     <Loader2 size={13} className="animate-spin" />

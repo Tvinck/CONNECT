@@ -38,8 +38,8 @@ const STATUS_OPTIONS: { value: ClientStatus; label: string }[] = [
 
 // ─── shared form fields ────────────────────────────────────────────────────────
 
-const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
-const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
+const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const SELECT = 'w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
 const LABEL  = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
 // ─── client form (shared by add + edit) ───────────────────────────────────────
@@ -242,7 +242,7 @@ function EditClientModal({ client, managers, onClose, onUpdated, onDeleted }: {
               >
                 {deleting ? <Loader2 size={13} className="animate-spin" /> : 'Удалить'}
               </button>
-              <button onClick={() => setConfirmDelete(false)} className="text-[12px] text-mute px-3 h-9 rounded-xl hover:text-white transition-colors">
+              <button onClick={() => setConfirmDelete(false)} className="text-[12px] text-mute px-3 h-9 rounded-xl hover:text-slate-800 transition-colors">
                 Отмена
               </button>
             </>
@@ -359,10 +359,10 @@ export function CrmClient({ initialClients, managers }: Props) {
             value={search}
             onChange={e => handleSearch(e.target.value)}
             placeholder="Имя, email, телефон, источник…"
-            className="w-full h-9 pl-8 pr-8 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all"
+            className="w-full h-9 pl-8 pr-8 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all"
           />
           {search && (
-            <button onClick={() => handleSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-white">
+            <button onClick={() => handleSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-slate-800">
               <X size={13} />
             </button>
           )}
@@ -394,7 +394,7 @@ export function CrmClient({ initialClients, managers }: Props) {
               <tr
                 key={c.id}
                 onClick={() => setEditing(c)}
-                className="border-b border-line last:border-0 hover:bg-white/[0.03] transition-colors cursor-pointer"
+                className="border-b border-line last:border-0 hover:bg-black/[0.03] transition-colors cursor-pointer"
               >
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
@@ -427,7 +427,7 @@ export function CrmClient({ initialClients, managers }: Props) {
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-slate-800 hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -435,7 +435,7 @@ export function CrmClient({ initialClients, managers }: Props) {
                 ? Array.from({ length: totalPages }, (_, i) => (
                     <button key={i} onClick={() => setPage(i)}
                       className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
-                        i === page ? 'bg-accent text-white' : 'border border-line text-mute hover:text-white hover:border-line2'
+                        i === page ? 'bg-brand text-[#171821]' : 'border border-line text-mute hover:text-slate-800 hover:border-line2'
                       }`}
                     >
                       {i + 1}
@@ -450,7 +450,7 @@ export function CrmClient({ initialClients, managers }: Props) {
               <button
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1}
-                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-slate-800 hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={14} />
               </button>

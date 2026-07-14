@@ -57,7 +57,7 @@ export function EditProjectModal({ project, onClose, onSaved }: {
             {EMOJI_OPTIONS.map((em: string) => (
               <button key={em} onClick={() => setEmoji(em)} type="button"
                 className={`w-9 h-9 rounded-xl text-lg inline-flex items-center justify-center border transition-all ${
-                  emoji === em ? 'border-accent bg-accent/15' : 'border-line hover:border-line2 bg-white/[0.02]'
+                  emoji === em ? 'border-accent bg-accent/15' : 'border-line hover:border-line2 bg-bg'
                 }`}
               >{em}</button>
             ))}

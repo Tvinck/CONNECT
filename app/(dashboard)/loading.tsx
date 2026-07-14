@@ -8,7 +8,7 @@
 
 /** Single pulsing shimmer block. */
 function Bone({ className }: { className?: string }) {
-  return <div className={`bg-white/[0.05] rounded-xl animate-pulse ${className ?? ''}`} />
+  return <div className={`bg-line2 rounded-xl animate-pulse ${className ?? ''}`} />
 }
 
 export default function DashboardLoading() {

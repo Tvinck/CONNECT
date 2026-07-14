@@ -20,7 +20,7 @@ export default function Loading() {
       {/* Project cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 space-y-4">
+          <div key={i} className="rounded-2xl border border-line bg-card p-5 space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-10 w-10 rounded-xl" />
@@ -43,7 +43,7 @@ export default function Loading() {
             <div className="flex items-center justify-between pt-1">
               <div className="flex -space-x-2">
                 {[...Array(3)].map((_, j) => (
-                  <Skeleton key={j} className="h-7 w-7 rounded-full border-2 border-[#0D0F22]" />
+                  <Skeleton key={j} className="h-7 w-7 rounded-full border-2 border-card" />
                 ))}
               </div>
               <Skeleton className="h-4 w-20" />

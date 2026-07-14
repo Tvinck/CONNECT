@@ -47,7 +47,7 @@ export const Team: React.FC<{
           {members.map(m => (
             <div
               key={m.id}
-              className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.02] transition-colors group"
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/[0.02] transition-colors group"
             >
               <Avatar initials={m.full_name.charAt(0)} color="blue" size={32} />
               <div className="flex-1 min-w-0">

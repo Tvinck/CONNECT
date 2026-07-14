@@ -56,7 +56,7 @@ export function AddMemberModal({
         <div className="space-y-4">
           <div>
             <label className={"block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2"}>Сотрудник</label>
-            <select value={userId} onChange={e => setUserId(e.target.value)} className={"w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all"}>
+            <select value={userId} onChange={e => setUserId(e.target.value)} className={"w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] transition-all"}>
               {available.map(u => (
                 <option key={u.id} value={u.id}>{u.full_name}</option>
               ))}
@@ -64,7 +64,7 @@ export function AddMemberModal({
           </div>
           <div>
             <label className={"block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2"}>Роль в проекте</label>
-            <select value={role} onChange={e => setRole(e.target.value as 'lead' | 'member')} className={"w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all"}>
+            <select value={role} onChange={e => setRole(e.target.value as 'lead' | 'member')} className={"w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] transition-all"}>
               <option value="member">Участник</option>
               <option value="lead">Лидер</option>
             </select>

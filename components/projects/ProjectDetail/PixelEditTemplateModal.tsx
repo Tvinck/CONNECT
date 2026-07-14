@@ -163,7 +163,7 @@ export function PixelEditTemplateModal({
               <Button variant="ghost" className="h-9" onClick={onClose} disabled={saving || deleting}>
                 Отмена
               </Button>
-              <Button className="bg-accent text-white h-9 px-4" onClick={handleSave} disabled={saving || deleting}>
+              <Button className="bg-brand text-[#171821] h-9 px-4" onClick={handleSave} disabled={saving || deleting}>
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Сохранить
               </Button>
             </div>
@@ -192,12 +192,12 @@ export function PixelEditTemplateModal({
               )}
             </div>
           ) : !canEdit ? (
-            <div className="aspect-video bg-white/[0.01] border border-dashed border-line rounded-xl flex flex-col items-center justify-center gap-2 text-mute select-none">
+            <div className="aspect-video bg-bg border border-dashed border-line rounded-xl flex flex-col items-center justify-center gap-2 text-mute select-none">
               <Upload size={24} className="text-mute2" />
               <span className="text-[13px]">Превью отсутствует</span>
             </div>
           ) : (
-            <label className={`cursor-pointer aspect-video bg-white/[0.01] hover:bg-white/[0.02] border-2 border-dashed border-line rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
+            <label className={`cursor-pointer aspect-video bg-bg hover:bg-black/[0.02] border-2 border-dashed border-line rounded-xl flex flex-col items-center justify-center gap-2 transition-all ${uploading ? 'pointer-events-none opacity-50' : ''}`}>
               {uploading ? (
                 <>
                   <Loader2 size={24} className="animate-spin text-accent" />
@@ -206,7 +206,7 @@ export function PixelEditTemplateModal({
               ) : (
                 <>
                   <Upload size={24} className="text-mute2" />
-                  <span className="text-[13px] text-white font-semibold">Выберите файл (фото/видео)</span>
+                  <span className="text-[13px] text-slate-800 font-semibold">Выберите файл (фото/видео)</span>
                   <span className="text-[11px] text-mute2">или перетащите его сюда</span>
                 </>
               )}
@@ -304,7 +304,7 @@ export function PixelEditTemplateModal({
               onChange={e => setIsActive(e.target.checked)}
               disabled={!canEdit}
             />
-            <label htmlFor="isActiveCheck" className={`text-[12.5px] font-semibold text-white select-none ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+            <label htmlFor="isActiveCheck" className={`text-[12.5px] font-semibold text-slate-800 select-none ${canEdit ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
               Активный шаблон
             </label>
           </div>

@@ -8,6 +8,9 @@ import { Progress } from '@/components/ui/Progress'
 import { Tag } from '@/components/ui/Tag'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { Avatar } from '@/components/ui/Avatar'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { getInitials, colorFor } from '@/lib/utils'
 import { useUIStore } from '@/store/ui'
 import type { ProjectStatus } from '@/types'
 
@@ -22,6 +25,7 @@ type ProjectRow = {
   description: string | null
   tasks: number
   team: number
+  members?: { id: string; full_name: string }[]
 }
 
 const STATUS_TONE: Record<string, 'ok' | 'warn' | 'mute'> = {
@@ -99,7 +103,7 @@ function CreateProjectModal({ onClose, onCreated }: { onClose: () => void; onCre
             {EMOJI_OPTIONS.map(em => (
               <button key={em} onClick={() => setEmoji(em)}
                 className={`w-9 h-9 rounded-xl text-lg inline-flex items-center justify-center border transition-all ${
-                  emoji === em ? 'border-accent bg-accent/15' : 'border-line hover:border-line2 bg-white/[0.02]'
+                  emoji === em ? 'border-accent bg-accent/15' : 'border-line hover:border-line2 bg-bg'
                 }`}>
                 {em}
               </button>
@@ -159,8 +163,13 @@ export function ProjectsClient({ initialProjects }: { initialProjects: ProjectRo
       </div>
 
       {projects.length === 0 ? (
-        <div className="card p-12 text-center text-mute text-[13px]">
-          Проектов пока нет. Создайте первый — нажмите «Новый проект».
+        <div className="card">
+          <EmptyState
+            emoji="📁"
+            title="Проектов пока нет"
+            description="Создайте первый проект — он появится здесь вместе с задачами и командой."
+            action={<Button onClick={() => setShowCreate(true)}><Plus size={16} /> Новый проект</Button>}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -184,6 +193,24 @@ export function ProjectsClient({ initialProjects }: { initialProjects: ProjectRo
                 </div>
                 <Progress value={p.progress} color={p.color} height={6} />
               </div>
+              {p.members && p.members.length > 0 && (
+                <div className="flex items-center mt-4 pt-4 border-t border-line">
+                  <div className="flex -space-x-2">
+                    {p.members.slice(0, 4).map(m => (
+                      <Avatar
+                        key={m.id}
+                        initials={getInitials(m.full_name)}
+                        color={colorFor(m.full_name || m.id)}
+                        size={26}
+                        className="ring-2 ring-card rounded-full"
+                      />
+                    ))}
+                  </div>
+                  {p.team > 4 && (
+                    <span className="ml-2 self-center text-[11px] text-mute font-semibold">+{p.team - 4}</span>
+                  )}
+                </div>
+              )}
             </Link>
           ))}
         </div>

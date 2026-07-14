@@ -61,21 +61,21 @@ export default function CreateCertModal({ isOpen, onClose, onSuccess }: CreateCe
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl p-6 relative">
-        <button 
+      <div className="w-full max-w-md bg-card border border-line rounded-2xl shadow-2xl p-6 relative">
+        <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-mute hover:text-slate-800 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
             <Apple className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Учет проданного сертификата</h2>
-            <p className="text-sm text-zinc-400">Внимание: сертификат не регистрируется автоматически! Вам нужно создать его вручную у поставщика, а здесь просто зафиксировать продажу.</p>
+            <h2 className="text-lg font-semibold text-slate-800">Учет проданного сертификата</h2>
+            <p className="text-sm text-mute">Внимание: сертификат не регистрируется автоматически! Вам нужно создать его вручную у поставщика, а здесь просто зафиксировать продажу.</p>
           </div>
         </div>
 
@@ -87,26 +87,26 @@ export default function CreateCertModal({ isOpen, onClose, onSuccess }: CreateCe
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">UDID Устройства</label>
+            <label className="block text-sm font-medium text-mute mb-1">UDID Устройства</label>
             <div className="relative">
-              <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mute2" />
               <input 
                 name="udid"
                 required
                 placeholder="00008110-001A2B3C..."
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-bg border border-line rounded-xl py-2.5 pl-10 pr-4 text-slate-800 focus:outline-none focus:border-accent/60 transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Тариф (Plan ID)</label>
+            <label className="block text-sm font-medium text-mute mb-1">Тариф (Plan ID)</label>
             <div className="relative">
-              <Activity className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+              <Activity className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mute2" />
               <select 
                 name="plan_id"
                 required
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none"
+                className="w-full bg-bg border border-line rounded-xl py-2.5 pl-10 pr-4 text-slate-800 focus:outline-none focus:border-accent/60 transition-colors appearance-none"
               >
                 <option value="super0">Super | iOS 0M Protection ($1.0)</option>
                 <option value="super40">Super | iOS 1M Protection ($1.5)</option>
@@ -121,25 +121,25 @@ export default function CreateCertModal({ isOpen, onClose, onSuccess }: CreateCe
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-1">Цена продажи (₽)</label>
+              <label className="block text-sm font-medium text-mute mb-1">Цена продажи (₽)</label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mute2" />
                 <input 
                   type="number"
                   name="sale_price"
                   required
                   placeholder="300"
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-bg border border-line rounded-xl py-2.5 pl-10 pr-4 text-slate-800 focus:outline-none focus:border-accent/60 transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-400 mb-1">Источник</label>
+              <label className="block text-sm font-medium text-mute mb-1">Источник</label>
               <select 
                 name="source"
                 required
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-bg border border-line rounded-xl py-2.5 px-4 text-slate-800 focus:outline-none focus:border-accent/60 transition-colors"
               >
                 <option value="avito">Авито</option>
                 <option value="ggsel">GGSEL</option>
@@ -151,20 +151,20 @@ export default function CreateCertModal({ isOpen, onClose, onSuccess }: CreateCe
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-zinc-950/50 border border-zinc-800/50 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs uppercase">
+          <div className="mt-4 p-3 bg-bg border border-line rounded-xl flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent/15 text-accent flex items-center justify-center font-bold text-xs uppercase">
               АК
             </div>
             <div className="flex-1 text-sm">
-              <div className="text-zinc-300">Согласующий</div>
-              <div className="text-white font-medium">Артём Кошелев</div>
+              <div className="text-mute">Согласующий</div>
+              <div className="text-slate-800 font-medium">Артём Кошелев</div>
             </div>
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex justify-center items-center"
+            className="w-full py-3 bg-brand hover:bg-brand/90 text-[#171821] font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4 flex justify-center items-center"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

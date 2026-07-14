@@ -42,12 +42,12 @@ export function Progress({
         <div className="flex items-center justify-between mb-2">
           {label && <span className="text-xs text-mute">{label}</span>}
           {showValue && (
-            <span className="text-xs text-white/80 font-mono">{value}%</span>
+            <span className="text-xs text-mute font-mono">{value}%</span>
           )}
         </div>
       )}
       <div
-        className="relative w-full rounded-full overflow-hidden bg-white/[0.04]"
+        className="relative w-full rounded-full overflow-hidden bg-line2"
         style={{ height }}
       >
         <div

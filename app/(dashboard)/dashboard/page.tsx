@@ -143,7 +143,7 @@ export default async function DashboardPage() {
           const Icon = item.icon
           return (
             <Link key={item.href} href={item.href}
-              className="flex items-center gap-4 p-4 rounded-2xl border border-line bg-card hover:border-line2 hover:bg-white/[0.03] transition-all active:scale-[0.98]">
+              className="flex items-center gap-4 p-4 rounded-2xl border border-line bg-card hover:border-line2 hover:bg-black/[0.02] transition-all active:scale-[0.98]">
               <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}
                 style={{ color: item.color }}>
                 <Icon size={22} />
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
           label="Оборот клиентов"
           value={fmtRub(turnover)}
           sub={<span className="text-mute text-[11px]">{payingClients} платящих</span>}
-          subBg="bg-white/[0.04] border-line"
+          subBg="bg-black/[0.04] border-line"
         />
         <StatCard
           icon={<CheckSquare size={18} />}
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
           label="Баллов накоплено"
           value={fmtNum(profile.points)}
           sub={<span className="text-mute text-[11px]">{lvl.current.name}</span>}
-          subBg="bg-white/[0.04] border-line"
+          subBg="bg-black/[0.04] border-line"
         >
           <Progress value={lvl.progress} color="#FFC833" height={5} />
           <div className="flex items-center justify-between mt-2 text-[11px] text-mute2 font-mono">
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
                 {myTasks.length > 0 ? `${activeCount} активных, ближайший срок сверху` : 'Открытых задач нет'}
               </p>
             </div>
-            <a href="/tasks" className="text-[12.5px] text-mute hover:text-white inline-flex items-center gap-1">
+            <a href="/tasks" className="text-[12.5px] text-mute hover:text-slate-800 inline-flex items-center gap-1">
               Все задачи <ArrowRight size={13} />
             </a>
           </div>
@@ -259,13 +259,13 @@ export default async function DashboardPage() {
               const color = project?.color ?? '#1472F5'
               const prio = PRIORITY_COLOR[t.priority] ?? '#8B92B4'
               return (
-                <div key={t.id} className="group flex items-center gap-4 px-4 py-3.5 rounded-xl border border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer transition-all">
+                <div key={t.id} className="group flex items-center gap-4 px-4 py-3.5 rounded-xl border border-line hover:border-line2 hover:bg-black/[0.02] cursor-pointer transition-all">
                   <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center text-[15px]"
                        style={{ background: `${color}22`, color }}>
                     {project?.emoji ?? '📌'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[14px] font-medium tracking-tight truncate group-hover:text-white">{t.title}</div>
+                    <div className="text-[14px] font-medium tracking-tight truncate group-hover:text-slate-800">{t.title}</div>
                     <div className="text-[11.5px] text-mute mt-0.5 flex items-center gap-2.5">
                       <span className="inline-flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
@@ -328,7 +328,7 @@ export default async function DashboardPage() {
               <h3 className="text-[17px] font-semibold tracking-tight">Прогресс по проектам</h3>
               <p className="text-[12.5px] text-mute mt-0.5">Готовность к релизу</p>
             </div>
-            <a href="/projects" className="text-[12.5px] text-mute hover:text-white inline-flex items-center gap-1">
+            <a href="/projects" className="text-[12.5px] text-mute hover:text-slate-800 inline-flex items-center gap-1">
               В проекты <ArrowRight size={13} />
             </a>
           </div>
@@ -379,7 +379,7 @@ export default async function DashboardPage() {
             <div className="flex items-baseline justify-between mb-2">
               <div className="text-[12.5px] text-mute">{lvl.next ? `До «${lvl.next.name}»` : 'Максимальный уровень'}</div>
               <div className="text-[12.5px] font-mono text-mute">
-                <span className="text-white font-semibold">{profile.points}</span>{lvl.next ? ` / ${lvl.next.min}` : ''} баллов
+                <span className="text-slate-800 font-semibold">{profile.points}</span>{lvl.next ? ` / ${lvl.next.min}` : ''} баллов
               </div>
             </div>
             <Progress value={lvl.progress} color="#FFC833" height={8} />
@@ -391,7 +391,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <a href="/shop" className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-white/[0.04] border border-line2 hover:border-gold/40 hover:bg-gold/[0.05] text-[13px] font-semibold whitespace-nowrap transition-all">
+          <a href="/shop" className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-bg border border-line2 hover:border-gold/40 hover:bg-gold/[0.05] text-[13px] font-semibold whitespace-nowrap transition-all">
             <Gift size={16} className="text-gold" />
             Магазин баллов
             <ArrowRight size={14} />
@@ -426,7 +426,7 @@ function StatCard({
       <div className="mt-1 flex items-baseline gap-2.5 flex-wrap">
         <div className="text-[36px] leading-none font-bold tracking-tight tabular-nums animate-rise whitespace-nowrap">{value}</div>
         {sub && (
-          <span className={`inline-flex items-center gap-1 px-2 h-6 rounded-md text-[11px] font-medium border tracking-tight whitespace-nowrap shrink-0 ${subBg}`}>
+          <span className={`inline-flex items-center gap-1 px-2 h-6 rounded-lg text-[11px] font-medium border tracking-tight whitespace-nowrap shrink-0 ${subBg}`}>
             {sub}
           </span>
         )}

@@ -32,6 +32,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getInitials, colorFor, timeAgo } from '@/lib/utils'
 import { useAuthStore } from '@/store/auth'
 import { FormattedText } from '@/components/ui/FormattedText'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 /** Articles revealed per "load more" click. */
 const ARTICLES_PAGE = 9
@@ -82,13 +83,13 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} aria-hidden="true" />
       <div role="dialog" aria-modal="true" aria-label={article.title}
-        className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[680px] max-h-[85vh] shadow-2xl overflow-hidden flex flex-col animate-modal-in">
+        className="relative bg-card border border-line rounded-2xl w-full max-w-[680px] max-h-[85vh] shadow-2xl overflow-hidden flex flex-col animate-modal-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line shrink-0">
-          <button onClick={onClose} className="flex items-center gap-2 text-[13px] text-mute hover:text-white transition-all">
+          <button onClick={onClose} className="flex items-center gap-2 text-[13px] text-mute hover:text-slate-800 transition-all">
             <ArrowLeft size={15} /> Назад
           </button>
           <button onClick={onClose} aria-label="Закрыть"
-            className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
+            className="w-8 h-8 rounded-lg text-mute hover:text-slate-800 hover:bg-black/[0.06] transition-all inline-flex items-center justify-center">
             <X size={16} />
           </button>
         </div>
@@ -97,7 +98,7 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
             style={{ background: `${meta(article.category).color}20`, color: meta(article.category).color }}>
             {meta(article.category).emoji} {article.category}
           </div>
-          <h1 className="text-[26px] font-bold tracking-tight leading-tight mb-4 text-white">{article.title}</h1>
+          <h1 className="text-[26px] font-bold tracking-tight leading-tight mb-4 text-slate-800">{article.title}</h1>
           <div className="flex items-center gap-4 text-[12.5px] text-mute pb-5 mb-5 border-b border-line">
             {article.author && (
               <div className="flex items-center gap-2">
@@ -109,7 +110,7 @@ function ArticleView({ article, onClose }: { article: Article; onClose: () => vo
             <span className="inline-flex items-center gap-1"><Eye size={12} /> {article.views}</span>
             <span>{timeAgo(article.created_at)}</span>
           </div>
-          <div className="text-[14.5px] text-white/90">
+          <div className="text-[14.5px] text-slate-700">
             {article.content ? <FormattedText text={article.content} /> : 'Статья пока пустая.'}
           </div>
         </div>
@@ -139,7 +140,7 @@ function ArticleForm({
         {CATEGORIES.map(c => (
           <button key={c} onClick={() => setCategory(c)} type="button"
             className={`inline-flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium border transition-all ${
-              category === c ? 'border-accent/50 bg-accent/10 text-white' : 'border-line text-mute hover:text-white hover:border-line2'
+              category === c ? 'border-accent/50 bg-accent/10 text-accent' : 'border-line text-mute hover:text-slate-800 hover:border-line2'
             }`}>
             {meta(c).emoji} {c}
           </button>
@@ -147,7 +148,7 @@ function ArticleForm({
       </div>
       <textarea value={content} onChange={e => setContent(e.target.value)} rows={12}
         placeholder="Текст статьи… Опишите процесс, инструкцию или ответ на частый вопрос."
-        className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[14px] leading-relaxed placeholder:text-mute2 transition-all resize-none" />
+        className="w-full px-4 py-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[14px] leading-relaxed placeholder:text-mute2 transition-all resize-none" />
       {error && <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{error}</div>}
     </div>
   )
@@ -324,7 +325,7 @@ export function KnowledgeClient({ initialArticles }: { initialArticles: Article[
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-mute" />
           <input value={query} onChange={e => setQuery(e.target.value)}
             placeholder="Поиск по статьям…"
-            className="w-full h-10 pl-10 pr-3 bg-white/[0.025] border border-line rounded-xl text-[13px] placeholder:text-mute2 focus:border-accent focus:bg-white/[0.04] outline-none transition-all" />
+            className="w-full h-10 pl-10 pr-3 bg-bg border border-line rounded-xl text-[13px] placeholder:text-mute2 focus:border-accent focus:bg-black/[0.02] outline-none transition-all" />
         </div>
         <Button onClick={() => setShowCreate(true)}><Plus size={16} /> Новая статья</Button>
       </div>
@@ -346,14 +347,17 @@ export function KnowledgeClient({ initialArticles }: { initialArticles: Article[
           {activeCat ? activeCat : 'Все статьи'} · {filtered.length}
         </h3>
         {activeCat && (
-          <button onClick={() => setActiveCat(null)} className="text-[12px] text-mute hover:text-white transition-all">Сбросить фильтр</button>
+          <button onClick={() => setActiveCat(null)} className="text-[12px] text-mute hover:text-slate-800 transition-all">Сбросить фильтр</button>
         )}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="card p-12 text-center text-mute text-[13px]">
-          {articles.length === 0 ? 'Статей пока нет — создайте первую' : 'Ничего не найдено'}
-        </div>
+        <EmptyState
+          className="card"
+          emoji={articles.length === 0 ? '📚' : '🔍'}
+          title={articles.length === 0 ? 'Статей пока нет' : 'Ничего не найдено'}
+          description={articles.length === 0 ? 'Создайте первую статью — она появится здесь.' : 'Попробуйте изменить запрос или категорию.'}
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -413,7 +417,7 @@ export function KnowledgeClient({ initialArticles }: { initialArticles: Article[
             <div className="flex justify-center mt-6">
               <button
                 onClick={() => setVisibleCount(c => c + ARTICLES_PAGE)}
-                className="h-9 px-5 rounded-xl border border-line text-[13px] text-mute hover:text-white hover:border-line2 hover:bg-white/[0.03] transition-all"
+                className="h-9 px-5 rounded-xl border border-line text-[13px] text-mute hover:text-slate-800 hover:border-line2 hover:bg-black/[0.03] transition-all"
               >
                 Загрузить ещё · {filtered.length - visibleCount}
               </button>
@@ -464,8 +468,8 @@ export function KnowledgeClient({ initialArticles }: { initialArticles: Article[
           }
         >
           <div className="space-y-2">
-            <p className="text-[13.5px] text-white/80">
-              Статья <span className="font-semibold text-white">«{deleteTarget.title}»</span> будет удалена навсегда.
+            <p className="text-[13.5px] text-slate-600">
+              Статья <span className="font-semibold text-slate-800">«{deleteTarget.title}»</span> будет удалена навсегда.
             </p>
             {deleteErr && (
               <div className="text-[12.5px] text-err bg-err/10 border border-err/20 rounded-xl px-3 py-2">{deleteErr}</div>

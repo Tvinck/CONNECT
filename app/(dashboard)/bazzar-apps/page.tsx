@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@supabase/supabase-js"
 import { Plus, Trash2, Eye, EyeOff, UploadCloud } from "lucide-react"
+import { Header } from "@/components/layout/Header"
 
 // Use environment variables for Supabase
 const supabase = createClient(
@@ -151,11 +152,14 @@ export default function BazzarAppsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-slate-800">Bazzar Apps</h1>
+      <Header
+        title="Bazzar Apps"
+        subtitle="Публикация и управление IPA-приложениями"
+      />
+      <div className="flex justify-end mb-6">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-brand-hover text-[#171821] rounded-lg transition"
         >
           <Plus className="w-5 h-5" />
           Добавить приложение
@@ -180,7 +184,7 @@ export default function BazzarAppsPage() {
                     <p className="text-xs text-slate-400 font-mono mt-0.5">{app.bundle_id}</p>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => toggleActive(app)} className="text-slate-400 hover:text-indigo-600" title={app.is_active ? 'Скрыть' : 'Опубликовать'}>
+                    <button onClick={() => toggleActive(app)} className="text-slate-400 hover:text-accent" title={app.is_active ? 'Скрыть' : 'Опубликовать'}>
                       {app.is_active ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                     </button>
                     <button onClick={() => deleteApp(app.id)} className="text-slate-400 hover:text-red-600" title="Удалить">
@@ -217,32 +221,32 @@ export default function BazzarAppsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Название *</label>
-                  <input required value={name} onChange={e => setName(e.target.value)} type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:border-indigo-500" placeholder="ВТБ" />
+                  <input required value={name} onChange={e => setName(e.target.value)} type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:border-accent" placeholder="ВТБ" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Версия *</label>
-                  <input required value={version} onChange={e => setVersion(e.target.value)} type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:border-indigo-500" placeholder="2.0.1" />
+                  <input required value={version} onChange={e => setVersion(e.target.value)} type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:border-accent" placeholder="2.0.1" />
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Bundle ID</label>
-                <input value={bundleId} onChange={e => setBundleId(e.target.value)} type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:border-indigo-500" placeholder="ru.vtb.invest" />
+                <input value={bundleId} onChange={e => setBundleId(e.target.value)} type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:border-accent" placeholder="ru.vtb.invest" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Описание</label>
-                <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full border rounded-lg px-3 py-2 outline-none focus:border-indigo-500 h-24" placeholder="Краткое описание функционала..." />
+                <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full border rounded-lg px-3 py-2 outline-none focus:border-accent h-24" placeholder="Краткое описание функционала..." />
               </div>
 
               <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Иконка (PNG/JPG) *</label>
-                  <input required type="file" accept="image/*" onChange={e => setIconFile(e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                  <input required type="file" accept="image/*" onChange={e => setIconFile(e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent hover:file:bg-accent/20" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">IPA файл *</label>
-                  <input required type="file" accept=".ipa" onChange={e => setIpaFile(e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                  <input required type="file" accept=".ipa" onChange={e => setIpaFile(e.target.files?.[0] || null)} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent hover:file:bg-accent/20" />
                 </div>
               </div>
 
@@ -253,7 +257,7 @@ export default function BazzarAppsPage() {
                     <span>{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                    <div className="bg-brand h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
                   </div>
                 </div>
               )}
@@ -262,7 +266,7 @@ export default function BazzarAppsPage() {
                 <button type="button" onClick={() => setIsModalOpen(false)} disabled={isUploading} className="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition disabled:opacity-50">
                   Отмена
                 </button>
-                <button type="submit" disabled={isUploading} className="px-4 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition flex items-center gap-2 disabled:opacity-50">
+                <button type="submit" disabled={isUploading} className="px-4 py-2 text-[#171821] bg-brand hover:bg-brand-hover rounded-lg transition flex items-center gap-2 disabled:opacity-50">
                   {isUploading ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

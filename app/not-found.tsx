@@ -45,7 +45,7 @@ export default function NotFound() {
 
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-2 px-6 h-12 rounded-xl bg-accent hover:bg-[#2A82FF] text-white font-semibold text-[14px] tracking-tight shadow-glow transition-all duration-200"
+        className="inline-flex items-center gap-2 px-6 h-12 rounded-xl bg-brand hover:bg-brand-hover text-[#171821] font-semibold text-[14px] tracking-tight shadow-glow-lime transition-all duration-200"
       >
         На главную
       </Link>

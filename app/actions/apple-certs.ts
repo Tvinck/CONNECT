@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { can, getUserCapabilities, getUsersWithCapability } from '@/lib/capabilities';
 
 const API_KEY = process.env.BOT1_API_KEY;
 const API_URL = process.env.NEXT_PUBLIC_BOT1_API_URL || 'https://api.bot1.org';
@@ -110,23 +111,27 @@ export async function registerCertificate(formData: {
       throw new Error('Successfully registered in API, but failed to save to database');
     }
 
-    // 3. Notify Artem Koshelev
-    const ARTEM_ID = '99fc4e1a-e44c-40e1-b2ef-cddb6ec94bf6';
+    // 3. Notify everyone who can approve certs (personal or role grant).
     const { data: authData } = await supabase.auth.getUser();
-    
+
     let creatorName = 'Сотрудник';
     if (authData?.user) {
       const { data: profile } = await supabase.from('users').select('full_name').eq('id', authData.user.id).single();
       if (profile) creatorName = profile.full_name;
     }
 
-    await supabase.from('notifications').insert({
-      user_id: ARTEM_ID,
-      type: 'info',
-      title: 'Новая заявка на сертификат',
-      body: `${creatorName} добавил продажу (UDID: ${formData.udid.substring(0,8)}...). Требуется согласование.`,
-      link: '/apple-certs'
-    });
+    const approverIds = await getUsersWithCapability('apple_certs.approve');
+    if (approverIds.length) {
+      await supabase.from('notifications').insert(
+        approverIds.map(id => ({
+          user_id: id,
+          type: 'info',
+          title: 'Новая заявка на сертификат',
+          body: `${creatorName} добавил продажу (UDID: ${formData.udid.substring(0,8)}...). Требуется согласование.`,
+          link: '/apple-certs'
+        }))
+      );
+    }
 
     revalidatePath('/apple-certs');
     return { success: true, message: 'Certificate registered successfully' };
@@ -143,8 +148,9 @@ export async function updateCertStatus(certId: string, status: string, comment?:
 
   if (!user) return { success: false, error: 'Not authenticated' };
 
-  const ARTEM_ID = '99fc4e1a-e44c-40e1-b2ef-cddb6ec94bf6';
-  if (user.id !== ARTEM_ID) {
+  const { data: approver } = await supabase.from('users').select('role').eq('id', user.id).single();
+  const caps = await getUserCapabilities(user.id, approver?.role ?? '');
+  if (!can(caps, 'apple_certs.approve', approver?.role)) {
     return { success: false, error: 'У вас нет прав для согласования сертификатов' };
   }
 

@@ -11,7 +11,7 @@ export default function Loading() {
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-5 space-y-4">
+          <div key={i} className="rounded-2xl border border-line bg-card p-5 space-y-4">
             <Skeleton className="h-10 w-10 rounded-xl" />
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-9 w-28" />
@@ -28,9 +28,9 @@ export default function Loading() {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] overflow-hidden">
+      <div className="rounded-2xl border border-line bg-card overflow-hidden">
         {/* Table header */}
-        <div className="flex items-center gap-4 px-5 py-3 border-b border-white/[0.06]">
+        <div className="flex items-center gap-4 px-5 py-3 border-b border-line">
           <Skeleton className="h-3 w-10" />
           <Skeleton className="h-3 flex-1" />
           <Skeleton className="h-3 w-20" />
@@ -39,7 +39,7 @@ export default function Loading() {
         </div>
         {/* Table rows */}
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-white/[0.04] last:border-0">
+          <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-line last:border-0">
             <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
             <Skeleton className="h-4 flex-1" />
             <Skeleton className="h-4 w-24 shrink-0" />

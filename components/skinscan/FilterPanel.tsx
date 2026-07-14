@@ -34,15 +34,15 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
   }
 
   return (
-    <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl p-5 w-full">
+    <div className="bg-card border border-line rounded-2xl p-5 w-full">
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2 text-white font-semibold text-[15px]">
-          <SlidersHorizontal size={18} className="text-[#BFF128]" />
+        <div className="flex items-center gap-2 text-slate-800 font-semibold text-[15px]">
+          <SlidersHorizontal size={18} className="text-[#6b8f00]" />
           <span>Фильтры поиска</span>
         </div>
         <button
           onClick={onReset}
-          className="flex items-center gap-1.5 text-xs text-[#8E92BC] hover:text-[#BFF128] transition-all font-medium"
+          className="flex items-center gap-1.5 text-xs text-mute hover:text-[#6b8f00] transition-all font-medium"
         >
           <RefreshCw size={12} />
           Сбросить
@@ -52,16 +52,16 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
       <div className="space-y-5">
         {/* Exterior Select */}
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#5A5D7F] font-bold mb-2">
+          <label className="block text-[11px] uppercase tracking-wider text-mute font-bold mb-2">
             Состояние (Exterior)
           </label>
           <select
             value={filters.exterior}
             onChange={(e) => updateFilter('exterior', e.target.value)}
-            className="w-full h-10 px-3 bg-[#13141C] border border-white/[0.06] rounded-xl text-[13px] text-white outline-none focus:border-[#BFF128] transition-all cursor-pointer"
+            className="w-full h-10 px-3 bg-bg border border-line rounded-xl text-[13px] text-slate-800 outline-none focus:border-[#BFF128] transition-all cursor-pointer"
           >
             {EXTERIORS.map((ext) => (
-              <option key={ext.id} value={ext.id} className="bg-[#1C1D2A]">
+              <option key={ext.id} value={ext.id} className="bg-card text-slate-800">
                 {ext.label}
               </option>
             ))}
@@ -70,10 +70,10 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
 
         {/* StatTrak Selector */}
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#5A5D7F] font-bold mb-2">
+          <label className="block text-[11px] uppercase tracking-wider text-mute font-bold mb-2">
             StatTrak™
           </label>
-          <div className="grid grid-cols-3 gap-1 bg-[#13141C] p-1 rounded-xl border border-white/[0.04]">
+          <div className="grid grid-cols-3 gap-1 bg-bg p-1 rounded-xl border border-line">
             {(['all', 'yes', 'no'] as const).map((mode) => (
               <button
                 key={mode}
@@ -81,7 +81,7 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
                 className={`h-8 rounded-lg text-xs font-semibold transition-all ${
                   filters.stattrak === mode
                     ? 'bg-[#BFF128] text-black shadow-[0_2px_8px_rgba(191,241,40,0.15)] font-extrabold'
-                    : 'text-[#8E92BC] hover:text-white'
+                    : 'text-mute hover:text-slate-800'
                 }`}
               >
                 {mode === 'all' ? 'Все' : mode === 'yes' ? 'Да' : 'Нет'}
@@ -92,10 +92,10 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
 
         {/* Souvenir Selector */}
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#5A5D7F] font-bold mb-2">
+          <label className="block text-[11px] uppercase tracking-wider text-mute font-bold mb-2">
             Сувенир (Souvenir)
           </label>
-          <div className="grid grid-cols-3 gap-1 bg-[#13141C] p-1 rounded-xl border border-white/[0.04]">
+          <div className="grid grid-cols-3 gap-1 bg-bg p-1 rounded-xl border border-line">
             {(['all', 'yes', 'no'] as const).map((mode) => (
               <button
                 key={mode}
@@ -103,7 +103,7 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
                 className={`h-8 rounded-lg text-xs font-semibold transition-all ${
                   filters.souvenir === mode
                     ? 'bg-[#BFF128] text-black shadow-[0_2px_8px_rgba(191,241,40,0.15)] font-extrabold'
-                    : 'text-[#8E92BC] hover:text-white'
+                    : 'text-mute hover:text-slate-800'
                 }`}
               >
                 {mode === 'all' ? 'Все' : mode === 'yes' ? 'Да' : 'Нет'}
@@ -114,7 +114,7 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
 
         {/* Price Bounds */}
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#5A5D7F] font-bold mb-2">
+          <label className="block text-[11px] uppercase tracking-wider text-mute font-bold mb-2">
             Цена ($ USD)
           </label>
           <div className="flex gap-2 items-center">
@@ -123,15 +123,15 @@ export function FilterPanel({ filters, onChange, onReset }: FilterPanelProps) {
               placeholder="Мин"
               value={filters.minPrice}
               onChange={(e) => updateFilter('minPrice', e.target.value)}
-              className="w-1/2 h-10 px-3 bg-[#13141C] border border-white/[0.06] rounded-xl text-[13px] text-white outline-none focus:border-[#BFF128] transition-all placeholder-slate-600"
+              className="w-1/2 h-10 px-3 bg-bg border border-line rounded-xl text-[13px] text-slate-800 outline-none focus:border-[#BFF128] transition-all placeholder-mute2"
             />
-            <span className="text-[#5A5D7F]">—</span>
+            <span className="text-mute">—</span>
             <input
               type="number"
               placeholder="Макс"
               value={filters.maxPrice}
               onChange={(e) => updateFilter('maxPrice', e.target.value)}
-              className="w-1/2 h-10 px-3 bg-[#13141C] border border-white/[0.06] rounded-xl text-[13px] text-white outline-none focus:border-[#BFF128] transition-all placeholder-slate-600"
+              className="w-1/2 h-10 px-3 bg-bg border border-line rounded-xl text-[13px] text-slate-800 outline-none focus:border-[#BFF128] transition-all placeholder-mute2"
             />
           </div>
         </div>

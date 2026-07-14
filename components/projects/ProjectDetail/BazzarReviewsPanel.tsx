@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MessageSquare, Star, Search, CheckCircle2, XCircle, Trash2, ShieldCheck, Loader2 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { getBazzarReviews, updateReviewStatus, deleteReview } from '@/app/actions/bazzar';
 
 export function BazzarReviewsPanel() {
@@ -150,15 +151,15 @@ export function BazzarReviewsPanel() {
                   </td>
                   <td className="py-4 px-4">
                     {review.status === 'published' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold bg-ok/10 text-ok border border-ok/20">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-ok/10 text-ok border border-ok/20">
                         Опубликован
                       </span>
                     ) : review.status === 'rejected' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold bg-err/10 text-err border border-err/20">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-err/10 text-err border border-err/20">
                         Отклонен
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold bg-accent/10 text-accent border border-accent/20">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-accent/10 text-accent border border-accent/20">
                         Ожидает
                       </span>
                     )}
@@ -168,7 +169,7 @@ export function BazzarReviewsPanel() {
                       {review.status !== 'published' && (
                         <button 
                           onClick={() => handleStatusChange(review.id, 'published')}
-                          className="p-1.5 text-mute hover:text-ok hover:bg-ok/10 rounded-md transition-colors"
+                          className="p-1.5 text-mute hover:text-ok hover:bg-ok/10 rounded-lg transition-colors"
                           title="Одобрить"
                         >
                           <CheckCircle2 size={16} />
@@ -177,7 +178,7 @@ export function BazzarReviewsPanel() {
                       {review.status !== 'rejected' && (
                         <button 
                           onClick={() => handleStatusChange(review.id, 'rejected')}
-                          className="p-1.5 text-mute hover:text-err hover:bg-err/10 rounded-md transition-colors"
+                          className="p-1.5 text-mute hover:text-err hover:bg-err/10 rounded-lg transition-colors"
                           title="Отклонить"
                         >
                           <XCircle size={16} />
@@ -185,7 +186,7 @@ export function BazzarReviewsPanel() {
                       )}
                       <button 
                         onClick={() => handleDelete(review.id)}
-                        className="p-1.5 text-mute hover:text-err hover:bg-err/10 rounded-md transition-colors"
+                        className="p-1.5 text-mute hover:text-err hover:bg-err/10 rounded-lg transition-colors"
                         title="Удалить"
                       >
                         <Trash2 size={16} />
@@ -196,7 +197,7 @@ export function BazzarReviewsPanel() {
               ))}
               {!loading && filteredReviews.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-10 text-center text-mute">Отзывы не найдены</td>
+                  <td colSpan={5}><EmptyState icon={MessageSquare} title="Отзывы не найдены" description="Отзывы пользователей появятся здесь." /></td>
                 </tr>
               )}
             </tbody>

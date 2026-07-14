@@ -5,8 +5,11 @@ import { createClient } from '@/lib/supabase/client'
 import { NewsCard } from './NewsCard'
 import { CreateNewsModal } from './CreateNewsModal'
 import { Button } from '@/components/ui/Button'
+import { Header } from '@/components/layout/Header'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuthStore } from '@/store/auth'
-import { Plus, Loader2, Search, X } from 'lucide-react'
+import { Plus, Search, X } from 'lucide-react'
 
 type FilterType = 'all' | 'unread' | 'important' | 'bugs' | 'updates'
 
@@ -120,19 +123,19 @@ export function NewsFeed() {
 
   return (
     <div className="max-w-4xl mx-auto w-full py-8 px-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-text">Новости компании</h1>
-          <p className="text-mute text-sm mt-1">Последние обновления, анонсы и важные события.</p>
-        </div>
+      {/* Shared top bar (title + global search / notifications / profile) */}
+      <Header
+        title="Новости компании"
+        subtitle="Последние обновления, анонсы и важные события."
+      />
 
-        {canCreateNews && (
+      {canCreateNews && (
+        <div className="flex justify-end -mt-2 mb-6">
           <Button onClick={() => setIsModalOpen(true)} className="gap-2">
             <Plus size={16} /> Написать новость
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Search + Filters bar */}
       <div className="space-y-4 mb-8">
@@ -143,7 +146,7 @@ export function NewsFeed() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Поиск по новостям..."
-            className="field w-full pl-11 pr-10 py-3 text-sm bg-card border border-line rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+            className="field w-full pl-11 pr-10 py-3 text-sm bg-card border border-line rounded-2xl shadow-sm focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
           />
           {searchQuery && (
             <button
@@ -168,8 +171,8 @@ export function NewsFeed() {
                   inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[12.5px] font-bold
                   border transition-all duration-200 select-none
                   ${isActive
-                    ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/20'
-                    : 'bg-card text-slate-600 border-line hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50/50'
+                    ? 'bg-brand text-[#171821] border-brand shadow-md shadow-brand/20'
+                    : 'bg-card text-slate-600 border-line hover:border-line2 hover:text-slate-800 hover:bg-black/[0.02]'
                   }
                 `}
               >
@@ -177,7 +180,7 @@ export function NewsFeed() {
                 <span>{f.label}</span>
                 {count !== undefined && count > 0 && (
                   <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none
-                    ${isActive ? 'bg-white/25 text-white' : 'bg-blue-500/10 text-blue-600'}
+                    ${isActive ? 'bg-black/10 text-[#171821]' : 'bg-accent/10 text-accent'}
                   `}>
                     {count}
                   </span>
@@ -190,29 +193,39 @@ export function NewsFeed() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <Loader2 className="animate-spin text-blue-500" size={32} />
+        <div className="grid grid-cols-1 gap-5">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-card border border-line rounded-card p-6 space-y-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3.5 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+            </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 bg-card border border-line rounded-3xl">
-          <div className="text-4xl mb-4">{searchQuery || activeFilter !== 'all' ? '🔍' : '📰'}</div>
-          <h3 className="text-lg font-bold text-text mb-2">
-            {searchQuery || activeFilter !== 'all' ? 'Ничего не найдено' : 'Новостей пока нет'}
-          </h3>
-          <p className="text-mute text-sm max-w-sm mx-auto">
-            {searchQuery || activeFilter !== 'all'
-              ? 'Попробуйте изменить запрос или сбросить фильтры.'
-              : 'Здесь будут публиковаться важные новости и обновления компании.'}
-          </p>
-          {(searchQuery || activeFilter !== 'all') && (
+        <EmptyState
+          className="bg-card border border-line rounded-card"
+          emoji={searchQuery || activeFilter !== 'all' ? '🔍' : '📰'}
+          title={searchQuery || activeFilter !== 'all' ? 'Ничего не найдено' : 'Новостей пока нет'}
+          description={searchQuery || activeFilter !== 'all'
+            ? 'Попробуйте изменить запрос или сбросить фильтры.'
+            : 'Здесь будут публиковаться важные новости и обновления компании.'}
+          action={(searchQuery || activeFilter !== 'all') ? (
             <button
               onClick={() => { setSearchQuery(''); setActiveFilter('all') }}
-              className="mt-4 text-sm text-blue-500 hover:text-blue-600 font-semibold transition-colors"
+              className="text-sm text-accent hover:text-accent/80 font-semibold transition-colors"
             >
               Сбросить фильтры
             </button>
-          )}
-        </div>
+          ) : undefined}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-5">
           {filtered.map(n => (

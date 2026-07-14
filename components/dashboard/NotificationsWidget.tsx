@@ -58,7 +58,7 @@ export function NotificationsWidget({ initialNotifications, userId }: Props) {
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
-            className="text-[12.5px] text-mute hover:text-white transition-colors"
+            className="text-[12.5px] text-mute hover:text-slate-800 transition-colors"
           >
             Отметить всё
           </button>
@@ -81,7 +81,7 @@ export function NotificationsWidget({ initialNotifications, userId }: Props) {
               className={`flex items-start gap-3 p-3 rounded-xl border transition-all
                 ${n.is_read
                   ? 'border-line opacity-45 cursor-default'
-                  : 'border-line hover:border-line2 hover:bg-white/[0.02] cursor-pointer'}`}
+                  : 'border-line hover:border-line2 hover:bg-black/[0.02] cursor-pointer'}`}
             >
               <div className={`w-9 h-9 rounded-lg ${tone.bg} ${tone.text} inline-flex items-center justify-center shrink-0`}>
                 {n.type === 'task'  && <CheckSquare size={16} />}

@@ -98,7 +98,7 @@ export function ClientsTab({ clients }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Поиск по email или имени..."
-            className="w-full h-9 pl-8 pr-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
+            className="w-full h-9 pl-8 pr-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
           />
         </div>
 
@@ -107,7 +107,7 @@ export function ClientsTab({ clients }: Props) {
             key={s}
             onClick={() => setSource(s)}
             className={`h-9 px-4 rounded-xl border text-[12.5px] font-medium transition-colors
-              ${source === s ? 'bg-accent/20 border-accent/40 text-accent' : 'border-line text-mute hover:text-white'}`}
+              ${source === s ? 'bg-accent/20 border-accent/40 text-accent' : 'border-line text-mute hover:text-slate-800'}`}
           >
             {s === 'all'   ? `Все (${clients.length})`
              : s === 'pixel' ? `Пиксель (${stats.pixelCount})`
@@ -118,7 +118,7 @@ export function ClientsTab({ clients }: Props) {
         <select
           value={sort}
           onChange={e => setSort(e.target.value as SortKey)}
-          className="h-9 px-3 rounded-xl bg-white/[0.03] border border-line outline-none text-[12.5px] text-mute"
+          className="h-9 px-3 rounded-xl bg-bg border border-line outline-none text-[12.5px] text-mute"
         >
           <option value="total_spent">По сумме</option>
           <option value="order_count">По заказам</option>
@@ -151,14 +151,14 @@ export function ClientsTab({ clients }: Props) {
                 </td>
               </tr>
             ) : filtered.map(c => (
-              <tr key={c.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
+              <tr key={c.id} className="border-b border-line last:border-0 hover:bg-black/[0.02] transition-colors">
                 <td className="px-4 py-3">
                   <div className="text-[13.5px] font-medium">{c.email}</div>
                   {c.name && <div className="text-[11.5px] text-mute">{c.name}</div>}
                 </td>
                 <td className="px-4 py-3 text-center hidden sm:table-cell">
                   <span className={`text-[11px] font-bold px-2 h-5 rounded-full inline-flex items-center
-                    ${c.source === 'pixel' ? 'bg-accent/20 text-accent' : 'bg-white/[0.06] text-mute'}`}>
+                    ${c.source === 'pixel' ? 'bg-accent/20 text-accent' : 'bg-black/[0.06] text-mute'}`}>
                     {c.source === 'pixel' ? 'Пиксель' : 'Новый'}
                   </span>
                 </td>

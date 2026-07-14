@@ -450,7 +450,7 @@ export function ProjectDetail({
       )}
       {/* Back navigation */}
       <Link href="/projects"
-        className="inline-flex items-center gap-1.5 text-[12.5px] text-mute hover:text-white transition-all mb-5">
+        className="inline-flex items-center gap-1.5 text-[12.5px] text-mute hover:text-slate-800 transition-all mb-5">
         <ArrowLeft size={14} /> Проекты
       </Link>
 
@@ -509,31 +509,31 @@ export function ProjectDetail({
         <div className="flex gap-2 border-b border-line pb-4 mb-5 overflow-x-auto">
           <button onClick={() => setActiveTab('project')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'project' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'project' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Activity size={14} /> Проектное управление
           </button>
           <button onClick={() => setActiveTab('servers')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'servers' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'servers' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Server size={14} /> VPN Серверы ({vpnServers.length})
           </button>
           <button onClick={() => setActiveTab('subs')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'subs' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'subs' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Users size={14} /> VPN Подписки ({vpnSubs.length})
           </button>
           <button onClick={() => setActiveTab('payments')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'payments' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'payments' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <CreditCard size={14} /> VPN Платежи ({vpnOrders.length})
           </button>
           <button onClick={() => setActiveTab('referrals')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'referrals' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'referrals' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Gift size={14} /> VPN Рефералы ({vpnReferrals.length})
           </button>
@@ -545,37 +545,37 @@ export function ProjectDetail({
         <div className="flex gap-2 border-b border-line pb-4 mb-5 overflow-x-auto">
           <button onClick={() => setActiveTab('project')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'project' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'project' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Activity size={14} /> Проектное управление
           </button>
           <button onClick={() => setActiveTab('pixel-users')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'pixel-users' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'pixel-users' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Users size={14} /> Пользователи ({pixelUsers?.length ?? 0})
           </button>
           <button onClick={() => setActiveTab('pixel-transactions')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'pixel-transactions' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'pixel-transactions' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <CreditCard size={14} /> Транзакции ({pixelTransactions?.length ?? 0})
           </button>
           <button onClick={() => setActiveTab('pixel-creations')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'pixel-creations' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'pixel-creations' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Globe size={14} /> История генераций ({pixelCreations?.length ?? 0})
           </button>
           <button onClick={() => setActiveTab('pixel-subscriptions')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'pixel-subscriptions' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'pixel-subscriptions' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Key size={14} /> Подписки ({pixelSubscriptions?.length ?? 0})
           </button>
           <button onClick={() => setActiveTab('pixel-templates')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all ${
-              activeTab === 'pixel-templates' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'pixel-templates' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <LayoutGrid size={14} /> Галерея шаблонов ({pixelTemplates?.length ?? 0})
           </button>
@@ -587,43 +587,43 @@ export function ProjectDetail({
         <div className="flex gap-2 border-b border-line pb-4 mb-5 overflow-x-auto">
           <button onClick={() => setActiveTab('project')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'project' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'project' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Activity size={14} /> Проектное управление
           </button>
           <button onClick={() => setActiveTab('bazzar-certs')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'bazzar-certs' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'bazzar-certs' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Server size={14} /> Регистрация сертификатов
           </button>
           <button onClick={() => setActiveTab('bazzar-products')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'bazzar-products' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'bazzar-products' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <LayoutGrid size={14} /> Управление товарами
           </button>
           <button onClick={() => setActiveTab('bazzar-users')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'bazzar-users' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'bazzar-users' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Users size={14} /> Пользователи
           </button>
           <button onClick={() => setActiveTab('bazzar-analytics')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'bazzar-analytics' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'bazzar-analytics' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <Activity size={14} /> Аналитика
           </button>
           <button onClick={() => setActiveTab('bazzar-reviews')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'bazzar-reviews' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'bazzar-reviews' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <MessageSquare size={14} /> Отзывы
           </button>
           <button onClick={() => setActiveTab('bazzar-tickets')}
             className={`h-9 px-4 rounded-xl text-[13px] font-semibold flex items-center gap-2 transition-all shrink-0 ${
-              activeTab === 'bazzar-tickets' ? 'bg-accent text-white' : 'hover:bg-white/[0.04] text-mute'
+              activeTab === 'bazzar-tickets' ? 'bg-brand text-[#171821]' : 'hover:bg-black/[0.04] text-mute'
             }`}>
             <MessageSquare size={14} /> Претензии и предложения
           </button>
@@ -654,7 +654,7 @@ export function ProjectDetail({
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <h3 className="text-[16px] font-semibold tracking-tight">Задачи</h3>
-                <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
+                <span className="text-[11px] text-mute2 font-mono bg-black/[0.04] px-2 h-5 rounded-lg inline-flex items-center">
                   {tasks.length}
                 </span>
               </div>
@@ -662,7 +662,7 @@ export function ProjectDetail({
                 <select
                   value={taskFilter}
                   onChange={e => setTaskFilter(e.target.value as TaskStatus | 'all')}
-                  className="h-8 px-2.5 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+                  className="h-8 px-2.5 rounded-lg border border-line bg-bg text-[12.5px] text-mute hover:text-slate-800 transition-all outline-none"
                 >
                   <option value="all">Все статусы</option>
                   <option value="todo">Сделать</option>
@@ -684,7 +684,7 @@ export function ProjectDetail({
               <div className="space-y-1">
                 {visibleTasks.map(t => (
                   <div key={t.id} onClick={() => setViewingTask(t)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.02] transition-colors cursor-pointer">
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-black/[0.02] transition-colors cursor-pointer">
                     <div className="w-2 h-2 rounded-full shrink-0"
                       style={{ background: PRIORITY_COLOR[t.priority] ?? '#8B92B4' }} />
                     <div className="flex-1 min-w-0">
@@ -701,7 +701,7 @@ export function ProjectDetail({
                         size={22}
                       />
                     ) : (
-                      <div className="w-5.5 h-5.5 rounded-full bg-white/[0.06] border border-line inline-flex items-center justify-center shrink-0">
+                      <div className="w-5.5 h-5.5 rounded-full bg-black/[0.05] border border-line inline-flex items-center justify-center shrink-0">
                         <User2 size={10} className="text-mute2" />
                       </div>
                     )}
@@ -726,7 +726,7 @@ export function ProjectDetail({
                 { label: 'Расходы', value: txTotals.expense, positive: false                 },
                 { label: 'Баланс',  value: txTotals.net,     positive: txTotals.net >= 0     },
               ].map(s => (
-                <div key={s.label} className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+                <div key={s.label} className="rounded-xl bg-bg border border-line p-3.5">
                   <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">{s.label}</div>
                   <div className={`text-[17px] font-bold tabular-nums ${s.positive ? 'text-ok' : 'text-err'}`}>
                     {txTotals.net === 0 && s.label === 'Баланс' ? fmtRub(0) : (s.positive ? '+' : '−') + fmtRub(Math.abs(s.value))}
@@ -742,7 +742,7 @@ export function ProjectDetail({
                 {txList.map(t => {
                   const cat = TX_CATEGORIES[t.category] ?? TX_CATEGORIES.other
                   return (
-                    <div key={t.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/[0.02] transition-colors">
+                    <div key={t.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-black/[0.02] transition-colors">
                       <span className="w-1.5 h-1.5 rounded-full shrink-0"
                         style={{ background: t.type === 'income' ? '#22C55E' : '#EF4444' }} />
                       <div className="flex-1 min-w-0">
@@ -853,9 +853,9 @@ export function ProjectDetail({
               <div className="text-center py-8 text-mute text-[13px]">Нет активных серверов</div>
             ) : (
               vpnServers.map(s => (
-                <div key={s.id} className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-white/[0.015] hover:bg-white/[0.025] transition-colors">
+                <div key={s.id} className="flex items-center justify-between p-3.5 rounded-xl border border-line bg-bg hover:bg-black/[0.02] transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-line flex items-center justify-center font-bold text-lg">
+                    <div className="w-10 h-10 rounded-xl bg-black/[0.04] border border-line flex items-center justify-center font-bold text-lg">
                       <Globe size={18} className="text-accent" />
                     </div>
                     <div>
@@ -872,13 +872,13 @@ export function ProjectDetail({
                         {s.reality_sni && (
                           <>
                             <span className="text-line">•</span>
-                            <span>SNI: <span className="font-mono text-white/70">{s.reality_sni}</span></span>
+                            <span>SNI: <span className="font-mono text-slate-600">{s.reality_sni}</span></span>
                           </>
                         )}
                         {s.reality_flow && (
                           <>
                             <span className="text-line">•</span>
-                            <span>Flow: <span className="font-mono text-white/70">{s.reality_flow}</span></span>
+                            <span>Flow: <span className="font-mono text-slate-600">{s.reality_flow}</span></span>
                           </>
                         )}
                       </div>
@@ -916,7 +916,7 @@ export function ProjectDetail({
             <h3 className="text-[16px] font-semibold">Пользовательские подписки</h3>
             <div className="flex items-center gap-3">
               {isVpn && (
-                <Button size="sm" onClick={() => setShowCreateVpnSub(true)} className="bg-accent text-white">
+                <Button size="sm" onClick={() => setShowCreateVpnSub(true)} className="bg-brand text-[#171821]">
                   <Plus size={13} /> Создать пользователя
                 </Button>
               )}
@@ -948,7 +948,7 @@ export function ProjectDetail({
                   </tr>
                 ) : (
                   vpnSubs.filter(s => s.username.toLowerCase().includes(searchQuery.toLowerCase()) || s.subscription_key.toLowerCase().includes(searchQuery.toLowerCase())).map(s => (
-                    <tr key={s.id} className="hover:bg-white/[0.015] transition-colors">
+                    <tr key={s.id} className="hover:bg-black/[0.02] transition-colors">
                       <td className="py-3.5 pr-4 font-semibold flex items-center gap-2">
                         <Avatar initials={getInitials(s.username)} color={colorFor(s.username)} size={24} />
                         <div className="flex flex-col">
@@ -959,12 +959,12 @@ export function ProjectDetail({
                           {(s.tg_bot_linked || s.tg_channel_subscribed) && (
                             <div className="flex gap-1 mt-1">
                               {s.tg_bot_linked && (
-                                <span className="text-[9.5px] font-bold bg-ok/10 text-ok border border-ok/20 px-1.5 py-0.5 rounded-md inline-flex items-center">
+                                <span className="text-[9.5px] font-bold bg-ok/10 text-ok border border-ok/20 px-1.5 py-0.5 rounded-lg inline-flex items-center">
                                   🤖 Бот
                                 </span>
                               )}
                               {s.tg_channel_subscribed && (
-                                <span className="text-[9.5px] font-bold bg-accent/10 text-accent border border-accent/20 px-1.5 py-0.5 rounded-md inline-flex items-center">
+                                <span className="text-[9.5px] font-bold bg-accent/10 text-accent border border-accent/20 px-1.5 py-0.5 rounded-lg inline-flex items-center">
                                   📢 Канал
                                 </span>
                               )}
@@ -982,14 +982,14 @@ export function ProjectDetail({
                       </td>
                       {isVpn && (
                         <td className="py-3.5 px-4 font-mono text-[12px] text-mute">
-                          <div className="flex items-center gap-1.5 bg-white/[0.02] border border-line rounded-lg px-2 py-1 max-w-[150px] justify-between">
+                          <div className="flex items-center gap-1.5 bg-bg border border-line rounded-lg px-2 py-1 max-w-[150px] justify-between">
                             <span className="truncate text-mute2 text-[11px]">{s.token || 'нет'}</span>
                             {s.token && (
                               <button onClick={() => {
                                 const cabLink = `https://www.veil-vps.online/cabinet/${s.token}`
                                 navigator.clipboard.writeText(cabLink)
                                 addToast('Успешно', 'Ссылка на кабинет скопирована', 'ok')
-                              }} className="text-mute hover:text-white transition-colors shrink-0">
+                              }} className="text-mute hover:text-slate-800 transition-colors shrink-0">
                                 <Copy size={11} />
                               </button>
                             )}
@@ -1005,9 +1005,9 @@ export function ProjectDetail({
                         </td>
                       )}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5 bg-white/[0.02] border border-line rounded-lg px-2 py-1 max-w-[180px] justify-between">
+                        <div className="flex items-center gap-1.5 bg-bg border border-line rounded-lg px-2 py-1 max-w-[180px] justify-between">
                           <span className="font-mono text-[11px] truncate text-mute2">{s.subscription_key}</span>
-                          <button onClick={() => copyKey(s.subscription_key, s.id)} className="text-mute hover:text-white transition-colors shrink-0">
+                          <button onClick={() => copyKey(s.subscription_key, s.id)} className="text-mute hover:text-slate-800 transition-colors shrink-0">
                             {copiedKeyId === s.id ? <Check size={11} color="#22C55E" /> : <Copy size={11} />}
                           </button>
                         </div>
@@ -1019,7 +1019,7 @@ export function ProjectDetail({
                               +30д
                             </Button>
                           )}
-                          <button onClick={() => setManagingSub(s)} className="w-7 h-7 rounded-lg hover:bg-white/[0.05] text-mute hover:text-white transition-all inline-flex items-center justify-center">
+                          <button onClick={() => setManagingSub(s)} className="w-7 h-7 rounded-lg hover:bg-black/[0.05] text-mute hover:text-slate-800 transition-all inline-flex items-center justify-center">
                             <Settings size={14} />
                           </button>
                           <button onClick={() => deleteVpnSub(s)} className="w-7 h-7 rounded-lg hover:bg-err/10 text-mute hover:text-err transition-all inline-flex items-center justify-center">
@@ -1055,7 +1055,7 @@ export function ProjectDetail({
                   </tr>
                 ) : (
                   vpnOrders.map(o => (
-                    <tr key={o.id} className="hover:bg-white/[0.015] transition-colors">
+                    <tr key={o.id} className="hover:bg-black/[0.02] transition-colors">
                       <td className="py-3.5 pr-4 font-semibold flex items-center gap-2">
                         <Avatar initials={getInitials(o.username)} color={colorFor(o.username)} size={24} />
                         {o.username}
@@ -1088,19 +1088,19 @@ export function ProjectDetail({
           <h3 className="text-[16px] font-semibold mb-2">Статистика Реферальных Кампаний</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5 mt-4">
-            <div className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+            <div className="rounded-xl bg-bg border border-line p-3.5">
               <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">Всего инвайтов</div>
-              <div className="text-[18px] font-bold text-white tabular-nums">
+              <div className="text-[18px] font-bold text-slate-800 tabular-nums">
                 {vpnReferrals.length}
               </div>
             </div>
-            <div className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+            <div className="rounded-xl bg-bg border border-line p-3.5">
               <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">Активные друзья</div>
               <div className="text-[18px] font-bold text-ok tabular-nums">
                 {vpnReferrals.filter(r => r.status === 'active').length}
               </div>
             </div>
-            <div className="rounded-xl bg-white/[0.025] border border-line p-3.5">
+            <div className="rounded-xl bg-bg border border-line p-3.5">
               <div className="text-[11px] text-mute2 uppercase tracking-[0.1em] font-semibold mb-1.5">Выдано бонусов</div>
               <div className="text-[18px] font-bold text-[#FF7A00] tabular-nums">
                 {vpnReferrals.filter(r => r.status === 'active').length * 30} дн.
@@ -1126,11 +1126,11 @@ export function ProjectDetail({
                   </tr>
                 ) : (
                   vpnReferrals.map(r => (
-                    <tr key={r.id} className="hover:bg-white/[0.015] transition-colors">
-                      <td className="py-3.5 pr-4 font-semibold text-white">
+                    <tr key={r.id} className="hover:bg-black/[0.02] transition-colors">
+                      <td className="py-3.5 pr-4 font-semibold text-slate-800">
                         {r.referrer_username}
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-white">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800">
                         {r.referred_username}
                       </td>
                       <td className="py-3.5 px-4">

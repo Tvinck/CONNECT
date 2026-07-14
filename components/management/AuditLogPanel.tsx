@@ -105,13 +105,13 @@ export function AuditLogPanel({ logs }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Поиск по действию, пользователю..."
-            className="w-full h-8 pl-8 pr-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[12.5px] placeholder:text-mute2"
+            className="w-full h-8 pl-8 pr-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[12.5px] placeholder:text-mute2"
           />
         </div>
         <select
           value={actionFilter}
           onChange={e => setActionFilter(e.target.value)}
-          className="h-8 px-3 rounded-xl bg-white/[0.03] border border-line outline-none text-[12px] text-mute"
+          className="h-8 px-3 rounded-xl bg-bg border border-line outline-none text-[12px] text-mute"
         >
           {categories.map(c => (
             <option key={c} value={c}>{c === 'all' ? 'Все категории' : c}</option>
@@ -130,7 +130,7 @@ export function AuditLogPanel({ logs }: Props) {
             return (
               <div
                 key={log.id}
-                className="flex items-start gap-3 py-2.5 px-3 rounded-lg hover:bg-white/[0.02] transition-colors"
+                className="flex items-start gap-3 py-2.5 px-3 rounded-lg hover:bg-black/[0.02] transition-colors"
               >
                 <div
                   className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
@@ -159,7 +159,7 @@ export function AuditLogPanel({ logs }: Props) {
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="text-[11.5px] text-white/70 font-medium">
+                  <div className="text-[11.5px] text-slate-600 font-medium">
                     {log.user?.full_name.split(' ')[0] ?? '—'}
                   </div>
                   <div className="text-[10.5px] text-mute2 font-mono">{timeAgo(log.created_at)}</div>

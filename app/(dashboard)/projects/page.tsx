@@ -32,11 +32,23 @@ export default async function ProjectsPage() {
     }
   }
 
-  const enriched = ((projects ?? []) as ProjectMeta[]).map(p => ({
-    ...p,
-    tasks: taskCounts[p.id] ?? 0,
-    team: teams[p.id]?.size ?? 0,
-  }))
+  // Resolve member names so the cards can show avatar stacks.
+  const allMemberIds = Array.from(new Set(Object.values(teams).flatMap(s => Array.from(s))))
+  const { data: memberUsers } = allMemberIds.length
+    ? await supabase.from('users').select('id, full_name').in('id', allMemberIds)
+    : { data: [] as { id: string; full_name: string }[] }
+  const nameById: Record<string, string> = {}
+  for (const u of (memberUsers ?? []) as { id: string; full_name: string }[]) nameById[u.id] = u.full_name
+
+  const enriched = ((projects ?? []) as ProjectMeta[]).map(p => {
+    const memberIds = teams[p.id] ? Array.from(teams[p.id]) : []
+    return {
+      ...p,
+      tasks: taskCounts[p.id] ?? 0,
+      team: memberIds.length,
+      members: memberIds.slice(0, 5).map(id => ({ id, full_name: nameById[id] ?? '' })),
+    }
+  })
 
   const activeCount = enriched.filter(p => p.status === 'active').length
 

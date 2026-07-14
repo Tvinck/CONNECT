@@ -15,9 +15,9 @@ export default function Loading() {
       </div>
 
       {/* Leaderboard rows */}
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] overflow-hidden">
+      <div className="rounded-2xl border border-line bg-card overflow-hidden">
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-white/[0.04] last:border-0">
+          <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-line last:border-0">
             {/* Rank */}
             <Skeleton className="h-6 w-6 rounded-full shrink-0" />
             {/* Avatar */}

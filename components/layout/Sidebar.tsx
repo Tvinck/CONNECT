@@ -18,11 +18,8 @@
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  Home, CheckSquare, Folder, BookOpen, Users, User, LayoutGrid,
-  MessageSquare, Shield, Settings, LogOut, X, ChevronDown, Check, ShoppingBag,
-  Wallet, Gift, HeadphonesIcon, Lightbulb, Newspaper, Search, Activity, Apple, Wand2
-} from 'lucide-react'
+import { LogOut, X, ChevronDown, Check, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { NAV_GROUPS } from '@/components/layout/nav-config'
 import { Logomark } from '@/components/ui/Logomark'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
@@ -31,47 +28,6 @@ import { ROLES, getInitials, colorFor } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useState, useRef, useEffect } from 'react'
 import type { UserRole } from '@/types'
-
-const NAV_GROUPS = [
-  {
-    label: 'Работа',
-    items: [
-      { key: 'dashboard', label: 'Главная',     href: '/dashboard', icon: Home },
-      { key: 'news',      label: 'Новости',     href: '/news',      icon: Newspaper },
-      { key: 'tasks',     label: 'Задачи',      href: '/tasks',     icon: CheckSquare },
-      { key: 'projects',  label: 'Проекты',     href: '/projects',  icon: Folder },
-      { key: 'knowledge', label: 'База знаний', href: '/knowledge', icon: BookOpen },
-      { key: 'ideas',     label: 'Идеи',        href: '/ideas',     icon: Lightbulb },
-      { key: 'skinscan',  label: 'СкинСкан (Beta)', href: '/skinscan', icon: Search },
-    ],
-  },
-  {
-    label: 'Бизнес',
-    items: [
-      { key: 'finances', label: 'Финансы',      href: '/finances',  icon: Wallet },
-      { key: 'crm',      label: 'CRM',          href: '/crm',       icon: Users },
-      { key: 'services', label: 'Сервисы',      href: '/services',  icon: LayoutGrid },
-      { key: 'shop',     label: 'Магазин',      href: '/shop',      icon: ShoppingBag },
-      { key: 'factory',  label: 'ИИ Завод',     href: '/factory',   icon: Wand2 },
-      { key: 'support',  label: 'Поддержка',    href: '/support',   icon: HeadphonesIcon },
-    ],
-  },
-  {
-    label: 'Команда',
-    items: [
-      { key: 'employees', label: 'Сотрудники', href: '/employees', icon: User },
-      { key: 'chats',     label: 'Чаты',       href: '/chats',     icon: MessageSquare },
-    ],
-  },
-  {
-    label: 'Управление',
-    items: [
-      { key: 'management', label: 'Управление', href: '/management', icon: Shield, ceoOnly: true },
-      { key: 'monitoring', label: 'Мониторинг', href: '/monitoring', icon: Activity, ceoOnly: true },
-      { key: 'profile',    label: 'Профиль',    href: '/profile',    icon: Settings },
-    ],
-  },
-] as const
 
 /**
  * Свойства для компонента Sidebar
@@ -97,8 +53,17 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { role, setRole, user, logout, permissions } = useAuthStore()
-  const { sidebarOpen, setSidebarOpen, addToast } = useUIStore()
+  const { sidebarOpen, setSidebarOpen, addToast, sidebarCollapsed, setSidebarCollapsed, toggleSidebarCollapsed } = useUIStore()
   const [newsCount, setNewsCount] = useState(0)
+
+  // Hydrate collapsed preference from localStorage after mount (avoids SSR mismatch).
+  useEffect(() => {
+    if (localStorage.getItem('sidebar_collapsed') === '1') {
+      setSidebarCollapsed(true)
+    }
+  }, [setSidebarCollapsed])
+
+  const collapsed = sidebarCollapsed
 
   useEffect(() => {
     if (!user) return
@@ -156,25 +121,36 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
       )}
 
       <aside
-        className={`w-[240px] shrink-0 h-screen border-r border-white/[0.04] bg-[#13141C] text-white flex flex-col z-40
-          fixed top-0 left-0 lg:sticky lg:top-0 transition-transform duration-200
+        className={`w-[240px] ${collapsed ? 'lg:w-[76px]' : 'lg:w-[240px]'} shrink-0 h-screen border-r border-white/[0.04] bg-[#13141C] text-white flex flex-col z-40
+          fixed top-0 left-0 lg:sticky lg:top-0 transition-[transform,width] duration-200
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Logo */}
-        <div className="px-5 pt-6 pb-5 flex items-center justify-between">
-          <Logomark className="drop-shadow-[0_0_8px_rgba(191,241,40,0.18)] text-white" />
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden w-8 h-8 rounded-md text-[#8E92BC] hover:text-white hover:bg-white/[0.05] inline-flex items-center justify-center"
-          >
-            <X size={16} />
-          </button>
+        <div className={`pt-6 pb-5 flex items-center ${collapsed ? 'px-5 lg:px-0 lg:justify-center' : 'px-5 justify-between'}`}>
+          <Logomark className={`drop-shadow-[0_0_8px_rgba(191,241,40,0.18)] text-white ${collapsed ? 'lg:hidden' : ''}`} />
+          <div className="flex items-center gap-1">
+            {/* Desktop collapse toggle */}
+            <button
+              onClick={toggleSidebarCollapsed}
+              title={collapsed ? 'Развернуть меню' : 'Свернуть меню'}
+              className="hidden lg:inline-flex w-8 h-8 rounded-lg text-[#8E92BC] hover:text-white hover:bg-white/[0.05] items-center justify-center"
+            >
+              {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+            </button>
+            {/* Mobile close */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden w-8 h-8 rounded-lg text-[#8E92BC] hover:text-white hover:bg-white/[0.05] inline-flex items-center justify-center"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* User profile chip */}
-        <div className="mx-3 mb-4 p-3 rounded-xl bg-[#1C1D2A] border border-white/[0.04] flex items-center gap-3">
+        <div className={`mx-3 mb-4 p-3 rounded-xl bg-[#1C1D2A] border border-white/[0.04] flex items-center gap-3 ${collapsed ? 'lg:justify-center lg:px-2' : ''}`}>
           <Avatar initials={initials} color={colorFor(user?.full_name ?? '')} size={38} status={status} />
-          <div className="min-w-0 flex-1">
+          <div className={`min-w-0 flex-1 ${collapsed ? 'lg:hidden' : ''}`}>
             <div className="text-[13.5px] font-semibold tracking-tight truncate text-white">
               {user?.full_name?.split(' ')[0] ?? 'Профиль'}
             </div>
@@ -194,14 +170,16 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
 
         {/* Role switcher (demo) - visible only to actual CEOs */}
         {user?.role === 'ceo' && (
-          <RoleSwitcher
-            role={role}
-            onRoleChange={(r) => {
-              setRole(r)
-              const found = ROLES.find((x) => x.id === r)
-              addToast('Роль переключена', `Теперь ты — ${found?.label}`, 'accent')
-            }}
-          />
+          <div className={collapsed ? 'lg:hidden' : ''}>
+            <RoleSwitcher
+              role={role}
+              onRoleChange={(r) => {
+                setRole(r)
+                const found = ROLES.find((x) => x.id === r)
+                addToast('Роль переключена', `Теперь ты — ${found?.label}`, 'accent')
+              }}
+            />
+          </div>
         )}
 
         {/* Navigation */}
@@ -211,22 +189,12 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
               if ('ceoOnly' in item && item.ceoOnly) {
                 return role === 'ceo'
               }
-              const labelMap: Record<string, string> = {
-                dashboard: 'Дашборд',
-                tasks: 'Задачи',
-                projects: 'Проекты',
-                knowledge: 'База знаний',
-                ideas: 'Идеи',
-                crm: 'CRM',
-                finances: 'Финансы',
-                chats: 'Чаты',
-                services: 'Сервисы',
-                support: 'Чаты',
-                shop: 'Сервисы',
-              }
-              const sectionName = labelMap[item.key as keyof typeof labelMap]
-              if (sectionName && permissions) {
-                const level = permissions[sectionName] ?? 2
+              // Permission-gated items are hidden unless the user has an
+              // explicit level > 0 for that section. Deny-by-default (?? 0)
+              // mirrors verifyPagePermission so the sidebar never shows a link
+              // that would just redirect. Ungated items (no `section`) always show.
+              if (item.section && permissions) {
+                const level = permissions[item.section] ?? 0
                 return level > 0
               }
               return true
@@ -234,7 +202,7 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
             if (visibleItems.length === 0) return null
             return (
               <div key={group.label}>
-                <div className="text-[10px] uppercase tracking-[0.14em] text-[#5A5D7F] px-3 mb-1.5 font-bold">
+                <div className={`text-[10px] uppercase tracking-[0.14em] text-[#5A5D7F] px-3 mb-1.5 font-bold ${collapsed ? 'lg:hidden' : ''}`}>
                   {group.label}
                 </div>
                 <nav className="space-y-0.5">
@@ -249,38 +217,45 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
                         key={item.key}
                         href={item.href}
                         onClick={() => setSidebarOpen(false)}
-                        className="relative nav-item w-full flex items-center gap-3 px-3 h-10 rounded-[12px] text-[13px] font-semibold tracking-tight transition-all duration-150 group"
+                        title={collapsed ? item.label : undefined}
+                        className={`relative nav-item w-full flex items-center gap-3 h-10 rounded-xl text-[13px] font-semibold tracking-tight transition-all duration-150 group ${collapsed ? 'px-3 lg:px-0 lg:justify-center' : 'px-3'}`}
                       >
                         {isActive && (
                           <motion.div
                             layoutId="active-sidebar-nav"
-                            className="absolute inset-0 bg-[#BFF128] rounded-[12px] shadow-[0_2px_8px_rgba(191,241,40,0.12)]"
+                            className="absolute inset-0 bg-[#BFF128] rounded-xl shadow-[0_2px_8px_rgba(191,241,40,0.12)]"
                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                           />
                         )}
                         <span className={`relative z-10 ${isActive ? 'text-black font-extrabold' : isCeoOnly ? 'text-gold' : 'text-[#8E92BC] group-hover:text-white'}`}>
                           <Icon size={17} />
                         </span>
-                        <span className={`relative z-10 flex-1 text-left ${isActive ? 'text-black font-extrabold' : 'text-[#8E92BC] group-hover:text-white'}`}>
+                        <span className={`relative z-10 flex-1 text-left ${collapsed ? 'lg:hidden' : ''} ${isActive ? 'text-black font-extrabold' : 'text-[#8E92BC] group-hover:text-white'}`}>
                           {item.label}
                         </span>
                         {isCeoOnly && !isActive && (
-                          <span className="relative z-10 text-[9px] text-gold/70 font-mono uppercase tracking-wider">
+                          <span className={`relative z-10 text-[9px] text-gold/70 font-mono uppercase tracking-wider ${collapsed ? 'lg:hidden' : ''}`}>
                             CEO
                           </span>
                         )}
                         {item.key === 'ideas' && (
-                          <span className="relative z-10 px-1.5 py-0.5 rounded border border-[#BFF128]/40 bg-[#BFF128]/10 text-[#BFF128] text-[8.5px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(191,241,40,0.2)]">
+                          <span className={`relative z-10 px-1.5 py-0.5 rounded border border-[#BFF128]/40 bg-[#BFF128]/10 text-[#BFF128] text-[8.5px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(191,241,40,0.2)] ${collapsed ? 'lg:hidden' : ''}`}>
                             Новое
                           </span>
                         )}
                         {badge ? (
-                          <span
-                            className={`relative z-10 min-w-[20px] h-5 px-1.5 rounded-md inline-flex items-center justify-center text-[10.5px] font-bold
-                               ${isActive ? 'bg-black/10 text-black' : 'bg-white/[0.06] text-[#8E92BC]'}`}
-                          >
-                            {badge}
-                          </span>
+                          <>
+                            <span
+                              className={`relative z-10 min-w-[20px] h-5 px-1.5 rounded-lg inline-flex items-center justify-center text-[10.5px] font-bold ${collapsed ? 'lg:hidden' : ''}
+                                 ${isActive ? 'bg-black/10 text-black' : 'bg-white/[0.06] text-[#8E92BC]'}`}
+                            >
+                              {badge}
+                            </span>
+                            {/* Collapsed rail: show a dot instead of the count */}
+                            {collapsed && (
+                              <span className="hidden lg:block absolute top-1 right-1 z-10 w-2 h-2 rounded-full bg-[#BFF128] ring-2 ring-[#13141C]" />
+                            )}
+                          </>
                         ) : null}
                       </Link>
                     )
@@ -293,17 +268,18 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
 
         {/* Footer */}
         <div className="px-3 pb-5 pt-3 border-t border-white/[0.04]">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2 text-[11px] text-[#8E92BC]">
+          <div className={`flex items-center px-1 ${collapsed ? 'lg:flex-col lg:gap-3' : 'justify-between'}`}>
+            <div className={`flex items-center gap-2 text-[11px] text-[#8E92BC] ${collapsed ? 'lg:justify-center' : ''}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${status === 'online' ? 'animate-pulse-dot' : ''}`}
                 style={{ background: status === 'online' ? '#22C55E' : status === 'busy' ? '#F59E0B' : '#5A6188' }} />
-              <span>{status === 'online' ? 'Онлайн' : status === 'busy' ? 'Занят' : 'Не в сети'}</span>
+              <span className={collapsed ? 'lg:hidden' : ''}>{status === 'online' ? 'Онлайн' : status === 'busy' ? 'Занят' : 'Не в сети'}</span>
             </div>
             <button
               onClick={handleLogout}
+              title={collapsed ? 'Выход' : undefined}
               className="inline-flex items-center gap-1.5 text-[12.5px] text-[#8E92BC] hover:text-white transition-colors"
             >
-              <LogOut size={14} /> Выход
+              <LogOut size={14} /> <span className={collapsed ? 'lg:hidden' : ''}>Выход</span>
             </button>
           </div>
         </div>

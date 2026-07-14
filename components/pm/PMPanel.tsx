@@ -77,7 +77,7 @@ export function PMPanel(props: TabProps) {
       />
 
       {/* Tab bar */}
-      <div className="flex items-center gap-1 mt-4 mb-5 bg-white/[0.025] border border-line rounded-xl p-1 overflow-x-auto">
+      <div className="flex items-center gap-1 mt-4 mb-5 bg-bg border border-line rounded-xl p-1 overflow-x-auto">
         {TABS.map(t => {
           const { label, icon: Icon } = TAB_META[t]
           const b = badge(t)
@@ -87,8 +87,8 @@ export function PMPanel(props: TabProps) {
               onClick={() => setTab(t)}
               className={`flex-shrink-0 flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg text-[12.5px] font-medium transition-colors relative
                 ${tab === t
-                  ? 'bg-accent text-white shadow-sm'
-                  : 'text-mute hover:text-white hover:bg-white/[0.04]'}`}
+                  ? 'bg-brand text-[#171821] shadow-sm'
+                  : 'text-mute hover:text-slate-800 hover:bg-black/[0.04]'}`}
             >
               <Icon size={14} />
               <span>{label}</span>

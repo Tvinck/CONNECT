@@ -94,17 +94,17 @@ export default function SkinDetailPage({ params }: { params: { name: string } })
       {/* Back button */}
       <button
         onClick={() => router.push('/skinscan')}
-        className="flex items-center gap-2 text-[#8E92BC] hover:text-white transition-colors text-sm font-semibold"
+        className="flex items-center gap-2 text-mute hover:text-slate-800 transition-colors text-sm font-semibold"
       >
         ← Вернуться к поиску
       </button>
 
       {/* Skin Header */}
-      <div className="border-b border-white/[0.04] pb-5">
-        <h1 className="text-2xl font-bold text-white tracking-tight">
+      <div className="border-b border-line pb-5">
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
           {currentFullNameRu}
         </h1>
-        <p className="text-sm text-[#8E92BC] mt-1">
+        <p className="text-sm text-mute mt-1">
           {currentFullNameEn}
         </p>
       </div>
@@ -120,28 +120,28 @@ export default function SkinDetailPage({ params }: { params: { name: string } })
           />
 
           {/* Configuration Panel */}
-          <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl p-5 space-y-4">
-            <h3 className="text-white font-semibold text-[13.5px] uppercase tracking-wider text-slate-400">
+          <div className="bg-card border border-line rounded-2xl p-5 space-y-4">
+            <h3 className="font-semibold text-[13.5px] uppercase tracking-wider text-mute">
               Настройки скина
             </h3>
 
             {/* StatTrak Switch */}
-            <div className="flex items-center justify-between border-b border-white/[0.04] pb-3">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
-                <div className="text-[13px] font-semibold text-white">StatTrak™</div>
-                <div className="text-[11px] text-[#8E92BC]">Со счетчиком убийств</div>
+                <div className="text-[13px] font-semibold text-slate-800">StatTrak™</div>
+                <div className="text-[11px] text-mute">Со счетчиком убийств</div>
               </div>
               <button
                 onClick={() => setStattrak(!stattrak)}
                 className={`w-12 h-6 rounded-full transition-all relative border ${
                   stattrak
                     ? 'bg-accent border-accent'
-                    : 'bg-[#161721] border-white/[0.08]'
+                    : 'bg-bg border-line'
                 }`}
               >
                 <div
-                  className={`w-4 h-4 rounded-full bg-white absolute top-1/2 -translate-y-1/2 transition-all ${
-                    stattrak ? 'left-6 bg-[#0d0e12]' : 'left-1'
+                  className={`w-4 h-4 rounded-full absolute top-1/2 -translate-y-1/2 transition-all ${
+                    stattrak ? 'left-6 bg-[#0d0e12]' : 'left-1 bg-slate-400'
                   }`}
                 />
               </button>
@@ -149,7 +149,7 @@ export default function SkinDetailPage({ params }: { params: { name: string } })
 
             {/* Wear / Exterior Select */}
             <div className="space-y-2">
-              <div className="text-[13px] font-semibold text-white">Качество (Wear)</div>
+              <div className="text-[13px] font-semibold text-slate-800">Качество (Wear)</div>
               <div className="grid grid-cols-1 gap-1.5">
                 {WEARS.map((w) => (
                   <button
@@ -158,7 +158,7 @@ export default function SkinDetailPage({ params }: { params: { name: string } })
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
                       exterior === w.id
                         ? 'bg-accent text-[#0d0e12] border-accent shadow-[0_0_10px_rgba(191,241,40,0.15)]'
-                        : 'bg-[#161721] text-[#8E92BC] hover:text-white border-white/[0.04]'
+                        : 'bg-bg text-mute hover:text-slate-800 border-line'
                     }`}
                   >
                     <span>{w.name}</span>
@@ -173,7 +173,7 @@ export default function SkinDetailPage({ params }: { params: { name: string } })
         {/* Right column: Prices & History */}
         <div className="lg:col-span-2 space-y-6">
           {loading ? (
-            <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl h-80 flex flex-col items-center justify-center text-[#8E92BC] gap-2">
+            <div className="bg-card border border-line rounded-2xl h-80 flex flex-col items-center justify-center text-mute gap-2">
               <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin" />
               <span className="text-sm">Получение актуальных цен с площадок...</span>
             </div>

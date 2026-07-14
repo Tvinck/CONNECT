@@ -79,7 +79,7 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
   const infoRow = (label: string, value: React.ReactNode) => (
     <div className="flex items-start gap-3 py-2.5 border-b border-line last:border-0">
       <span className="text-[11.5px] text-mute2 font-semibold uppercase tracking-[0.08em] w-28 shrink-0 pt-0.5">{label}</span>
-      <span className="text-[13px] text-white/90 flex-1">{value}</span>
+      <span className="text-[13px] text-slate-700 flex-1">{value}</span>
     </div>
   )
 
@@ -185,7 +185,7 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
             href={order.file_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] border border-line rounded-xl text-[13px] text-accent hover:bg-white/[0.05] transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-bg border border-line rounded-xl text-[13px] text-accent hover:bg-black/[0.05] transition-colors"
           >
             <ExternalLink size={14} />
             <span className="flex-1 truncate">{order.file_url}</span>
@@ -200,7 +200,7 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
               value={fileUrl}
               onChange={e => setFileUrl(e.target.value)}
               placeholder="https://... ссылка на готовый файл"
-              className="flex-1 h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
+              className="flex-1 h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
             />
             <Button size="sm" onClick={uploadFile} disabled={busy || !fileUrl.trim()}>
               {busy ? <Loader2 size={14} className="animate-spin" /> : 'Сохранить'}
@@ -261,7 +261,7 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
               </button>
               <button
                 onClick={() => setConfirmRefund(false)}
-                className="text-[11.5px] text-mute px-2 h-7 rounded-lg hover:text-white transition-colors"
+                className="text-[11.5px] text-mute px-2 h-7 rounded-lg hover:text-slate-800 transition-colors"
               >
                 Отмена
               </button>
@@ -288,7 +288,7 @@ export function OrderModal({ order, onClose, onUpdated }: Props) {
             onChange={e => setNotes(e.target.value)}
             rows={2}
             placeholder="Внутренние заметки по этому заказу..."
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 resize-none"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 resize-none"
           />
           <div className="flex justify-end mt-2">
             <Button size="sm" variant="ghost" onClick={saveNotes} disabled={busy || notes === (order.admin_notes ?? '')}>

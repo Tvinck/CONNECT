@@ -112,7 +112,7 @@ export default function ServicesPage() {
     return (
       <PageContainer>
         <Header title="Сервисы" subtitle="Доступ ограничен" />
-        <div className="card p-12 text-center text-mute text-[13.5px] border border-line bg-white/[0.02] mt-6">
+        <div className="card p-12 text-center text-mute text-[13.5px] border border-line bg-bg mt-6">
           🔐 Доступ ограничен. У вас нет прав для просмотра этого раздела.
         </div>
       </PageContainer>
@@ -136,7 +136,7 @@ export default function ServicesPage() {
               className={`inline-flex items-center gap-1.5 px-3 h-8 rounded-lg text-[12.5px] font-medium transition-all border ${
                 isActive
                   ? 'bg-accent/15 text-accent border-accent/30'
-                  : 'border-line bg-white/[0.02] text-mute hover:text-white hover:bg-white/[0.04] hover:border-line2'
+                  : 'border-line bg-bg text-mute hover:text-slate-800 hover:bg-card-hover hover:border-line2'
               }`}
             >
               {c.emoji} {c.label}
@@ -148,7 +148,7 @@ export default function ServicesPage() {
 
       {/* CEO & Co-owner only notice */}
       {!isCeoOrCoowner && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-line text-[12.5px] text-mute">
+        <div className="mb-4 px-4 py-2.5 rounded-xl bg-bg border border-line text-[12.5px] text-mute">
           Подключение и отключение сервисов доступно только руководству
         </div>
       )}
@@ -172,14 +172,14 @@ export default function ServicesPage() {
                   <div className="flex items-center gap-2">
                     {s.url && (
                       <a href={s.url} target="_blank" rel="noopener noreferrer" 
-                        className="w-7 h-7 rounded-full bg-white/[0.03] hover:bg-white/[0.08] flex items-center justify-center text-mute hover:text-white transition-colors"
+                        className="w-7 h-7 rounded-full bg-black/[0.03] hover:bg-black/[0.07] flex items-center justify-center text-mute hover:text-slate-800 transition-colors"
                         title="Открыть сайт"
                       >
                         <ExternalLink size={13} />
                       </a>
                     )}
                     <span className={`text-[10.5px] font-semibold px-2 h-5 rounded-full inline-flex items-center ${
-                      loadingDb ? 'bg-white/[0.05] text-mute' : isOn ? 'bg-ok/15 text-ok' : 'bg-white/[0.05] text-mute'
+                      loadingDb ? 'bg-black/[0.05] text-mute' : isOn ? 'bg-ok/15 text-ok' : 'bg-black/[0.05] text-mute'
                     }`}>
                       {loadingDb ? '…' : isOn ? '● Подключён' : '○ Отключён'}
                     </span>

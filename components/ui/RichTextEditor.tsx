@@ -41,9 +41,9 @@ export function RichTextEditor({
   const handleMention = () => insertFormat('@', '')
 
   return (
-    <div className="border border-border rounded-xl bg-bg-soft overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-blue-500/50 transition-shadow">
+    <div className="border border-border rounded-xl bg-bg-soft overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-accent/50 transition-shadow">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 border-b border-border p-2 bg-[#171821]">
+      <div className="flex items-center gap-1 border-b border-border p-2 bg-bg">
         <button 
           type="button" 
           onClick={handleBold} 

@@ -287,7 +287,7 @@ export function Header({ title, subtitle }: HeaderProps) {
       <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={() => setSidebarOpen(true)}
-          className="lg:hidden w-10 h-10 rounded-xl border border-line bg-white/[0.025] text-mute hover:text-white inline-flex items-center justify-center shrink-0"
+          className="lg:hidden w-10 h-10 rounded-xl border border-line bg-card text-mute hover:text-slate-800 hover:bg-card-hover inline-flex items-center justify-center shrink-0 transition-colors"
         >
           <Menu size={18} />
         </button>
@@ -310,17 +310,17 @@ export function Header({ title, subtitle }: HeaderProps) {
             onChange={e => { setQuery(e.target.value); setShowResults(true) }}
             onFocus={() => setShowResults(true)}
             placeholder="Поиск задач, людей, проектов…"
-            className="w-[200px] xl:w-[280px] h-10 pl-10 pr-8 bg-white/[0.025] border border-line rounded-xl text-[13px] placeholder:text-mute2 focus:border-accent focus:bg-white/[0.04] outline-none transition-all duration-200"
+            className="w-[200px] xl:w-[280px] h-10 pl-10 pr-8 bg-card border border-line rounded-xl text-[13px] text-slate-800 placeholder:text-mute focus:border-accent focus:bg-card-hover outline-none transition-all duration-200"
           />
           {query && (
             <button onClick={() => { setQuery(''); setResults([]) }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-white">
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-slate-800">
               <X size={14} />
             </button>
           )}
 
           {showResults && query.trim().length >= 2 && (
-            <div className="absolute right-0 top-full mt-2 w-[320px] bg-[#151829] border border-line rounded-2xl shadow-2xl z-50 overflow-hidden animate-pop-in">
+            <div className="absolute right-0 top-full mt-2 w-[320px] bg-card border border-line rounded-2xl shadow-2xl z-50 overflow-hidden animate-pop-in">
               {searching && (
                 <div className="flex items-center justify-center gap-2 py-6 text-mute text-[13px]">
                   <Loader2 size={14} className="animate-spin" /> Поиск…
@@ -331,11 +331,11 @@ export function Header({ title, subtitle }: HeaderProps) {
               )}
               {!searching && results.map(r => (
                 <button key={`${r.kind}-${r.id}`} onClick={() => goToResult(r)}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-all text-left border-b border-line/40 last:border-0">
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-card-hover transition-all text-left border-b border-line/40 last:border-0">
                   {r.kind === 'user' ? (
                     <Avatar initials={getInitials(r.label)} color={colorFor(r.label)} size={30} />
                   ) : (
-                    <div className="w-[30px] h-[30px] rounded-lg bg-white/[0.05] border border-line inline-flex items-center justify-center text-mute shrink-0">
+                    <div className="w-[30px] h-[30px] rounded-lg bg-bg border border-line inline-flex items-center justify-center text-mute shrink-0">
                       {r.kind === 'task' ? <CheckSquare size={14} /> : <Folder size={14} />}
                     </div>
                   )}
@@ -353,7 +353,7 @@ export function Header({ title, subtitle }: HeaderProps) {
         </div>
 
         {/* Search mobile */}
-        <button className="md:hidden w-10 h-10 rounded-xl border border-line bg-white/[0.025] text-mute hover:text-white inline-flex items-center justify-center">
+        <button className="md:hidden w-10 h-10 rounded-xl border border-line bg-card text-mute hover:text-slate-800 hover:bg-card-hover inline-flex items-center justify-center transition-colors">
           <Search size={17} />
         </button>
 
@@ -364,7 +364,7 @@ export function Header({ title, subtitle }: HeaderProps) {
             className={`relative w-10 h-10 rounded-xl border transition inline-flex items-center justify-center ${
               showNotifs
                 ? 'border-accent/40 bg-accent/10 text-accent'
-                : 'border-line bg-white/[0.025] text-mute hover:text-white hover:border-line2'
+                : 'border-line bg-card text-mute hover:text-slate-800 hover:bg-card-hover hover:border-line2'
             }`}
           >
             <Bell size={17} />

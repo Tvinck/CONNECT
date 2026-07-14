@@ -113,7 +113,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
   return (
     <Modal onClose={onClose} className="relative bg-bg text-[#171821] border border-line rounded-2xl w-full max-w-[800px] flex flex-col shadow-2xl animate-modal-in my-auto overflow-hidden p-0">
       {/* Header Profile */}
-      <div className="p-6 border-b border-line bg-white/[0.01]">
+      <div className="p-6 border-b border-line bg-bg">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <Avatar initials={getInitials(sub.username)} color={colorFor(sub.username)} size={56} />
@@ -136,15 +136,15 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
 
         {/* Telegram Quests Status */}
         <div className="mt-5 flex items-center gap-3">
-          <div className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1.5 ${sub.tg_bot_linked ? 'bg-ok/10 border-ok/20 text-ok' : 'bg-white/[0.02] border-line text-mute'}`}>
+          <div className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1.5 ${sub.tg_bot_linked ? 'bg-ok/10 border-ok/20 text-ok' : 'bg-bg border-line text-mute'}`}>
             {sub.tg_bot_linked ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
             TG Бот {sub.tg_bot_linked ? 'Привязан' : 'Не привязан'}
           </div>
-          <div className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1.5 ${sub.tg_channel_subscribed ? 'bg-ok/10 border-ok/20 text-ok' : 'bg-white/[0.02] border-line text-mute'}`}>
+          <div className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold inline-flex items-center gap-1.5 ${sub.tg_channel_subscribed ? 'bg-ok/10 border-ok/20 text-ok' : 'bg-bg border-line text-mute'}`}>
             {sub.tg_channel_subscribed ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
             TG Канал {sub.tg_channel_subscribed ? 'Подписан' : 'Не подписан'}
           </div>
-          <div className="px-3 py-1.5 rounded-lg border border-line bg-white/[0.02] text-mute text-[11px] font-bold inline-flex items-center gap-1.5">
+          <div className="px-3 py-1.5 rounded-lg border border-line bg-bg text-mute text-[11px] font-bold inline-flex items-center gap-1.5">
             <Activity size={13} />
             Лимит: {sub.ip_limit || 3} устр.
           </div>
@@ -156,7 +156,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
         {/* Left Column */}
         <div className="space-y-6">
           {/* Traffic Management */}
-          <div className="card p-4 bg-white/[0.01]">
+          <div className="card p-4 bg-bg">
             <h3 className="text-[13px] font-semibold flex items-center gap-2 mb-4">
               <Activity size={14} className="text-accent" />
               Управление трафиком
@@ -167,7 +167,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
                 <span>Использовано: {usedGb} GiB</span>
                 <span>Лимит: {limitGb} {sub.traffic_limit && 'GiB'}</span>
               </div>
-              <div className="h-2 w-full bg-white/[0.04] rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-black/[0.06] rounded-full overflow-hidden">
                 <div className="h-full bg-accent" style={{ width: `${progressPercent}%` }} />
               </div>
             </div>
@@ -187,7 +187,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
           </div>
 
           {/* IP Limit Management */}
-          <div className="card p-4 bg-white/[0.01]">
+          <div className="card p-4 bg-bg">
             <h3 className="text-[13px] font-semibold flex items-center gap-2 mb-4">
               <Users size={14} className="text-accent" />
               Лимит устройств (IP)
@@ -209,7 +209,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
           </div>
 
           {/* Block / Unblock */}
-          <div className="card p-4 bg-white/[0.01]">
+          <div className="card p-4 bg-bg">
             <h3 className="text-[13px] font-semibold flex items-center gap-2 mb-3">
               {isBlocked ? <ShieldCheck size={14} className="text-ok" /> : <ShieldAlert size={14} className="text-err" />}
               Доступ к сети
@@ -233,7 +233,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
         {/* Right Column */}
         <div className="space-y-6">
           {/* Related Orders */}
-          <div className="card p-4 bg-white/[0.01]">
+          <div className="card p-4 bg-bg">
             <h3 className="text-[13px] font-semibold flex items-center gap-2 mb-3">
               <CreditCard size={14} className="text-ok" />
               История платежей
@@ -243,7 +243,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
             ) : (
               <div className="space-y-2 max-h-[160px] overflow-y-auto pr-2">
                 {relatedOrders.map(o => (
-                  <div key={o.id} className="flex items-center justify-between p-2.5 rounded-lg border border-line bg-white/[0.01]">
+                  <div key={o.id} className="flex items-center justify-between p-2.5 rounded-lg border border-line bg-bg">
                     <div>
                       <div className="text-[13px] font-bold text-ok">+{o.amount} {o.currency}</div>
                       <div className="text-[11px] text-mute mt-0.5">{new Date(o.created_at).toLocaleDateString('ru-RU')} • {o.tariff_months} мес.</div>
@@ -258,7 +258,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
           </div>
 
           {/* Related Subscriptions */}
-          <div className="card p-4 bg-white/[0.01]">
+          <div className="card p-4 bg-bg">
             <h3 className="text-[13px] font-semibold flex items-center gap-2 mb-3">
               <Users size={14} className="text-accent" />
               Другие подписки аккаунта
@@ -268,7 +268,7 @@ export function ManageVpnSubModal({ sub, allSubs, allOrders, onClose, onUpdate }
             ) : (
               <div className="space-y-2 max-h-[140px] overflow-y-auto pr-2">
                 {relatedSubs.map(s => (
-                  <div key={s.id} className="flex flex-col p-2.5 rounded-lg border border-line bg-white/[0.01]">
+                  <div key={s.id} className="flex flex-col p-2.5 rounded-lg border border-line bg-bg">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[12px] font-mono text-mute2 truncate max-w-[150px]">{s.subscription_key}</span>
                       <Tag tone={s.status === 'active' ? 'ok' : 'err'}>{s.status}</Tag>

@@ -55,10 +55,10 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#151829] border border-line rounded-2xl w-full max-w-[400px] shadow-2xl overflow-hidden animate-modal-in">
+      <div className="relative bg-card border border-line rounded-2xl w-full max-w-[400px] shadow-lg overflow-hidden animate-modal-in">
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-[16px] font-bold tracking-tight">Подтверждение покупки</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-white hover:bg-white/[0.06] transition-all inline-flex items-center justify-center">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-mute hover:text-slate-800 hover:bg-black/[0.05] transition-all inline-flex items-center justify-center">
             <X size={16} />
           </button>
         </div>
@@ -68,7 +68,7 @@ function ConfirmModal({
             <div className="text-[17px] font-bold tracking-tight">{item.title}</div>
             {item.description && <div className="text-[13px] text-mute mt-1">{item.description}</div>}
           </div>
-          <div className="rounded-xl bg-white/[0.04] border border-line p-4 space-y-2">
+          <div className="rounded-xl bg-bg border border-line p-4 space-y-2">
             <div className="flex justify-between text-[13px]">
               <span className="text-mute">Стоимость</span>
               <span className="font-bold text-gold">{item.price} баллов</span>
@@ -161,11 +161,11 @@ export default function ShopPage() {
         subtitle={viewTab === 'internal' ? `Баланс: ${user?.points ?? 0} баллов` : 'Управление товарами GGSel'}
       />
 
-      <div className="flex items-center gap-2 mb-6 p-1 bg-white/[0.02] border border-line rounded-xl w-fit">
+      <div className="flex items-center gap-2 mb-6 p-1 bg-card border border-line rounded-xl w-fit">
         <button
           onClick={() => setViewTab('internal')}
           className={`h-9 px-5 rounded-lg text-[13px] font-semibold transition-all ${
-            viewTab === 'internal' ? 'bg-accent text-white shadow-sm' : 'text-mute hover:text-white'
+            viewTab === 'internal' ? 'bg-brand text-[#171821] shadow-sm' : 'text-mute hover:text-slate-800'
           }`}
         >
           Внутренние товары
@@ -190,8 +190,8 @@ export default function ShopPage() {
             <button key={cat} onClick={() => setCategory(cat)}
               className={`h-8 px-4 rounded-full text-[12.5px] font-medium transition-all border ${
                 category === cat
-                  ? 'text-white border-transparent'
-                  : 'text-mute border-line hover:border-line2 hover:text-white'
+                  ? 'text-slate-800 border-transparent'
+                  : 'text-mute border-line hover:border-line2 hover:text-slate-800'
               }`}
               style={category === cat ? { background: `${meta.color}28`, borderColor: `${meta.color}60`, color: meta.color } : {}}
             >
@@ -262,7 +262,7 @@ export default function ShopPage() {
                       className={`flex items-center gap-1.5 h-8 px-4 rounded-xl text-[12.5px] font-semibold transition-all ${
                         canAfford
                           ? 'bg-accent/15 text-accent hover:bg-accent hover:text-white border border-accent/30 hover:border-accent'
-                          : 'bg-white/[0.04] text-mute border border-line cursor-not-allowed'
+                          : 'bg-black/[0.04] text-mute border border-line cursor-not-allowed'
                       }`}
                     >
                       <ShoppingBag size={13} />
@@ -294,7 +294,7 @@ export default function ShopPage() {
                 {purchases.slice(0, 10).map(p => {
                   const itm = items.find(i => i.id === p.item_id)
                   return (
-                    <tr key={p.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
+                    <tr key={p.id} className="border-b border-line last:border-0 hover:bg-black/[0.02] transition-colors">
                       <td className="px-5 py-3 font-medium">
                         {itm ? `${itm.icon} ${itm.title}` : '—'}
                       </td>

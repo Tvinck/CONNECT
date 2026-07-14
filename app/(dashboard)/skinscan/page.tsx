@@ -14,6 +14,7 @@ import { FilterSidebar } from '@/components/skinscan/FilterSidebar'
 import { SKIN_DATABASE } from '@/lib/skinscan/skinDatabase'
 import { getSteamCdnUrl, getSkinBasePrice } from '@/lib/skinscan/utils'
 import { Flame, Star, Sparkles, Trophy, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react'
+import { MobileMenuButton } from '@/components/layout/MobileMenuButton'
 
 const CATEGORIES = [
   { id: 'all', name: 'Все скины', icon: '🔥' },
@@ -196,10 +197,14 @@ export default function SkinScanHome() {
   )
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8 animate-in fade-in duration-500">
+    <>
+      <div className="lg:hidden px-4 pt-4">
+        <MobileMenuButton />
+      </div>
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8 animate-in fade-in duration-500">
       
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1C1D2A] via-[#151622] to-[#1C1D2A] border border-white/[0.05] p-6 md:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
+      <div className="relative overflow-hidden rounded-card bg-gradient-to-r from-[#1C1D2A] via-[#151622] to-[#1C1D2A] border border-white/[0.05] p-6 md:p-10 shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#1472F5]/[0.03] rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple/[0.03] rounded-full blur-[100px] pointer-events-none" />
         
@@ -249,7 +254,7 @@ export default function SkinScanHome() {
       </div>
 
       {/* Global search */}
-      <div className="bg-[#1C1D2A] border border-white/[0.04] p-5 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+      <div className="bg-card border border-line p-5 rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.06)]">
         <SearchBar onSelect={handleSelect} />
       </div>
 
@@ -258,7 +263,7 @@ export default function SkinScanHome() {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-[#1472F5]" />
-            <h2 className="text-[13px] uppercase tracking-wider text-[#5A5D7F] font-bold">
+            <h2 className="text-[13px] uppercase tracking-wider text-mute font-bold">
               Популярные хайлайты
             </h2>
           </div>
@@ -326,7 +331,7 @@ export default function SkinScanHome() {
         <div className="flex-1 w-full space-y-5">
           
           {/* Categories top bar */}
-          <div className="flex flex-wrap gap-2 border-b border-white/[0.04] pb-4">
+          <div className="flex flex-wrap gap-2 border-b border-line pb-4">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
@@ -334,7 +339,7 @@ export default function SkinScanHome() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all border ${
                   selectedCategory === cat.id
                     ? 'bg-[#1472F5] text-white font-bold border-[#1472F5] shadow-[0_0_15px_rgba(20,114,245,0.25)]'
-                    : 'bg-[#1C1D2A] text-[#8E92BC] hover:text-white border-white/[0.02] hover:bg-white/[0.01]'
+                    : 'bg-card text-mute hover:text-slate-800 border-line hover:bg-card-hover'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -344,12 +349,12 @@ export default function SkinScanHome() {
           </div>
 
           {/* Sorting, currency, and mobile filter toggle */}
-          <div className="bg-[#1C1D2A] border border-white/[0.04] p-4.5 rounded-2xl flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3.5 shadow-sm">
+          <div className="bg-card border border-line p-4.5 rounded-2xl flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3.5 shadow-sm">
             <div className="flex flex-wrap items-center gap-3">
               {/* Mobile Filter Button */}
               <button
                 onClick={() => setIsMobileDrawerOpen(true)}
-                className="flex lg:hidden items-center gap-2 px-4 py-2 bg-[#13141C] border border-white/[0.08] text-slate-200 hover:text-white rounded-xl text-xs font-bold transition-all"
+                className="flex lg:hidden items-center gap-2 px-4 py-2 bg-bg border border-line text-slate-700 hover:text-slate-800 rounded-xl text-xs font-bold transition-all"
               >
                 <SlidersHorizontal size={14} className="text-[#1472F5]" />
                 <span>Фильтры</span>
@@ -359,33 +364,33 @@ export default function SkinScanHome() {
               </button>
 
               {/* Sorting selector */}
-              <div className="flex items-center gap-2 bg-[#13141C] border border-white/[0.08] px-3.5 py-2 rounded-xl">
-                <ArrowUpDown size={12} className="text-[#8E92BC]" />
+              <div className="flex items-center gap-2 bg-bg border border-line px-3.5 py-2 rounded-xl">
+                <ArrowUpDown size={12} className="text-mute" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-transparent text-xs text-[#8E92BC] hover:text-white font-bold outline-none cursor-pointer pr-1"
+                  className="bg-transparent text-xs text-mute hover:text-slate-800 font-bold outline-none cursor-pointer pr-1"
                 >
-                  <option value="popularity" className="bg-[#1C1D2A]">Популярность</option>
-                  <option value="name" className="bg-[#1C1D2A]">Название (А-Я)</option>
-                  <option value="priceAsc" className="bg-[#1C1D2A]">Сначала дешевые</option>
-                  <option value="priceDesc" className="bg-[#1C1D2A]">Сначала дорогие</option>
+                  <option value="popularity" className="bg-card text-slate-800">Популярность</option>
+                  <option value="name" className="bg-card text-slate-800">Название (А-Я)</option>
+                  <option value="priceAsc" className="bg-card text-slate-800">Сначала дешевые</option>
+                  <option value="priceDesc" className="bg-card text-slate-800">Сначала дорогие</option>
                 </select>
               </div>
             </div>
 
             {/* Currency toggle */}
             <div className="flex items-center justify-between sm:justify-end gap-3.5">
-              <span className="text-[11px] text-[#8E92BC] font-semibold uppercase tracking-wider hidden xs:inline">
+              <span className="text-[11px] text-mute font-semibold uppercase tracking-wider hidden xs:inline">
                 Валюта:
               </span>
-              <div className="inline-flex rounded-xl bg-[#13141C] p-1 border border-white/[0.06]">
+              <div className="inline-flex rounded-xl bg-bg p-1 border border-line">
                 <button
                   onClick={() => setCurrency('RUB')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     currency === 'RUB'
                       ? 'bg-[#1472F5] text-white shadow-md'
-                      : 'text-[#8E92BC] hover:text-white'
+                      : 'text-mute hover:text-slate-800'
                   }`}
                 >
                   ₽ RUB
@@ -395,7 +400,7 @@ export default function SkinScanHome() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     currency === 'USD'
                       ? 'bg-[#1472F5] text-white shadow-md'
-                      : 'text-[#8E92BC] hover:text-white'
+                      : 'text-mute hover:text-slate-800'
                   }`}
                 >
                   $ USD
@@ -405,9 +410,9 @@ export default function SkinScanHome() {
           </div>
 
           {/* Results Count & active filter tags */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#8E92BC] py-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-mute py-1">
             <span className="font-medium">
-              Показано скинов: <span className="text-white font-semibold">{Math.min(displayedSkins.length, sortedSkins.length)}</span> из <span className="text-white font-semibold">{sortedSkins.length}</span>
+              Показано скинов: <span className="text-slate-800 font-semibold">{Math.min(displayedSkins.length, sortedSkins.length)}</span> из <span className="text-slate-800 font-semibold">{sortedSkins.length}</span>
             </span>
 
             {/* Clear Filters indicator */}
@@ -442,17 +447,17 @@ export default function SkinScanHome() {
               })}
             </div>
           ) : (
-            <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl p-16 text-center text-[#8E92BC] flex flex-col items-center justify-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-white/[0.02] border border-white/[0.04] flex items-center justify-center text-slate-500 text-lg">
+            <div className="bg-card border border-line rounded-2xl p-16 text-center text-mute flex flex-col items-center justify-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-bg border border-line flex items-center justify-center text-slate-500 text-lg">
                 ❓
               </div>
               <div>
-                <p className="text-white font-bold text-[14px]">Ничего не найдено</p>
-                <p className="text-xs text-[#5A5D7F] mt-1">Попробуйте смягчить ценовой диапазон или сбросить фильтры.</p>
+                <p className="text-slate-800 font-bold text-[14px]">Ничего не найдено</p>
+                <p className="text-xs text-mute mt-1">Попробуйте смягчить ценовой диапазон или сбросить фильтры.</p>
               </div>
               <button
                 onClick={handleResetFilters}
-                className="mt-3 px-4 py-2 bg-[#1472F5] hover:bg-blue-600 text-white font-bold text-xs rounded-xl transition-all"
+                className="mt-3 px-4 py-2 bg-brand hover:bg-brand-hover text-[#171821] font-bold text-xs rounded-xl transition-all"
               >
                 Сбросить фильтры
               </button>
@@ -464,7 +469,7 @@ export default function SkinScanHome() {
             <div className="flex justify-center pt-6">
               <button
                 onClick={() => setVisibleCount((prev) => prev + 24)}
-                className="px-6 py-3 bg-[#1C1D2A] hover:bg-white/[0.06] text-white hover:text-[#1472F5] font-semibold text-xs rounded-xl border border-white/[0.04] transition-all"
+                className="px-6 py-3 bg-card hover:bg-card-hover text-slate-800 hover:text-[#1472F5] font-semibold text-xs rounded-xl border border-line transition-all"
               >
                 Загрузить ещё (+24 скина)
               </button>
@@ -482,14 +487,14 @@ export default function SkinScanHome() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           />
           {/* Drawer content panel */}
-          <div className="relative w-full max-w-[340px] h-full bg-[#13141C] border-l border-white/[0.08] flex flex-col p-5 overflow-y-auto animate-in slide-in-from-right duration-250 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-5">
-              <div className="text-[14px] font-bold text-white uppercase tracking-wider">
+          <div className="relative w-full max-w-[340px] h-full bg-bg border-l border-line flex flex-col p-5 overflow-y-auto animate-in slide-in-from-right duration-250 shadow-2xl">
+            <div className="flex items-center justify-between pb-4 border-b border-line mb-5">
+              <div className="text-[14px] font-bold text-slate-800 uppercase tracking-wider">
                 Фильтры
               </div>
               <button
                 onClick={() => setIsMobileDrawerOpen(false)}
-                className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-[#8E92BC] hover:text-white transition-all"
+                className="p-1.5 rounded-lg bg-black/[0.04] hover:bg-black/[0.07] text-mute hover:text-slate-800 transition-all"
               >
                 <X size={16} />
               </button>
@@ -516,7 +521,7 @@ export default function SkinScanHome() {
 
             <button
               onClick={() => setIsMobileDrawerOpen(false)}
-              className="mt-6 w-full py-3 bg-[#1472F5] hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg transition-all text-center"
+              className="mt-6 w-full py-3 bg-brand hover:bg-brand-hover text-[#171821] font-bold text-xs rounded-xl shadow-lg transition-all text-center"
             >
               Применить ({sortedSkins.length} скинов)
             </button>
@@ -524,5 +529,6 @@ export default function SkinScanHome() {
         </div>
       )}
     </div>
+    </>
   )
 }

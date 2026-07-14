@@ -55,7 +55,7 @@ export function BazzarAnalyticsPanel() {
   const prevData = data.length > 1 ? data[data.length - 2] : currentData;
 
   const metrics = [
-    { label: 'Посетители', value: currentData.unique_visitors, icon: Users, color: 'text-blue-500' },
+    { label: 'Посетители', value: currentData.unique_visitors, icon: Users, color: 'text-accent'},
     { label: 'Регистрации', value: currentData.registrations, icon: Activity, color: 'text-purple-500' },
     { label: 'Просмотры', value: currentData.views, icon: Eye, color: 'text-orange-500' },
     { label: 'В корзине', value: currentData.add_to_cart, icon: ShoppingCart, color: 'text-pink-500' },

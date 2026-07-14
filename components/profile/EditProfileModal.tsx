@@ -23,7 +23,7 @@ const STATUS_OPTIONS: { value: UserStatus; label: string; color: string }[] = [
   { value: 'offline', label: 'Офлайн', color: '#5A6188' },
 ]
 
-const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
 const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
 export function EditProfileModal({ profile, onClose, onSaved }: Props) {
@@ -109,9 +109,9 @@ export function EditProfileModal({ profile, onClose, onSaved }: Props) {
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-accent hover:bg-[#2A82FF] inline-flex items-center justify-center shadow-lg transition-colors"
+              className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-brand hover:bg-brand-hover inline-flex items-center justify-center shadow-lg transition-colors"
             >
-              {uploading ? <Loader2 size={11} className="animate-spin text-white" /> : <Camera size={11} className="text-white" />}
+              {uploading ? <Loader2 size={11} className="animate-spin text-[#171821]" /> : <Camera size={11} className="text-[#171821]" />}
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
           </div>
@@ -147,8 +147,8 @@ export function EditProfileModal({ profile, onClose, onSaved }: Props) {
               <button key={opt.value} onClick={() => setStatus(opt.value)}
                 className={`flex-1 flex items-center justify-center gap-2 h-10 rounded-xl border text-[13px] font-medium transition-all ${
                   status === opt.value
-                    ? 'border-accent/50 bg-accent/10 text-white'
-                    : 'border-line bg-white/[0.02] text-mute hover:text-white hover:border-line2'
+                    ? 'border-accent/50 bg-accent/10 text-accent'
+                    : 'border-line bg-bg text-mute hover:text-slate-800 hover:border-line2'
                 }`}
               >
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ background: opt.color }} />

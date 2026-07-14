@@ -50,8 +50,8 @@ export const Links: React.FC<{
           {links.map(l => {
             const domain = domainOf(l.url);
             return (
-              <div key={l.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/[0.02] transition-colors group">
-                <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-line inline-flex items-center justify-center shrink-0 overflow-hidden">
+              <div key={l.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-black/[0.02] transition-colors group">
+                <div className="w-7 h-7 rounded-lg bg-black/[0.04] border border-line inline-flex items-center justify-center shrink-0 overflow-hidden">
                   {domain ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

@@ -17,7 +17,13 @@ const outfit = Outfit({
 })
 
 export const metadata: Metadata = {
-  title: 'CONNECT — BAZZAR Group',
+  title: {
+    // Each route's layout sets a short title; it's slotted into %s here so the
+    // browser tab reads e.g. "Задачи · CONNECT". Pages without their own title
+    // fall back to `default`.
+    template: '%s · CONNECT',
+    default: 'CONNECT — BAZZAR Group',
+  },
   description: 'Внутренняя платформа команды BAZZAR Group',
 }
 

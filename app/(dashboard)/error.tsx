@@ -47,7 +47,7 @@ export default function DashboardError({ error, reset }: Props) {
       {/* Action */}
       <button
         onClick={reset}
-        className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-white/[0.06] border border-line hover:border-line2 hover:bg-white/[0.08] text-[13px] font-semibold transition-all"
+        className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-bg border border-line hover:border-line2 hover:bg-card-hover text-[13px] font-semibold transition-all"
       >
         <RefreshCw size={15} /> Попробовать снова
       </button>

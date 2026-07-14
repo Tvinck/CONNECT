@@ -181,7 +181,7 @@ export default function MonitoringPage() {
                   </span>
                   {bar.latency > 0 && <span className="text-zinc-400 font-bold">{bar.latency}ms</span>}
                 </div>
-                <div className="text-[10px] text-zinc-500">
+                <div className="text-[10px] text-mute2">
                   {new Date(bar.timestamp).toLocaleString('ru-RU', {
                     month: 'short',
                     day: 'numeric',
@@ -241,8 +241,8 @@ export default function MonitoringPage() {
           />
         </div>
         <div className="flex flex-col items-center justify-center py-32 gap-3">
-          <RefreshCw className="animate-spin text-[#BFF128]" size={36} />
-          <span className="text-[13px] font-medium text-[#8E92BC]">Опрашиваем серверы, базы данных и процессы...</span>
+          <RefreshCw className="animate-spin text-[#6b8f00]" size={36} />
+          <span className="text-[13px] font-medium text-mute">Опрашиваем серверы, базы данных и процессы...</span>
         </div>
       </PageContainer>
     )
@@ -258,10 +258,10 @@ export default function MonitoringPage() {
             subtitle="Панель отслеживания стабильности сайтов, баз данных и фоновых процессов BAZZAR Group."
           />
         </div>
-        <div className="bg-[#1C1D2A] border border-red-500/20 rounded-2xl p-6 text-center shadow-xl max-w-lg mx-auto mt-10">
+        <div className="bg-card border border-red-500/20 rounded-2xl p-6 text-center shadow-lg max-w-lg mx-auto mt-10">
           <AlertCircle className="text-red-500 mx-auto mb-3" size={40} />
-          <h3 className="text-lg font-bold text-white mb-2">Не удалось загрузить данные</h3>
-          <p className="text-sm text-[#8E92BC] mb-4">{error || 'Пустой ответ от сервера'}</p>
+          <h3 className="text-lg font-bold text-slate-800 mb-2">Не удалось загрузить данные</h3>
+          <p className="text-sm text-mute mb-4">{error || 'Пустой ответ от сервера'}</p>
           <button
             onClick={() => fetchStatus()}
             className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition-all"
@@ -288,11 +288,11 @@ export default function MonitoringPage() {
         
         {/* Controls */}
         <div className="flex items-center gap-3 self-end md:self-center shrink-0">
-          <label className="text-[12px] font-semibold text-[#8E92BC] font-sans">Автообновление:</label>
+          <label className="text-[12px] font-semibold text-mute font-sans">Автообновление:</label>
           <select
             value={refreshInterval}
             onChange={(e) => setRefreshInterval(Number(e.target.value))}
-            className="h-9 px-3 rounded-lg text-xs bg-[#1C1D2A] border border-white/[0.08] text-white hover:border-white/20 focus:outline-none transition-all cursor-pointer font-medium"
+            className="h-9 px-3 rounded-lg text-xs bg-bg border border-line text-slate-800 hover:border-line2 focus:outline-none transition-all cursor-pointer font-medium"
           >
             <option value={15000}>Каждые 15 сек</option>
             <option value={30000}>Каждые 30 сек</option>
@@ -312,14 +312,14 @@ export default function MonitoringPage() {
         </div>
       </div>
 
-      <div className="space-y-6 text-zinc-100">
+      <div className="space-y-6 text-slate-800">
         {/* Outage Alerts Banner */}
         {outageList && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-start gap-3 shadow-md animate-pulse">
-            <AlertCircle size={20} className="text-red-400 shrink-0 mt-0.5" />
+            <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-red-400 text-[14px] font-bold">Некоторые службы требуют внимания!</h4>
-              <p className="text-red-300/80 text-[12px] mt-0.5 leading-snug">
+              <h4 className="text-red-600 text-[14px] font-bold">Некоторые службы требуют внимания!</h4>
+              <p className="text-red-500 text-[12px] mt-0.5 leading-snug">
                 Обнаружены сбои или недоступность в: {outageList.join(', ')}. Пожалуйста, проверьте состояние процессов и логи ниже.
               </p>
             </div>
@@ -328,10 +328,10 @@ export default function MonitoringPage() {
 
         {!outageList && (
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3 shadow-md">
-            <CheckCircle2 size={20} className="text-emerald-400 shrink-0 mt-0.5" />
+            <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <h4 className="text-emerald-400 text-[14px] font-bold">Все системы функционируют в штатном режиме</h4>
-              <p className="text-emerald-300/80 text-[12px] mt-0.5 leading-snug">
+              <h4 className="text-emerald-700 text-[14px] font-bold">Все системы функционируют в штатном режиме</h4>
+              <p className="text-emerald-600 text-[12px] mt-0.5 leading-snug">
                 Сайты, базы данных и VPN-службы активны. Нагрузка VPS находится в пределах нормы.
               </p>
             </div>
@@ -340,12 +340,12 @@ export default function MonitoringPage() {
 
         {/* Quick Metrics Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="bg-[#181824] border border-white/5 p-4 rounded-2xl flex items-center gap-4 shadow-xl">
+          <div className="bg-card border border-line p-4 rounded-2xl flex items-center gap-4 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
               <Globe size={18} />
             </div>
             <div>
-              <div className="text-[11px] text-[#8E92BC] uppercase tracking-wider font-semibold">Veil Веб-сайт</div>
+              <div className="text-[11px] text-mute uppercase tracking-wider font-semibold">Veil Веб-сайт</div>
               <div className="text-lg font-bold flex items-center gap-2 mt-0.5">
                 <span className={`w-2 h-2 rounded-full ${monitoringData.websites.veil_site.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                 {monitoringData.websites.veil_site.status === 'online' ? 'Онлайн' : 'Оффлайн'}
@@ -353,12 +353,12 @@ export default function MonitoringPage() {
             </div>
           </div>
 
-          <div className="bg-[#181824] border border-white/5 p-4 rounded-2xl flex items-center gap-4 shadow-xl">
-            <div className="w-10 h-10 rounded-xl bg-[#BFF128]/10 text-[#BFF128] flex items-center justify-center shrink-0">
+          <div className="bg-card border border-line p-4 rounded-2xl flex items-center gap-4 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-[#BFF128]/15 text-[#6b8f00] flex items-center justify-center shrink-0">
               <Server size={18} />
             </div>
             <div>
-              <div className="text-[11px] text-[#8E92BC] uppercase tracking-wider font-semibold">Veil VPS Сервер</div>
+              <div className="text-[11px] text-mute uppercase tracking-wider font-semibold">Veil VPS Сервер</div>
               <div className="text-lg font-bold flex items-center gap-2 mt-0.5">
                 <span className={`w-2 h-2 rounded-full ${monitoringData.vps.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                 {monitoringData.vps.status === 'online' ? 'Активен' : 'Оффлайн'}
@@ -366,12 +366,12 @@ export default function MonitoringPage() {
             </div>
           </div>
 
-          <div className="bg-[#181824] border border-white/5 p-4 rounded-2xl flex items-center gap-4 shadow-xl">
+          <div className="bg-card border border-line p-4 rounded-2xl flex items-center gap-4 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 flex items-center justify-center shrink-0">
               <Database size={18} />
             </div>
             <div>
-              <div className="text-[11px] text-[#8E92BC] uppercase tracking-wider font-semibold">БД (Connect CRM)</div>
+              <div className="text-[11px] text-mute uppercase tracking-wider font-semibold">БД (Connect CRM)</div>
               <div className="text-lg font-bold flex items-center gap-2 mt-0.5">
                 <span className={`w-2 h-2 rounded-full ${monitoringData.databases.connect_db.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                 {monitoringData.databases.connect_db.status === 'online' ? 'Доступна' : 'Сбой'}
@@ -379,12 +379,12 @@ export default function MonitoringPage() {
             </div>
           </div>
 
-          <div className="bg-[#181824] border border-white/5 p-4 rounded-2xl flex items-center gap-4 shadow-xl">
+          <div className="bg-card border border-line p-4 rounded-2xl flex items-center gap-4 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
               <Activity size={18} />
             </div>
             <div>
-              <div className="text-[11px] text-[#8E92BC] uppercase tracking-wider font-semibold">Активных служб PM2</div>
+              <div className="text-[11px] text-mute uppercase tracking-wider font-semibold">Активных служб PM2</div>
               <div className="text-lg font-bold mt-0.5">
                 {monitoringData.vps.processes.filter(p => p.status === 'online').length} / {monitoringData.vps.processes.length}
               </div>
@@ -394,63 +394,63 @@ export default function MonitoringPage() {
 
         {/* VPS Resource Usage Widgets */}
         {monitoringData.vps.status === 'online' && systemMetrics && (
-          <div className="bg-[#181824] border border-white/5 p-6 rounded-2xl shadow-xl">
+          <div className="bg-card border border-line p-6 rounded-2xl shadow-sm">
             <h3 className="text-md font-bold flex items-center gap-2 mb-4">
-              <Cpu size={16} className="text-[#BFF128]" /> Метрики VPS сервера (185.142.99.185)
+              <Cpu size={16} className="text-[#6b8f00]" /> Метрики VPS сервера (185.142.99.185)
             </h3>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* CPU Load */}
-              <div className="bg-[#161722] border border-white/5 p-4 rounded-xl">
-                <div className="flex justify-between text-xs mb-2 font-mono text-[#8E92BC]">
+              <div className="bg-bg border border-line p-4 rounded-xl">
+                <div className="flex justify-between text-xs mb-2 font-mono text-mute">
                   <span>Загрузка CPU (1 мин)</span>
-                  <span className="font-bold text-white">{(systemMetrics.loadAvg[0] * 100).toFixed(0)}%</span>
+                  <span className="font-bold text-slate-800">{(systemMetrics.loadAvg[0] * 100).toFixed(0)}%</span>
                 </div>
-                <div className="w-full bg-white/[0.04] h-2 rounded-full overflow-hidden border border-white/[0.05]">
+                <div className="w-full bg-black/[0.06] h-2 rounded-full overflow-hidden border border-line">
                   <div
                     className="bg-emerald-400 h-full rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, systemMetrics.loadAvg[0] * 100)}%` }}
                   />
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-zinc-500 font-mono mt-2">
+                <div className="flex justify-between items-center text-[10px] text-mute2 font-mono mt-2">
                   <span>Усредненная нагрузка:</span>
                   <span>{systemMetrics.loadAvg.map(l => l.toFixed(2)).join(', ')}</span>
                 </div>
               </div>
 
               {/* Memory Allocation */}
-              <div className="bg-[#161722] border border-white/5 p-4 rounded-xl">
-                <div className="flex justify-between text-xs mb-2 font-mono text-[#8E92BC]">
+              <div className="bg-bg border border-line p-4 rounded-xl">
+                <div className="flex justify-between text-xs mb-2 font-mono text-mute">
                   <span>Использование RAM</span>
-                  <span className="font-bold text-white">
+                  <span className="font-bold text-slate-800">
                     {formatBytes(systemMetrics.ram.used)} / {formatBytes(systemMetrics.ram.total)}
                   </span>
                 </div>
-                <div className="w-full bg-white/[0.04] h-2 rounded-full overflow-hidden border border-white/[0.05]">
+                <div className="w-full bg-black/[0.06] h-2 rounded-full overflow-hidden border border-line">
                   <div
                     className="bg-[#BFF128] h-full rounded-full transition-all duration-500"
                     style={{ width: `${(systemMetrics.ram.used / systemMetrics.ram.total) * 100}%` }}
                   />
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-zinc-500 font-mono mt-2">
+                <div className="flex justify-between items-center text-[10px] text-mute2 font-mono mt-2">
                   <span>Свободно RAM:</span>
                   <span>{formatBytes(systemMetrics.ram.free)}</span>
                 </div>
               </div>
 
               {/* Disk Space */}
-              <div className="bg-[#161722] border border-white/5 p-4 rounded-xl">
-                <div className="flex justify-between text-xs mb-2 font-mono text-[#8E92BC]">
+              <div className="bg-bg border border-line p-4 rounded-xl">
+                <div className="flex justify-between text-xs mb-2 font-mono text-mute">
                   <span>Занято на диске (/)</span>
-                  <span className="font-bold text-white">{systemMetrics.disk.percent}</span>
+                  <span className="font-bold text-slate-800">{systemMetrics.disk.percent}</span>
                 </div>
-                <div className="w-full bg-white/[0.04] h-2 rounded-full overflow-hidden border border-white/[0.05]">
+                <div className="w-full bg-black/[0.06] h-2 rounded-full overflow-hidden border border-line">
                   <div
                     className="bg-indigo-400 h-full rounded-full transition-all duration-500"
                     style={{ width: systemMetrics.disk.percent }}
                   />
                 </div>
-                <div className="flex justify-between items-center text-[10px] text-zinc-500 font-mono mt-2">
+                <div className="flex justify-between items-center text-[10px] text-mute2 font-mono mt-2">
                   <span>Свободно места:</span>
                   <span>{formatBytes(systemMetrics.disk.free)} / {formatBytes(systemMetrics.disk.total)}</span>
                 </div>
@@ -458,7 +458,7 @@ export default function MonitoringPage() {
             </div>
 
             {/* Service Status Sub-bar */}
-            <div className="flex flex-wrap items-center justify-between mt-5 pt-4 border-t border-white/[0.04] gap-4 text-xs font-mono text-zinc-400">
+            <div className="flex flex-wrap items-center justify-between mt-5 pt-4 border-t border-line gap-4 text-xs font-mono text-mute">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5">
                   Xray Service:
@@ -474,18 +474,18 @@ export default function MonitoringPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[11px]">
-                <Clock size={12} className="text-[#8E92BC]" />
+                <Clock size={12} className="text-mute" />
                 <span>Uptime сервера:</span>
-                <span className="text-white font-bold">{systemMetrics.uptime.split('up')[1]?.split(',')[0]?.trim() || 'N/A'}</span>
+                <span className="text-slate-800 font-bold">{systemMetrics.uptime.split('up')[1]?.split(',')[0]?.trim() || 'N/A'}</span>
               </div>
             </div>
           </div>
         )}
 
         {/* Web sites & Databases Uptime Section */}
-        <div className="bg-[#181824] border border-white/5 p-6 rounded-2xl shadow-xl space-y-6">
-          <h3 className="text-md font-bold flex items-center gap-2 pb-2 border-b border-white/[0.04]">
-            <Globe size={16} className="text-[#BFF128]" /> Статус веб-ресурсов и баз данных
+        <div className="bg-card border border-line p-6 rounded-2xl shadow-sm space-y-6">
+          <h3 className="text-md font-bold flex items-center gap-2 pb-2 border-b border-line">
+            <Globe size={16} className="text-[#6b8f00]" /> Статус веб-ресурсов и баз данных
           </h3>
 
           {/* Websites Grid */}
@@ -494,20 +494,20 @@ export default function MonitoringPage() {
               ...Object.entries(monitoringData.websites).map(([key, val]) => ({ ...val, type: 'Веб-сайт', label: val.name, ping: val.latency }),),
               ...Object.entries(monitoringData.databases).map(([key, val]) => ({ ...val, type: 'База данных', label: val.name, ping: val.latency }))
             ].map((item, index) => (
-              <div key={index} className="grid grid-cols-1 lg:grid-cols-[220px_1fr_100px] items-center gap-4 bg-[#161722] border border-white/5 p-4 rounded-xl">
+              <div key={index} className="grid grid-cols-1 lg:grid-cols-[220px_1fr_100px] items-center gap-4 bg-bg border border-line p-4 rounded-xl">
                 {/* Info Column */}
                 <div>
-                  <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold font-mono">{item.type}</div>
-                  <div className="text-[14px] font-bold text-white mt-0.5 truncate">{item.label}</div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-[#8E92BC] mt-1 font-mono">
+                  <div className="text-[10px] text-mute2 uppercase tracking-wider font-semibold font-mono">{item.type}</div>
+                  <div className="text-[14px] font-bold text-slate-800 mt-0.5 truncate">{item.label}</div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-mute mt-1 font-mono">
                     <span>Задержка:</span>
-                    <span className="text-white font-bold">{item.ping} мс</span>
+                    <span className="text-slate-800 font-bold">{item.ping} мс</span>
                   </div>
                 </div>
 
                 {/* Uptime timeline */}
                 <div>
-                  <div className="flex justify-between items-center text-[10.5px] text-[#8E92BC] font-mono mb-1">
+                  <div className="flex justify-between items-center text-[10.5px] text-mute font-mono mb-1">
                     <span>История аптайма (24ч)</span>
                     <span>Доступность: {calculateUptimePercent(item.history)}</span>
                   </div>
@@ -527,35 +527,35 @@ export default function MonitoringPage() {
         </div>
 
         {/* Processes (PM2) Monitoring & Log Viewer */}
-        <div className="bg-[#181824] border border-white/5 p-6 rounded-2xl shadow-xl space-y-6">
-          <h3 className="text-md font-bold flex items-center gap-2 pb-2 border-b border-white/[0.04]">
-            <Server size={16} className="text-[#BFF128]" /> Статус процессов PM2 на ноде
+        <div className="bg-card border border-line p-6 rounded-2xl shadow-sm space-y-6">
+          <h3 className="text-md font-bold flex items-center gap-2 pb-2 border-b border-line">
+            <Server size={16} className="text-[#6b8f00]" /> Статус процессов PM2 на ноде
           </h3>
 
           <div className="space-y-4">
             {monitoringData.vps.processes.map((proc, index) => {
               const isExpanded = !!expandedLogs[proc.name]
               return (
-                <div key={index} className="bg-[#161722] border border-white/5 rounded-xl overflow-hidden shadow-md">
+                <div key={index} className="bg-bg border border-line rounded-xl overflow-hidden shadow-md">
                   {/* Header bar */}
                   <div
-                    className="p-4 grid grid-cols-1 lg:grid-cols-[180px_1fr_120px_120px_120px_40px] items-center gap-4 cursor-pointer hover:bg-white/[0.02] transition-colors"
+                    className="p-4 grid grid-cols-1 lg:grid-cols-[180px_1fr_120px_120px_120px_40px] items-center gap-4 cursor-pointer hover:bg-black/[0.02] transition-colors"
                     onClick={() => toggleLogs(proc.name)}
                   >
                     {/* Name & PID */}
                     <div>
-                      <div className="text-[14px] font-bold text-white truncate flex items-center gap-2">
+                      <div className="text-[14px] font-bold text-slate-800 truncate flex items-center gap-2">
                         <span className={`w-2 h-2 rounded-full ${proc.status === 'online' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                         {proc.name}
                       </div>
-                      <div className="text-[10.5px] text-zinc-500 mt-1 font-mono">
+                      <div className="text-[10.5px] text-mute2 mt-1 font-mono">
                         PID: {proc.pid || 'N/A'} · Uptime: {formatUptimeDuration(proc.uptime)}
                       </div>
                     </div>
 
                     {/* Uptime bars */}
                     <div onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-between items-center text-[10.5px] text-[#8E92BC] font-mono mb-1">
+                      <div className="flex justify-between items-center text-[10.5px] text-mute font-mono mb-1">
                         <span>История аптайма (24ч)</span>
                         <span>Доступность: {calculateUptimePercent(proc.history)}</span>
                       </div>
@@ -564,27 +564,27 @@ export default function MonitoringPage() {
 
                     {/* CPU Usage */}
                     <div>
-                      <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold font-mono">Загрузка CPU</div>
-                      <div className="text-sm font-bold text-white mt-0.5 font-mono">{proc.cpu}%</div>
+                      <div className="text-[10px] text-mute2 uppercase tracking-wider font-semibold font-mono">Загрузка CPU</div>
+                      <div className="text-sm font-bold text-slate-800 mt-0.5 font-mono">{proc.cpu}%</div>
                     </div>
 
                     {/* RAM Allocation */}
                     <div>
-                      <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold font-mono">Память RAM</div>
-                      <div className="text-sm font-bold text-white mt-0.5 font-mono">{formatBytes(proc.memory)}</div>
+                      <div className="text-[10px] text-mute2 uppercase tracking-wider font-semibold font-mono">Память RAM</div>
+                      <div className="text-sm font-bold text-slate-800 mt-0.5 font-mono">{formatBytes(proc.memory)}</div>
                     </div>
 
                     {/* Restarts */}
                     <div>
-                      <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold font-mono">Перезапуски</div>
-                      <div className={`text-sm font-bold mt-0.5 font-mono ${proc.restarts > 5 ? 'text-amber-400' : 'text-white'}`}>
+                      <div className="text-[10px] text-mute2 uppercase tracking-wider font-semibold font-mono">Перезапуски</div>
+                      <div className={`text-sm font-bold mt-0.5 font-mono ${proc.restarts > 5 ? 'text-amber-500' : 'text-slate-800'}`}>
                         {proc.restarts}
                       </div>
                     </div>
 
                     {/* Chevron Toggle */}
                     <div className="flex justify-end">
-                      <button className="text-[#8E92BC] hover:text-white transition-colors">
+                      <button className="text-mute hover:text-slate-800 transition-colors">
                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                       </button>
                     </div>
@@ -592,15 +592,15 @@ export default function MonitoringPage() {
 
                   {/* Logs Collapsible */}
                   {isExpanded && (
-                    <div className="border-t border-white/[0.04] bg-black/20 p-4 animate-rise">
+                    <div className="border-t border-line bg-bg p-4 animate-rise">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-bold text-[#8E92BC] uppercase tracking-wider font-mono">Последние логи вывода и ошибок PM2:</span>
+                        <span className="text-[11px] font-bold text-mute uppercase tracking-wider font-mono">Последние логи вывода и ошибок PM2:</span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             handleCopyLogs(proc.name, proc.logs)
                           }}
-                          className="flex items-center gap-1 text-[11px] font-bold text-[#BFF128] bg-[#BFF128]/10 hover:bg-[#BFF128]/20 px-2.5 py-1 rounded transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-[#6b8f00] bg-[#BFF128]/10 hover:bg-[#BFF128]/20 px-2.5 py-1 rounded transition-colors"
                         >
                           {copiedLog === proc.name ? (
                             <>
@@ -618,7 +618,7 @@ export default function MonitoringPage() {
                         {proc.logs ? (
                           proc.logs.split('\n').map((line, idx) => renderLogLine(line, idx))
                         ) : (
-                          <div className="text-zinc-500 italic">Логи пусты или не найдены.</div>
+                          <div className="text-mute2 italic">Логи пусты или не найдены.</div>
                         )}
                       </div>
                     </div>

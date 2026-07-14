@@ -16,6 +16,8 @@ const config: Config = { darkMode: 'class',
         line:    'var(--color-line)',
         line2:   'var(--color-line2)',
         accent:  '#1472F5',
+        brand:   '#BFF128',
+        'brand-hover': '#C9F735',
         cyan:    '#00C2FF',
         ok:      '#22C55E',
         warn:    '#F59E0B',
@@ -28,10 +30,27 @@ const config: Config = { darkMode: 'class',
       fontFamily: {
         sans: ['var(--font-outfit)', 'Inter', 'system-ui', 'sans-serif'],
       },
+      // Canonical radius scale (single source of truth). Values match the
+      // radii already in use so this is visually a no-op; edit here to
+      // retune the whole app at once. Usage guide:
+      //   lg   (8px)  — small controls, chips, tiny badges
+      //   xl   (12px) — inputs, buttons, list rows
+      //   2xl  (16px) — inner cards, nested surfaces
+      //   card (24px) — panels, cards, modals
+      //   full        — pills, avatars, dots
+      borderRadius: {
+        lg:    '8px',
+        xl:    '12px',
+        '2xl': '16px',
+        card:  '24px',
+      },
       boxShadow: {
         glow:      '0 0 24px -4px rgba(20,114,245,0.45)',
         'glow-sm': '0 0 12px -2px rgba(20,114,245,0.35)',
         'glow-gold': '0 0 24px -6px rgba(255,200,51,0.5)',
+        // Brand (lime) glows — for primary actions / active states.
+        'glow-lime':    '0 0 24px -4px rgba(191,241,40,0.45)',
+        'glow-lime-sm': '0 0 12px -2px rgba(191,241,40,0.35)',
       },
       backgroundImage: {
         'grid-pattern':

@@ -105,7 +105,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
   return (
     <div className="space-y-6">
       {!isCeoOrCoowner && (
-        <div className="px-4 py-2.5 rounded-xl bg-white/[0.03] border border-line text-[12.5px] text-mute">
+        <div className="px-4 py-2.5 rounded-xl bg-bg border border-line text-[12.5px] text-mute">
           🔒 Редактирование цен и промокодов доступно только руководству.
         </div>
       )}
@@ -114,7 +114,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
         <h3 className="text-[15px] font-semibold mb-4">Продукты и цены</h3>
         <div className="space-y-3">
           {products.map(p => (
-            <div key={p.id} className={`rounded-xl border p-4 transition-colors ${editing === p.id ? 'border-accent/40 bg-accent/5' : 'border-line bg-white/[0.02]'}`}>
+            <div key={p.id} className={`rounded-xl border p-4 transition-colors ${editing === p.id ? 'border-accent/40 bg-accent/5' : 'border-line bg-bg'}`}>
               <div className="flex items-start gap-3">
                 <span className="text-[28px] shrink-0">{p.emoji}</span>
                 <div className="flex-1 min-w-0">
@@ -135,7 +135,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
                             type="number"
                             value={editPrice}
                             onChange={e => setEditPrice(e.target.value)}
-                            className="w-full h-9 px-3 rounded-xl bg-white/[0.04] border border-line focus:border-accent/60 outline-none text-[13.5px] font-bold tabular-nums"
+                            className="w-full h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] font-bold tabular-nums"
                           />
                         </div>
                         <div>
@@ -144,7 +144,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
                             type="number"
                             value={editCost}
                             onChange={e => setEditCost(e.target.value)}
-                            className="w-full h-9 px-3 rounded-xl bg-white/[0.04] border border-line focus:border-accent/60 outline-none text-[13.5px] tabular-nums"
+                            className="w-full h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] tabular-nums"
                           />
                         </div>
                       </div>
@@ -208,10 +208,10 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
 
         <div className="space-y-2 mb-4">
           {promos.map(promo => (
-            <div key={promo.id} className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.025] border border-line rounded-xl">
+            <div key={promo.id} className="flex items-center gap-3 px-4 py-2.5 bg-bg border border-line rounded-xl">
               <code className="text-[14px] font-bold font-mono text-accent">{promo.code}</code>
               {promo.source && (
-                <span className="text-[10.5px] px-1.5 h-4 rounded bg-white/[0.06] text-mute font-medium">{promo.source}</span>
+                <span className="text-[10.5px] px-1.5 h-4 rounded bg-black/[0.06] text-mute font-medium">{promo.source}</span>
               )}
               <div className="flex-1" />
               <span className="text-[13px] font-semibold text-ok">−{promo.discount}%</span>
@@ -219,7 +219,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
               <button
                 onClick={() => copyCode(promo.code)}
                 title="Скопировать"
-                className="text-mute hover:text-white transition-colors"
+                className="text-mute hover:text-slate-800 transition-colors"
                 aria-label="Скопировать промокод"
               >
                 {copiedCode === promo.code
@@ -246,7 +246,7 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
               value={newCode}
               onChange={e => setNewCode(e.target.value.toUpperCase())}
               placeholder="КОД"
-              className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] font-mono font-bold placeholder:font-normal placeholder:text-mute2"
+              className="w-36 h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] font-mono font-bold placeholder:font-normal placeholder:text-mute2"
             />
             <input
               type="number"
@@ -255,13 +255,13 @@ export function SettingsTab({ products: initialProducts, initialPromos }: Props)
               placeholder="Скидка %"
               min={1}
               max={99}
-              className="w-24 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px]"
+              className="w-24 h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px]"
             />
             <input
               value={newSource}
               onChange={e => setNewSource(e.target.value.toLowerCase())}
               placeholder="Канал (avito, vk...)"
-              className="w-36 h-9 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
+              className="w-36 h-9 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
             />
             <Button size="sm" onClick={addPromo} disabled={savingPromo}>
               {savingPromo ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}

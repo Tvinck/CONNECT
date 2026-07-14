@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Calendar, CreditCard, ArrowUpRight, ArrowDownLeft, Search } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { getInitials, colorFor } from '@/lib/utils'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 interface PixelTransactionsProps {
   initialTransactions: any[]
@@ -68,7 +69,7 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
           <select
             value={filterType}
             onChange={e => setFilterType(e.target.value)}
-            className="h-8 px-2.5 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+            className="h-8 px-2.5 rounded-lg border border-line bg-bg text-[12.5px] text-mute hover:text-slate-800 transition-all outline-none"
           >
             <option value="all">Все транзакции</option>
             <option value="deposit">Пополнения</option>
@@ -89,7 +90,7 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
-        <div className="rounded-xl bg-white/[0.015] border border-line p-3.5 flex items-center justify-between">
+        <div className="rounded-xl bg-bg border border-line p-3.5 flex items-center justify-between">
           <div>
             <div className="text-[10.5px] text-mute2 uppercase tracking-[0.05em] font-semibold mb-1">Всего зачислено</div>
             <div className="text-[17px] font-black text-ok font-mono">+{totals.deposit} ⚡</div>
@@ -98,7 +99,7 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
             <ArrowUpRight size={16} />
           </div>
         </div>
-        <div className="rounded-xl bg-white/[0.015] border border-line p-3.5 flex items-center justify-between">
+        <div className="rounded-xl bg-bg border border-line p-3.5 flex items-center justify-between">
           <div>
             <div className="text-[10.5px] text-mute2 uppercase tracking-[0.05em] font-semibold mb-1">Всего списано</div>
             <div className="text-[17px] font-black text-err font-mono">-{totals.charge} ⚡</div>
@@ -107,7 +108,7 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
             <ArrowDownLeft size={16} />
           </div>
         </div>
-        <div className="rounded-xl bg-white/[0.015] border border-line p-3.5 flex items-center justify-between">
+        <div className="rounded-xl bg-bg border border-line p-3.5 flex items-center justify-between">
           <div>
             <div className="text-[10.5px] text-mute2 uppercase tracking-[0.05em] font-semibold mb-1">Всего возвращено</div>
             <div className="text-[17px] font-black text-accent font-mono">+{totals.refund} ⚡</div>
@@ -133,8 +134,8 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
           <tbody className="divide-y divide-line/30">
             {filteredTxs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-mute">
-                  Транзакций не найдено
+                <td colSpan={5}>
+                  <EmptyState icon={CreditCard} title="Транзакций не найдено" description="История платежей и пополнений появится здесь." />
                 </td>
               </tr>
             ) : (
@@ -144,7 +145,7 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
                 const amountVal = Math.abs(Number(t.amount || 0))
                 
                 return (
-                  <tr key={t.id} className="hover:bg-white/[0.01] transition-colors">
+                  <tr key={t.id} className="hover:bg-black/[0.02] transition-colors">
                     <td className="py-3 pr-4 font-semibold flex items-center gap-2">
                       <Avatar
                         initials={getInitials(t.user?.first_name || t.user?.username || 'User')}
@@ -160,7 +161,7 @@ export function PixelTransactions({ initialTransactions }: PixelTransactionsProp
                     <td className={`py-3 px-4 font-bold font-mono ${isDeposit ? 'text-ok' : isRefund ? 'text-accent' : 'text-err'}`}>
                       {isDeposit ? '+' : isRefund ? '+' : '-'}{amountVal} ⚡
                     </td>
-                    <td className="py-3 px-4 text-white max-w-[250px] truncate" title={t.description}>
+                    <td className="py-3 px-4 text-slate-800 max-w-[250px] truncate" title={t.description}>
                       {t.description || 'Без описания'}
                     </td>
                     <td className="py-3 px-4">

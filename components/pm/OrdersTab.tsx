@@ -104,7 +104,7 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Email, имя, ID заказа..."
-            className="w-full h-9 pl-8 pr-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
+            className="w-full h-9 pl-8 pr-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2"
           />
         </div>
 
@@ -112,7 +112,7 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
         <select
           value={prodFilter}
           onChange={e => setProdFilter(e.target.value)}
-          className="h-9 px-3 rounded-xl bg-white/[0.03] border border-line outline-none text-[12.5px] text-mute"
+          className="h-9 px-3 rounded-xl bg-bg border border-line outline-none text-[12.5px] text-mute"
         >
           <option value="all">Все продукты</option>
           {products.map(p => <option key={p.id} value={p.id}>{p.emoji} {p.name}</option>)}
@@ -122,7 +122,7 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
         <select
           value={genFilter}
           onChange={e => setGenFilter(e.target.value as GenStatus | 'all')}
-          className="h-9 px-3 rounded-xl bg-white/[0.03] border border-line outline-none text-[12.5px] text-mute"
+          className="h-9 px-3 rounded-xl bg-bg border border-line outline-none text-[12.5px] text-mute"
         >
           <option value="all">Весь статус генерации</option>
           {(['pending','processing','done','failed','manual'] as GenStatus[]).map(s =>
@@ -133,7 +133,7 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
         <button
           onClick={exportCsv}
           title={`Экспорт ${filtered.length} заказов в CSV`}
-          className="h-9 px-3 rounded-xl border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center gap-1.5 text-[12.5px] transition-colors"
+          className="h-9 px-3 rounded-xl border border-line text-mute hover:text-slate-800 hover:border-line2 inline-flex items-center gap-1.5 text-[12.5px] transition-colors"
         >
           <Download size={13} /> CSV ({filtered.length})
         </button>
@@ -148,7 +148,7 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
             className={`h-7 px-3 rounded-lg text-[12px] font-medium border transition-colors
               ${payFilter === f
                 ? 'bg-accent/20 border-accent/40 text-accent'
-                : 'border-line bg-white/[0.02] text-mute hover:text-white'}`}
+                : 'border-line bg-bg text-mute hover:text-slate-800'}`}
           >
             {PAY_FILTER_LABEL[f]}
             <span className="ml-1.5 opacity-60">
@@ -169,8 +169,8 @@ export function OrdersTab({ orders: initialOrders, products }: Props) {
               <button
                 key={order.id}
                 onClick={() => setSelected(order)}
-                className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors hover:bg-white/[0.03]
-                  ${stuck ? 'border-amber-500/30 bg-amber-500/5' : 'border-line bg-white/[0.015]'}`}
+                className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors hover:bg-black/[0.03]
+                  ${stuck ? 'border-amber-500/30 bg-amber-500/5' : 'border-line bg-bg'}`}
               >
                 {/* Stuck indicator */}
                 {stuck && <AlertTriangle size={14} className="text-amber-400 shrink-0" />}

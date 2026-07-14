@@ -12,7 +12,7 @@ export function StatCardInteractive({ children }: { children: React.ReactNode })
     <TiltCard className="h-full">
       <div 
         ref={cardRef} 
-        className="relative overflow-hidden h-full group rounded-[24px] border border-line bg-card p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] transition-all duration-200 hover:border-line2 hover:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)]"
+        className="relative overflow-hidden h-full group rounded-card border border-line bg-card p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] transition-all duration-200 hover:border-line2 hover:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)]"
       >
         <span
           style={{

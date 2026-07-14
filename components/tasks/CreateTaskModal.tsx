@@ -382,7 +382,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                 type="button"
                 onClick={() => setTool('pen')}
                 className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                  tool === 'pen' ? 'bg-accent text-white' : 'text-mute hover:bg-line/60'
+                  tool === 'pen' ? 'bg-brand text-[#171821]' : 'text-mute hover:bg-line/60'
                 }`}
                 title="Рисовать кистью"
               >
@@ -392,7 +392,7 @@ export function CreateTaskModal({ projects, users, onClose, onCreated, initialPr
                 type="button"
                 onClick={() => setTool('text')}
                 className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                  tool === 'text' ? 'bg-accent text-white' : 'text-mute hover:bg-line/60'
+                  tool === 'text' ? 'bg-brand text-[#171821]' : 'text-mute hover:bg-line/60'
                 }`}
                 title="Добавить текст (кликните на холст)"
               >

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PackageSearch, Plus, Tag, ToggleLeft, ToggleRight, Edit2, Trash2, Loader2, X, Save } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { getBazzarProducts, toggleProductStatus, createBazzarProduct, updateBazzarProduct, deleteBazzarProduct } from '@/app/actions/bazzar';
 
 export function BazzarProductsPanel() {
@@ -104,7 +105,7 @@ export function BazzarProductsPanel() {
         </div>
         
         <button 
-          className="flex items-center gap-1.5 px-4 py-2.5 bg-accent hover:bg-accent/80 text-white text-[13px] font-medium rounded-xl transition-all"
+          className="flex items-center gap-1.5 px-4 py-2.5 bg-brand hover:bg-brand/90 text-[#171821] text-[13px] font-medium rounded-xl transition-all"
           onClick={() => openModal()}
         >
           <Plus className="w-4 h-4" />
@@ -133,7 +134,7 @@ export function BazzarProductsPanel() {
 
       <div className="card overflow-hidden">
         <table className="w-full text-left text-[13px]">
-          <thead className="bg-white/[0.01] text-mute border-b border-line text-[11px] uppercase tracking-[0.05em]">
+          <thead className="bg-bg text-mute border-b border-line text-[11px] uppercase tracking-[0.05em]">
             <tr>
               <th className="py-3 px-4 font-semibold">Название</th>
               <th className="py-3 px-4 font-semibold">Категория</th>
@@ -148,8 +149,12 @@ export function BazzarProductsPanel() {
               <tr>
                 <td colSpan={6} className="py-10 text-center"><Loader2 className="w-5 h-5 animate-spin text-mute mx-auto" /></td>
               </tr>
+            ) : products.length === 0 ? (
+              <tr>
+                <td colSpan={6}><EmptyState icon={PackageSearch} title="Товаров пока нет" description="Добавьте первый товар, чтобы он появился здесь." /></td>
+              </tr>
             ) : products.map(p => (
-              <tr key={p.id} className="hover:bg-white/[0.015] transition-colors">
+              <tr key={p.id} className="hover:bg-black/[0.02] transition-colors">
                 <td className="py-3 px-4 font-medium text-foreground flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-black/[0.04] dark:bg-white/[0.04] flex items-center justify-center overflow-hidden text-[16px]">
                     {p.image ? (
@@ -176,10 +181,10 @@ export function BazzarProductsPanel() {
                 </td>
                 <td className="py-3 px-3 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={() => openModal(p)} className="p-1.5 text-mute hover:text-foreground rounded-md transition-colors">
+                    <button onClick={() => openModal(p)} className="p-1.5 text-mute hover:text-foreground rounded-lg transition-colors">
                       <Edit2 size={14} />
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="p-1.5 text-mute hover:text-err rounded-md transition-colors">
+                    <button onClick={() => handleDelete(p.id)} className="p-1.5 text-mute hover:text-err rounded-lg transition-colors">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -291,7 +296,7 @@ export function BazzarProductsPanel() {
               <button onClick={() => setModalOpen(false)} className="px-4 py-2 rounded-lg text-[13px] font-medium text-mute hover:bg-black/[0.05] dark:hover:bg-white/[0.05] transition-colors">
                 Отмена
               </button>
-              <button onClick={saveProduct} disabled={saving} className="px-4 py-2 rounded-lg text-[13px] font-medium bg-accent text-white hover:bg-accent/90 transition-colors flex items-center gap-2">
+              <button onClick={saveProduct} disabled={saving} className="px-4 py-2 rounded-lg text-[13px] font-medium bg-brand text-[#171821] hover:bg-accent/90 transition-colors flex items-center gap-2">
                 {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                 Сохранить
               </button>

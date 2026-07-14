@@ -80,7 +80,7 @@ function AudioPlayer({ url, title }: { url: string; title?: string | null }) {
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 bg-white/[0.03] rounded-xl border border-line">
+    <div className="flex items-center gap-3 px-3 py-2 bg-bg rounded-xl border border-line">
       <button
         onClick={toggle}
         className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0 hover:bg-accent/80 transition-colors"
@@ -91,7 +91,7 @@ function AudioPlayer({ url, title }: { url: string; title?: string | null }) {
         {title && <div className="text-[12px] font-medium truncate mb-1">{title}</div>}
         <div className="flex items-center gap-2">
           <div
-            className="flex-1 h-1 bg-white/[0.08] rounded-full cursor-pointer"
+            className="flex-1 h-1 bg-black/[0.08] rounded-full cursor-pointer"
             onClick={e => {
               const rect = e.currentTarget.getBoundingClientRect()
               const pct  = (e.clientX - rect.left) / rect.width
@@ -103,7 +103,7 @@ function AudioPlayer({ url, title }: { url: string; title?: string | null }) {
           <span className="text-[10px] text-mute shrink-0 tabular-nums">{fmt(progress)}/{fmt(duration)}</span>
         </div>
       </div>
-      <a href={url} download className="text-mute hover:text-white transition-colors">
+      <a href={url} download className="text-mute hover:text-slate-800 transition-colors">
         <Download size={14} />
       </a>
       <audio
@@ -165,7 +165,7 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
     onClose()
   }
 
-  const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+  const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
   const LABEL  = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
   return (
@@ -195,7 +195,7 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
                 className={`px-3 py-2.5 rounded-xl border text-left transition-colors
                   ${model === m.id
                     ? 'border-accent/60 bg-accent/10 text-accent'
-                    : 'border-line bg-white/[0.02] text-mute hover:border-line2'}`}
+                    : 'border-line bg-bg text-mute hover:border-line2'}`}
               >
                 <div className="text-[12.5px] font-semibold">{m.label}</div>
                 <div className="text-[10.5px] opacity-70">{m.desc}</div>
@@ -205,7 +205,7 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
         </div>
 
         {/* Instrumental toggle */}
-        <label className="flex items-center justify-between px-4 py-3 rounded-xl bg-white/[0.025] border border-line cursor-pointer hover:bg-white/[0.03] transition-colors">
+        <label className="flex items-center justify-between px-4 py-3 rounded-xl bg-bg border border-line cursor-pointer hover:bg-black/[0.03] transition-colors">
           <div className="flex items-center gap-2">
             {instrumental ? <MicOff size={15} className="text-mute2" /> : <Mic size={15} className="text-accent" />}
             <div>
@@ -215,7 +215,7 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
               </div>
             </div>
           </div>
-          <div className={`w-10 h-5.5 rounded-full transition-colors relative ${instrumental ? 'bg-accent' : 'bg-white/[0.08]'}`}>
+          <div className={`w-10 h-5.5 rounded-full transition-colors relative ${instrumental ? 'bg-accent' : 'bg-black/[0.08]'}`}>
             <div className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white transition-transform shadow-sm ${instrumental ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
           </div>
           <input type="checkbox" checked={instrumental} onChange={e => setInstrumental(e.target.checked)} className="sr-only" />
@@ -252,7 +252,7 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
                 className={`h-6 px-2.5 rounded-lg text-[11px] font-medium border transition-colors
                   ${style.split(',').map(x => x.trim()).includes(s)
                     ? 'border-accent/50 bg-accent/15 text-accent'
-                    : 'border-line text-mute hover:border-line2 hover:text-white'}`}
+                    : 'border-line text-mute hover:border-line2 hover:text-slate-800'}`}
               >
                 {s}
               </button>
@@ -275,7 +275,7 @@ function GenerateModal({ onClose, onStarted }: { onClose: () => void; onStarted:
             placeholder={instrumental
               ? 'Опиши настроение и тематику музыки...\nПример: Весёлая, праздничная, для дня рождения, с оркестром'
               : 'Напиши текст песни или опиши тематику...\nПример:\n[Verse]\nСегодня день рождения мамы\nОна любит цветы и улыбки\n[Chorus]\nС днём рождения, мамочка!'}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all resize-none font-mono"
+            className="w-full px-3.5 py-2.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] placeholder:text-mute2 transition-all resize-none font-mono"
           />
           <div className="text-[11px] text-mute2 mt-1.5">
             Используй [Verse], [Chorus], [Bridge] для структуры или просто опиши тематику — ИИ сам напишет слова.
@@ -306,7 +306,7 @@ function CopyId({ id }: { id: string }) {
   return (
     <button
       onClick={copy}
-      className="mt-1.5 flex items-center gap-1 text-[10px] text-mute2 font-mono hover:text-white transition-colors group"
+      className="mt-1.5 flex items-center gap-1 text-[10px] text-mute2 font-mono hover:text-slate-800 transition-colors group"
     >
       <span className="group-hover:underline">ID: {id}</span>
       {copied
@@ -334,7 +334,7 @@ function TaskCard({
       task.status === 'done'   ? 'border-ok/30 bg-ok/5'  :
       task.status === 'failed' ? 'border-err/30 bg-err/5' :
       isActive                 ? 'border-accent/30 bg-accent/5' :
-      'border-line bg-white/[0.02]'
+      'border-line bg-bg'
     }`}>
       <div className="flex items-start gap-3">
         {/* Cover art — external Kie.ai URL, next/image not applicable */}
@@ -342,7 +342,7 @@ function TaskCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={task.image_url} alt={task.title ?? ''} className="w-12 h-12 rounded-xl object-cover shrink-0" />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-black/[0.06] flex items-center justify-center shrink-0">
             <Music size={18} className="text-mute2" />
           </div>
         )}
@@ -364,7 +364,7 @@ function TaskCard({
 
           {/* Meta */}
           <div className="text-[11.5px] text-mute space-x-2">
-            <span className="font-mono bg-white/[0.04] px-1.5 py-0.5 rounded text-[10.5px]">{task.model}</span>
+            <span className="font-mono bg-black/[0.04] px-1.5 py-0.5 rounded text-[10.5px]">{task.model}</span>
             {task.style && <span>· {task.style}</span>}
             {task.instrumental && <span>· инструментал</span>}
             {task.duration && <span>· {task.duration}с</span>}
@@ -383,7 +383,7 @@ function TaskCard({
             <button
               onClick={() => task.task_id && onPoll(task.task_id)}
               title="Обновить статус"
-              className="w-7 h-7 rounded-lg border border-line flex items-center justify-center text-mute hover:text-white hover:border-line2 transition-colors"
+              className="w-7 h-7 rounded-lg border border-line flex items-center justify-center text-mute hover:text-slate-800 hover:border-line2 transition-colors"
             >
               <RefreshCw size={12} />
             </button>
@@ -492,7 +492,7 @@ export function KieTab({ initialTasks }: Props) {
         <div className="card p-4 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] text-mute2 uppercase tracking-wider font-semibold">Баланс Kie.ai</div>
-            <button onClick={fetchCredits} className="text-mute hover:text-white transition-colors" title="Обновить">
+            <button onClick={fetchCredits} className="text-mute hover:text-slate-800 transition-colors" title="Обновить">
               {creditsLoad ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
             </button>
           </div>
@@ -501,7 +501,7 @@ export function KieTab({ initialTasks }: Props) {
               <AlertCircle size={13} /> {creditsErr}
             </div>
           ) : credits === null ? (
-            <div className="h-7 w-20 bg-white/[0.04] rounded animate-pulse" />
+            <div className="h-7 w-20 bg-black/[0.04] rounded animate-pulse" />
           ) : (
             <>
               <div className="flex items-end gap-1.5">
@@ -561,7 +561,7 @@ export function KieTab({ initialTasks }: Props) {
               className={`h-7 px-3 rounded-lg text-[11.5px] font-medium border transition-colors
                 ${filterStatus === s
                   ? 'bg-accent/20 border-accent/40 text-accent'
-                  : 'border-line text-mute hover:text-white'}`}
+                  : 'border-line text-mute hover:text-slate-800'}`}
             >
               {s === 'all' ? `Все (${tasks.length})`
                : s === 'pending'    ? `Ожидание (${tasks.filter(t => t.status === 'pending').length})`
@@ -580,7 +580,7 @@ export function KieTab({ initialTasks }: Props) {
           <div className="text-[15px] font-semibold mb-2">Генерация ИИ-музыки через Kie.ai</div>
           <div className="text-[13px] text-mute max-w-md mx-auto mb-4">
             Kie.ai — доступный прокси к Suno. Генерация песни стоит ~20 кредитов (~2 ₽).
-            Добавь ключ <code className="bg-white/[0.06] px-1.5 py-0.5 rounded text-accent">KIE_AI_KEY</code> в .env.local, затем нажми «Сгенерировать песню».
+            Добавь ключ <code className="bg-black/[0.06] px-1.5 py-0.5 rounded text-accent">KIE_AI_KEY</code> в .env.local, затем нажми «Сгенерировать песню».
           </div>
           <div className="flex items-start gap-6 justify-center text-left text-[12.5px]">
             {[

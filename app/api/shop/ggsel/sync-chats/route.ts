@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     }
 
     let insertedCount = 0;
-    let errors: any[] = [];
+    const errors: any[] = [];
 
     for (const chat of chatsData.items) {
        const msgsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2?token=${loginData.token}&id_i=${chat.id_i}`, {

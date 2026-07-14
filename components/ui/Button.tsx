@@ -43,11 +43,11 @@ export function Button({
     <button
       ref={ref}
       className={cn(
-        'relative overflow-hidden inline-flex items-center justify-center gap-2 font-semibold tracking-tight transition-all duration-200 transform hover:scale-[1.02] active:scale-95 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[#07091A] disabled:opacity-40 disabled:cursor-not-allowed group',
+        'relative overflow-hidden inline-flex items-center justify-center gap-2 font-semibold tracking-tight transition-all duration-200 transform hover:scale-[1.02] active:scale-95 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:ring-offset-1 focus-visible:ring-offset-white disabled:opacity-40 disabled:cursor-not-allowed group',
         {
-          'bg-accent hover:bg-[#2A82FF] text-white shadow-glow': variant === 'primary',
-          'border border-line hover:border-line2 bg-white/[0.02] hover:bg-white/[0.04] text-mute hover:text-white': variant === 'ghost',
-          'border border-line2 bg-transparent hover:bg-white/[0.04] text-white': variant === 'outline',
+          'bg-brand hover:bg-brand-hover text-[#171821] shadow-glow-lime': variant === 'primary',
+          'border border-line hover:border-line2 bg-card hover:bg-card-hover text-mute hover:text-slate-800': variant === 'ghost',
+          'border border-line2 bg-transparent hover:bg-card-hover text-slate-800': variant === 'outline',
         },
         {
           'h-8 px-3 text-xs': size === 'sm',

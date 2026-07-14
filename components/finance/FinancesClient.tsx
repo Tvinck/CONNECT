@@ -24,6 +24,7 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
 import { Modal } from '@/components/ui/Modal'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
@@ -57,8 +58,8 @@ export const TX_CATEGORIES: Record<string, { label: string; color: string }> = {
   other:          { label: 'Прочее',           color: '#8B92B4' },
 }
 
-const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
-const SELECT = 'w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
+const FIELD  = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+const SELECT = 'w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] transition-all'
 const LABEL  = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
 // ─── AddTransactionModal (exported for ProjectDetail) ────────────────────────
@@ -126,13 +127,13 @@ export function AddTransactionModal({
     >
       <div className="space-y-4">
         {/* Type toggle */}
-        <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-white/[0.03] border border-line">
+        <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-bg border border-line">
           {(['income', 'expense'] as const).map(t => (
             <button key={t} type="button" onClick={() => setTxType(t)}
               className={`h-9 rounded-lg text-[13px] font-semibold transition-all ${
                 txType === t
                   ? t === 'income' ? 'bg-ok/20 text-ok border border-ok/30' : 'bg-err/20 text-err border border-err/30'
-                  : 'text-mute hover:text-white'
+                  : 'text-mute hover:text-slate-800'
               }`}>
               {t === 'income' ? '↑ Доход' : '↓ Расход'}
             </button>
@@ -300,11 +301,11 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
               <span className="text-[10px] text-mute uppercase tracking-widest">К выводу</span>
             </div>
           </div>
-          <div className="text-[28px] font-bold tabular-nums text-white relative z-10">
+          <div className="text-[28px] font-bold tabular-nums text-slate-800 relative z-10">
             14 550 <span className="text-[18px] text-mute font-medium">₽</span>
           </div>
           <div className="text-[11.5px] text-mute mt-2 pt-2 border-t border-line flex justify-between items-center relative z-10">
-            <span>В холде: <span className="text-white font-medium">4 200 ₽</span></span>
+            <span>В холде: <span className="text-slate-800 font-medium">4 200 ₽</span></span>
             <button className="text-[#FF9900] font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer">
               Вывести
             </button>
@@ -318,7 +319,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
         <select
           value={filterType}
           onChange={e => { setFilterType(e.target.value as typeof filterType); setPage(0) }}
-          className="h-9 px-3 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+          className="h-9 px-3 rounded-lg border border-line bg-bg text-[12.5px] text-mute hover:text-slate-800 transition-all outline-none"
         >
           <option value="all">Все типы</option>
           <option value="income">Доходы</option>
@@ -327,7 +328,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
         <select
           value={filterProject}
           onChange={e => { setFilterProject(e.target.value); setPage(0) }}
-          className="h-9 px-3 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+          className="h-9 px-3 rounded-lg border border-line bg-bg text-[12.5px] text-mute hover:text-slate-800 transition-all outline-none"
         >
           <option value="">Все проекты</option>
           {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -338,10 +339,10 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(0) }}
             placeholder="Поиск по описанию…"
-            className="w-full h-9 pl-8 pr-7 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-white placeholder:text-mute2 outline-none focus:border-accent/60 transition-all"
+            className="w-full h-9 pl-8 pr-7 rounded-lg border border-line bg-bg text-[12.5px] text-slate-800 placeholder:text-mute2 outline-none focus:border-accent/60 transition-all"
           />
           {search && (
-            <button onClick={() => { setSearch(''); setPage(0) }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-white">
+            <button onClick={() => { setSearch(''); setPage(0) }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-mute2 hover:text-slate-800">
               <X size={12} />
             </button>
           )}
@@ -352,9 +353,11 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
       {/* Transactions table */}
       <div className="card overflow-x-auto">
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-mute text-[13px]">
-            {txList.length === 0 ? 'Транзакций пока нет — добавьте первую' : 'Ничего не найдено'}
-          </div>
+          <EmptyState
+            emoji={txList.length === 0 ? '💰' : '🔍'}
+            title={txList.length === 0 ? 'Транзакций пока нет' : 'Ничего не найдено'}
+            description={txList.length === 0 ? 'Добавьте первую транзакцию — доход или расход.' : 'Попробуйте изменить фильтры.'}
+          />
         ) : (
           <table className="w-full min-w-[640px]">
             <thead>
@@ -372,7 +375,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
               {pageRows.map(t => {
                 const cat = TX_CATEGORIES[t.category] ?? TX_CATEGORIES.other
                 return (
-                  <tr key={t.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
+                  <tr key={t.id} className="border-b border-line last:border-0 hover:bg-black/[0.02] transition-colors">
                     <td className="px-5 py-3.5 text-[12.5px] text-mute font-mono whitespace-nowrap">
                       {formatDate(t.date)}
                     </td>
@@ -417,7 +420,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
                             </button>
                             <button
                               onClick={() => setConfirmDelete(null)}
-                              className="text-[11px] text-mute px-1.5 h-6 rounded hover:text-white transition-colors"
+                              className="text-[11px] text-mute px-1.5 h-6 rounded hover:text-slate-800 transition-colors"
                             >
                               Отмена
                             </button>
@@ -450,7 +453,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-slate-800 hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -458,7 +461,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
                 ? Array.from({ length: totalPages }, (_, i) => (
                     <button key={i} onClick={() => setPage(i)}
                       className={`w-7 h-7 rounded-lg text-[12px] font-semibold transition-all ${
-                        i === page ? 'bg-accent text-white' : 'border border-line text-mute hover:text-white'
+                        i === page ? 'bg-brand text-[#171821]' : 'border border-line text-mute hover:text-slate-800'
                       }`}>
                       {i + 1}
                     </button>
@@ -468,7 +471,7 @@ export function FinancesClient({ initialTransactions, projects }: Props) {
               <button
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1}
-                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-white hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg border border-line text-mute hover:text-slate-800 hover:border-line2 inline-flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <ChevronRight size={14} />
               </button>

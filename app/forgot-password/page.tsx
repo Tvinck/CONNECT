@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-12 rounded-xl bg-accent hover:bg-[#2A82FF] text-white font-semibold text-[14px] shadow-glow transition-all disabled:opacity-70"
+                  className="w-full h-12 rounded-xl bg-brand hover:bg-brand-hover text-[#171821] font-semibold text-[14px] shadow-glow-lime transition-all disabled:opacity-70"
                 >
                   {loading ? 'Отправляем…' : 'Отправить ссылку'}
                 </button>

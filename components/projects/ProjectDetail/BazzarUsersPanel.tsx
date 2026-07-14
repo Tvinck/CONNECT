@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Users, Search, Smartphone, ShieldCheck, HelpCircle, Clock, CheckCircle2, Loader2 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { getBazzarUsers } from '@/app/actions/bazzar';
 
 export function BazzarUsersPanel() {
@@ -30,19 +31,19 @@ export function BazzarUsersPanel() {
     switch(status) {
       case 'bought':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold bg-ok/10 text-ok border border-ok/20">
+          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-ok/10 text-ok border border-ok/20">
             <ShieldCheck size={12} /> Купил сертификат
           </span>
         );
       case 'thinking':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold bg-mute2/10 text-mute2 border border-mute2/20">
+          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-mute2/10 text-mute2 border border-mute2/20">
             <HelpCircle size={12} /> В раздумьях
           </span>
         );
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold bg-accent/10 text-accent border border-accent/20">
+          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold bg-accent/10 text-accent border border-accent/20">
             <Clock size={12} /> Ожидает выдачи
           </span>
         );
@@ -161,7 +162,7 @@ export function BazzarUsersPanel() {
               ))}
               {!loading && filteredUsers.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-10 text-center text-mute">Ничего не найдено</td>
+                  <td colSpan={4}><EmptyState icon={Users} title="Пользователи не найдены" description="Зарегистрированные пользователи появятся здесь." /></td>
                 </tr>
               )}
             </tbody>

@@ -518,14 +518,14 @@ export function OnboardingFlow({ role, name }: Props) {
           {isLast ? (
             <button
               onClick={dismiss}
-              className="inline-flex items-center gap-2 h-10 px-6 rounded-xl bg-accent hover:bg-[#2A82FF] text-white text-[13.5px] font-semibold shadow-glow transition-all"
+              className="inline-flex items-center gap-2 h-10 px-6 rounded-xl bg-brand hover:bg-brand-hover text-[#171821] text-[13.5px] font-semibold shadow-glow-lime transition-all"
             >
               Начать работу 🚀
             </button>
           ) : (
             <button
               onClick={() => setStep(s => s + 1)}
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-accent hover:bg-[#2A82FF] text-white text-[13px] font-semibold shadow-glow transition-all"
+              className="inline-flex items-center gap-2 h-10 px-5 rounded-xl bg-brand hover:bg-brand-hover text-[#171821] text-[13px] font-semibold shadow-glow-lime transition-all"
             >
               Далее <ArrowRight size={14} />
             </button>

@@ -20,6 +20,7 @@ import { useAuthStore } from '@/store/auth'
 import { getInitials, colorFor } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { UserProfileModal } from '@/components/profile/UserProfileModal'
+import { MobileMenuButton } from '@/components/layout/MobileMenuButton'
 
 const EMOJI_QUICK = ['😀','😂','🔥','❤️','👍','👋','🎉','✅','💪','🤝','😊','🙏','💡','⚡','🚀','😅','🤔','👏','🫡','💯','😎','🌟','🔧','📦','💬','🗓️','✨','🎯','🤩','👀']
 
@@ -431,7 +432,8 @@ export default function ChatsPage() {
 
       {/* ── Channels sidebar ── */}
       <div className="w-[220px] shrink-0 border-r border-line flex flex-col bg-card">
-        <div className="px-4 py-4 border-b border-line">
+        <div className="px-4 py-4 border-b border-line flex items-center gap-2">
+          <MobileMenuButton className="!w-8 !h-8" />
           <h3 className="text-[13px] font-bold tracking-tight text-[#171821]">Чаты</h3>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
@@ -697,7 +699,7 @@ export default function ChatsPage() {
               </div>
               <button
                 onClick={e => { e.stopPropagation(); if (m.id !== user?.id) openDmWith(m) }}
-                className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-md text-mute hover:text-accent hover:bg-accent/10 inline-flex items-center justify-center transition-all shrink-0"
+                className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded-lg text-mute hover:text-accent hover:bg-accent/10 inline-flex items-center justify-center transition-all shrink-0"
               >
                 <MessageSquare size={11} />
               </button>

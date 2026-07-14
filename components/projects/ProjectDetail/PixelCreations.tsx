@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Search, Eye, Sparkles, X, Download, Film, Image as ImageIcon } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Modal } from '@/components/ui/Modal'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { getInitials, colorFor } from '@/lib/utils'
 
 interface PixelCreationsProps {
@@ -38,7 +39,7 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
       <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <h3 className="text-[16px] font-semibold">История генераций пользователей</h3>
-          <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
+          <span className="text-[11px] text-mute2 font-mono bg-black/[0.04] px-2 h-5 rounded-lg inline-flex items-center">
             {filteredCreations.length}
           </span>
         </div>
@@ -46,7 +47,7 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
           <select
             value={filterType}
             onChange={e => setFilterType(e.target.value)}
-            className="h-8 px-2.5 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+            className="h-8 px-2.5 rounded-lg border border-line bg-bg text-[12.5px] text-mute hover:text-slate-800 transition-all outline-none"
           >
             <option value="all">Все типы</option>
             <option value="image">Фото / Изображения</option>
@@ -65,9 +66,8 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
       </div>
 
       {filteredCreations.length === 0 ? (
-        <div className="text-center py-12 text-mute text-[13px]">
-          Генераций не найдено
-        </div>
+        <EmptyState icon={Sparkles} title="Генераций не найдено" description="Здесь появятся изображения и видео, сгенерированные пользователями." />
+
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filteredCreations.map(c => {
@@ -143,7 +143,7 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
                 href={activeMedia.image_url || activeMedia.result_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-accent hover:text-white transition-colors py-1 px-3 rounded-lg bg-accent/10 border border-accent/20"
+                className="inline-flex items-center gap-1 text-accent hover:text-slate-800 transition-colors py-1 px-3 rounded-lg bg-accent/10 border border-accent/20"
               >
                 <Download size={12} /> Скачать файл
               </a>
@@ -171,14 +171,14 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
             </div>
 
             {/* Prompt information */}
-            <div className="rounded-xl bg-white/[0.015] border border-line p-3.5 space-y-2">
+            <div className="rounded-xl bg-bg border border-line p-3.5 space-y-2">
               <div className="text-[10px] text-mute2 uppercase font-bold tracking-wider">Промпт</div>
-              <p className="text-[13px] leading-relaxed text-white font-medium">
+              <p className="text-[13px] leading-relaxed text-slate-800 font-medium">
                 {activeMedia.prompt || 'Без промпта'}
               </p>
               {activeMedia.model_id && (
                 <div className="text-[11px] text-mute flex items-center gap-1.5 mt-2">
-                  <span className="font-semibold bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[10px] uppercase">
+                  <span className="font-semibold bg-black/[0.04] border border-line px-1.5 py-0.5 rounded text-[10px] uppercase">
                     {activeMedia.model_id}
                   </span>
                   {activeMedia.metadata?.cost && (
@@ -189,7 +189,7 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
             </div>
 
             {/* Author card */}
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-line bg-white/[0.01]">
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-line bg-bg">
               <Avatar
                 initials={getInitials(activeMedia.user?.username || 'User')}
                 color={colorFor(activeMedia.user?.username || activeMedia.id)}
@@ -197,7 +197,7 @@ export function PixelCreations({ initialCreations }: PixelCreationsProps) {
                 src={activeMedia.user?.avatar_url}
               />
               <div>
-                <div className="text-[13px] font-bold text-white">
+                <div className="text-[13px] font-bold text-slate-800">
                   @{activeMedia.user?.username || 'пользователь'}
                 </div>
                 <div className="text-[11px] text-mute2">

@@ -66,12 +66,12 @@ export function GGSelProducts() {
           </thead>
           <tbody>
             {products.map(p => (
-              <tr key={p.id} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
+              <tr key={p.id} className="border-b border-line last:border-0 hover:bg-black/[0.02] transition-colors">
                 <td className="px-5 py-3.5 text-mute font-mono">{p.id}</td>
                 <td className="px-5 py-3.5 font-medium flex items-center gap-2">
                   <Package size={14} className="text-accent" />
                   {p.name}
-                  <a href={p.url} target="_blank" rel="noreferrer" className="text-mute hover:text-white transition-colors" title="Открыть на GGSel">
+                  <a href={p.url} target="_blank" rel="noreferrer" className="text-mute hover:text-slate-800 transition-colors" title="Открыть на GGSel">
                     <ExternalLink size={12} />
                   </a>
                 </td>
@@ -88,7 +88,7 @@ export function GGSelProducts() {
                 <td className="px-5 py-3.5 text-right">
                   <button 
                     onClick={() => handleEdit(p)}
-                    className="h-7 px-3 rounded-lg border border-line text-[11px] font-semibold text-mute hover:text-white hover:border-line2 transition-all flex items-center gap-1.5 ml-auto"
+                    className="h-7 px-3 rounded-lg border border-line text-[11px] font-semibold text-mute hover:text-slate-800 hover:border-line2 transition-all flex items-center gap-1.5 ml-auto"
                   >
                     <Edit2 size={11} /> Изменить
                   </button>
@@ -116,14 +116,14 @@ export function GGSelProducts() {
           <div className="space-y-4">
             <div>
               <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Название</label>
-              <input disabled value={editingProduct.name} className="w-full h-10 px-3.5 rounded-xl bg-white/[0.02] border border-line text-[13.5px] text-mute cursor-not-allowed" />
+              <input disabled value={editingProduct.name} className="w-full h-10 px-3.5 rounded-xl bg-bg border border-line text-[13.5px] text-mute cursor-not-allowed" />
             </div>
             <div>
               <label className="block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2">Цена (Руб)</label>
               <input 
                 value={editPrice} 
                 onChange={e => setEditPrice(e.target.value.replace(/[^0-9]/g, ''))}
-                className="w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all font-bold text-gold tabular-nums" 
+                className="w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all font-bold text-gold tabular-nums"
                 autoFocus
               />
             </div>

@@ -71,14 +71,14 @@ function processLine(line: string) {
     }
     if (part.startsWith('@')) {
       return (
-        <span key={idx} className="text-blue-500 font-semibold bg-blue-500/10 px-1 rounded mx-0.5">
+        <span key={idx} className="text-accent font-semibold bg-accent/10 px-1 rounded mx-0.5">
           {part}
         </span>
       )
     }
     if (part.startsWith('http://') || part.startsWith('https://')) {
       return (
-        <a key={idx} href={part} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline break-all">
+        <a key={idx} href={part} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all">
           {part}
         </a>
       )

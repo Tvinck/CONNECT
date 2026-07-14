@@ -56,32 +56,32 @@ export function PriceChart({ history }: PriceChartProps) {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#8E92BC' },
+        ticks: { color: '#7D81A0' },
       },
       y: {
-        grid: { color: 'rgba(255,255,255,0.05)' },
-        ticks: { color: '#8E92BC' },
+        grid: { color: 'rgba(0,0,0,0.06)' },
+        ticks: { color: '#7D81A0' },
       },
     },
   }
 
   return (
-    <div className="bg-[#1C1D2A] border border-white/[0.04] rounded-2xl p-5">
+    <div className="bg-card border border-line rounded-2xl p-5">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-white font-semibold text-[15px]">📈 Тренд цены</h3>
+        <h3 className="text-slate-800 font-semibold text-[15px]">📈 Тренд цены</h3>
         <div className="flex gap-2">
           <button
             onClick={() => setRange('7d')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              range === '7d' ? 'bg-[#BFF128]/20 text-[#BFF128]' : 'text-[#8E92BC] hover:bg-white/[0.04]'
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+              range === '7d' ? 'bg-[#BFF128]/20 text-[#6b8f00]' : 'text-mute hover:bg-black/[0.04]'
             }`}
           >
             7 дней
           </button>
           <button
             onClick={() => setRange('30d')}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              range === '30d' ? 'bg-[#BFF128]/20 text-[#BFF128]' : 'text-[#8E92BC] hover:bg-white/[0.04]'
+            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+              range === '30d' ? 'bg-[#BFF128]/20 text-[#6b8f00]' : 'text-mute hover:bg-black/[0.04]'
             }`}
           >
             30 дней

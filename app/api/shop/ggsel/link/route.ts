@@ -26,11 +26,13 @@ export async function POST(request: Request) {
     }
 
     // 1. Получаем заказ из базы
-    let { data: order, error: orderErr } = await supabase
+    const { data: initialOrder, error: orderErr } = await supabase
       .from('bazzar_orders')
       .select('*')
       .eq('uniquecode', uniquecode)
       .maybeSingle();
+
+    let order = initialOrder;
 
     if (orderErr) {
       console.error('[GGSel link] DB error:', orderErr.message);

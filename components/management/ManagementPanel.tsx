@@ -104,7 +104,7 @@ function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: (
     }
   }
 
-  const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
+  const FIELD = 'w-full h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all'
   const LABEL = 'block text-[11.5px] uppercase tracking-[0.1em] text-mute2 font-semibold mb-2'
 
   return (
@@ -127,7 +127,7 @@ function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: (
           <div className="text-5xl mb-4">🎉</div>
           <div className="text-[17px] font-bold mb-2">Сотрудник добавлен!</div>
           <div className="text-[13px] text-mute mb-1">{name} может войти через:</div>
-          <div className="rounded-xl bg-white/[0.04] border border-line px-4 py-3 text-[12.5px] font-mono space-y-1 text-left mt-3">
+          <div className="rounded-xl bg-black/[0.04] border border-line px-4 py-3 text-[12.5px] font-mono space-y-1 text-left mt-3">
             <div><span className="text-mute2">Email:</span> {email}</div>
             <div><span className="text-mute2">Пароль:</span> {password}</div>
           </div>
@@ -150,9 +150,9 @@ function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: (
             <div className="flex gap-2">
               <input value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="минимум 6 символов" type="text"
-                className="flex-1 h-10 px-3.5 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
+                className="flex-1 h-10 px-3.5 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13.5px] placeholder:text-mute2 transition-all" />
               <button type="button" onClick={genPassword}
-                className="px-3 h-10 rounded-xl border border-line bg-white/[0.02] hover:bg-white/[0.05] text-[12px] text-mute hover:text-white transition-all shrink-0">
+                className="px-3 h-10 rounded-xl border border-line bg-bg hover:bg-black/[0.05] text-[12px] text-mute hover:text-slate-800 transition-all shrink-0">
                 Сгенерировать
               </button>
             </div>
@@ -165,7 +165,7 @@ function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: (
           <div>
             <label className={LABEL}>Роль (доступы)</label>
             <select value={role} onChange={e => setRole(e.target.value as UserRole)}
-              className="w-full h-10 px-3 rounded-xl bg-white/[0.03] border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
+              className="w-full h-10 px-3 rounded-xl bg-bg border border-line focus:border-accent/60 outline-none text-[13px] transition-all">
               {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </div>
@@ -296,7 +296,7 @@ export function ManagementPanel({ employees }: Props) {
               </thead>
               <tbody>
                 {SECTIONS.map((sec, si) => (
-                  <tr key={sec} className="border-b border-line last:border-0 hover:bg-white/[0.02] transition-colors">
+                  <tr key={sec} className="border-b border-line last:border-0 hover:bg-black/[0.02] transition-colors">
                     <td className="px-4 py-3 text-[13px] font-medium">{sec}</td>
                     {ROLES_SHORT.map(r => {
                       const val     = perms[r]?.[si] ?? 0

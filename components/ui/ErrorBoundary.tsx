@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
         </div>
         <button
           onClick={() => this.setState({ error: null })}
-          className="inline-flex items-center gap-2 h-9 px-4 rounded-xl border border-line text-[13px] font-medium text-mute hover:text-white hover:border-line2 transition-all"
+          className="inline-flex items-center gap-2 h-9 px-4 rounded-xl border border-line text-[13px] font-medium text-mute hover:text-slate-800 hover:border-line2 transition-all"
         >
           <RefreshCw size={13} /> Попробовать снова
         </button>

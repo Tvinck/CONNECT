@@ -9,7 +9,7 @@ const WEAPON_GROUPS = [
     id: 'pistols',
     name: 'Пистолеты',
     icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-blue-400">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
         <path d="M4 8h10l1 2h5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3.5L15 19h-3.5l1.5-4H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z" />
       </svg>
     ),
@@ -81,7 +81,7 @@ const WEAPON_GROUPS = [
     id: 'shotguns',
     name: 'Дробовики',
     icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-emerald-400">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ok">
         <path d="M2 11h16v3H2zm16 1h4v1h-4zm-8 2h2v2h-2z" />
       </svg>
     ),
@@ -307,28 +307,28 @@ export function FilterSidebar({
   const maxPercent = Math.min(100, Math.max(0, (maxVal / maxLimit) * 100))
 
   return (
-    <div className="w-full bg-[#1C1D2A] border border-white/[0.04] rounded-2xl p-5 space-y-6 shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.3)] text-slate-200">
+    <div className="w-full bg-card border border-line rounded-2xl p-5 space-y-6 shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.3)] text-slate-800">
       
       {/* Game Selection Dropdown */}
-      <div className="relative border border-white/[0.06] rounded-xl bg-[#13141C] p-3 flex items-center justify-between cursor-default group">
+      <div className="relative border border-line rounded-xl bg-bg p-3 flex items-center justify-between cursor-default group">
         <div className="flex items-center gap-2.5">
           <div className="w-6 h-6 rounded bg-gradient-to-br from-[#E67E22] to-[#D35400] flex items-center justify-center text-white text-[10px] font-black shadow-[0_0_8px_rgba(230,126,34,0.3)]">
             CS2
           </div>
           <div>
-            <div className="text-[12.5px] font-bold text-white leading-tight">Counter-Strike 2</div>
-            <div className="text-[9px] text-[#8E92BC]">Официальный каталог</div>
+            <div className="text-[12.5px] font-bold text-slate-800 leading-tight">Counter-Strike 2</div>
+            <div className="text-[9px] text-mute">Официальный каталог</div>
           </div>
         </div>
-        <ChevronDown size={14} className="text-[#8E92BC] group-hover:text-white transition-colors" />
+        <ChevronDown size={14} className="text-mute group-hover:text-slate-800 transition-colors" />
       </div>
 
       {/* Header controls */}
       <div className="flex items-center justify-between pb-1">
-        <h3 className="text-white font-bold text-[13px] uppercase tracking-wider">Фильтры поиска</h3>
+        <h3 className="text-slate-800 font-bold text-[13px] uppercase tracking-wider">Фильтры поиска</h3>
         <button
           onClick={onReset}
-          className="flex items-center gap-1.5 text-xs text-[#8E92BC] hover:text-white transition-colors bg-white/[0.03] hover:bg-white/[0.06] px-2.5 py-1.5 rounded-lg border border-white/[0.04]"
+          className="flex items-center gap-1.5 text-xs text-mute hover:text-slate-800 transition-colors bg-black/[0.03] hover:bg-black/[0.05] px-2.5 py-1.5 rounded-lg border border-line"
           title="Сбросить все"
         >
           <RotateCcw size={11} />
@@ -345,7 +345,7 @@ export function FilterSidebar({
             value={subQuery}
             onChange={(e) => setSubQuery(e.target.value)}
             placeholder="Например: азимов, буйство..."
-            className="w-full h-10 pl-10 pr-3.5 bg-[#13141C] border border-white/[0.08] rounded-xl text-[12.5px] text-white placeholder-slate-600 focus:border-[#1472F5] outline-none transition-all"
+            className="w-full h-10 pl-10 pr-3.5 bg-bg border border-line rounded-xl text-[12.5px] text-slate-800 placeholder-mute2 focus:border-[#1472F5] outline-none transition-all"
           />
         </div>
 
@@ -360,7 +360,7 @@ export function FilterSidebar({
           <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
             searchInDescription
               ? 'bg-[#1472F5] border-[#1472F5] text-white'
-              : 'border-white/[0.1] bg-[#13141C] group-hover/descr:border-white/30'
+              : 'border-line bg-bg group-hover/descr:border-mute2'
           }`}>
             {searchInDescription && (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-2.5 h-2.5">
@@ -368,7 +368,7 @@ export function FilterSidebar({
               </svg>
             )}
           </div>
-          <span className="text-[#8E92BC] group-hover/descr:text-slate-200 transition-colors">
+          <span className="text-mute group-hover/descr:text-slate-800 transition-colors">
             Искать в описаниях скинов
           </span>
         </label>
@@ -383,31 +383,31 @@ export function FilterSidebar({
             const activeCount = group.weapons.filter(w => selectedWeapons.includes(w.id)).length
 
             return (
-              <div key={group.id} className="border border-white/[0.04] rounded-xl overflow-hidden bg-[#13141C]/40">
+              <div key={group.id} className="border border-line rounded-xl overflow-hidden bg-bg/40">
                 <div className="w-full flex items-stretch h-11">
                   <button
                     onClick={() => toggleGroup(group.id)}
-                    className="flex-1 flex items-center gap-2.5 px-4.5 py-2.5 text-left hover:bg-white/[0.02] transition-colors"
+                    className="flex-1 flex items-center gap-2.5 px-4.5 py-2.5 text-left hover:bg-black/[0.03] transition-colors"
                   >
                     <span>{group.icon}</span>
-                    <span className="text-[12.5px] font-bold text-white truncate">{group.name}</span>
+                    <span className="text-[12.5px] font-bold text-slate-800 truncate">{group.name}</span>
                     {activeCount > 0 && (
-                      <span className="px-1.5 py-0.2 bg-[#1472F5] text-white text-[9px] font-bold rounded-md">
+                      <span className="px-1.5 py-0.2 bg-[#1472F5] text-white text-[9px] font-bold rounded-lg">
                         {activeCount}
                       </span>
                     )}
                   </button>
-                  <div className="w-[1px] bg-white/[0.06] my-2" />
+                  <div className="w-[1px] bg-line my-2" />
                   <button
                     onClick={() => toggleGroup(group.id)}
-                    className="px-3 hover:bg-white/[0.02] transition-colors flex items-center justify-center"
+                    className="px-3 hover:bg-black/[0.03] transition-colors flex items-center justify-center"
                   >
-                    {isExpanded ? <ChevronUp size={13} className="text-[#8E92BC]" /> : <ChevronDown size={13} className="text-[#8E92BC]" />}
+                    {isExpanded ? <ChevronUp size={13} className="text-mute" /> : <ChevronDown size={13} className="text-mute" />}
                   </button>
                 </div>
 
                 {isExpanded && (
-                  <div className="px-4.5 pb-3.5 pt-1.5 border-t border-white/[0.03] space-y-2 max-h-[220px] overflow-y-auto bg-[#13141C]/25">
+                  <div className="px-4.5 pb-3.5 pt-1.5 border-t border-line space-y-2 max-h-[220px] overflow-y-auto bg-bg/25">
                     <label
                       onClick={() => {
                         const ids = group.weapons.map(w => w.id)
@@ -415,12 +415,12 @@ export function FilterSidebar({
                       }}
                       className="flex items-center gap-2.5 py-0.5 cursor-pointer group/item select-none text-[12.5px]"
                     >
-                      <div className="w-4 h-4 rounded border flex items-center justify-center border-white/[0.1] bg-[#13141C] group-hover/item:border-white/30">
+                      <div className="w-4 h-4 rounded border flex items-center justify-center border-line bg-bg group-hover/item:border-mute2">
                         {activeCount === 0 && (
                           <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                         )}
                       </div>
-                      <span className="text-slate-400 group-hover/item:text-slate-200 transition-colors">
+                      <span className="text-slate-400 group-hover/item:text-slate-800 transition-colors">
                         Все {group.name.toLowerCase()}
                       </span>
                     </label>
@@ -442,7 +442,7 @@ export function FilterSidebar({
                             <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                               isChecked
                                 ? 'bg-[#1472F5] border-[#1472F5] text-white'
-                                : 'border-white/[0.1] bg-[#13141C] group-hover/item:border-white/30'
+                                : 'border-line bg-bg group-hover/item:border-mute2'
                             }`}>
                               {isChecked && (
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-2.5 h-2.5">
@@ -450,7 +450,7 @@ export function FilterSidebar({
                                 </svg>
                               )}
                             </div>
-                            <span className={`${isChecked ? 'text-white font-semibold' : 'text-[#8E92BC] group-hover/item:text-slate-200'} transition-colors`}>
+                            <span className={`${isChecked ? 'text-slate-800 font-semibold' : 'text-mute group-hover/item:text-slate-800'} transition-colors`}>
                               {w.name}
                             </span>
                           </div>
@@ -473,10 +473,10 @@ export function FilterSidebar({
         <select
           value={selectedCollection}
           onChange={(e) => setSelectedCollection(e.target.value)}
-          className="w-full h-10 px-3 bg-[#13141C] border border-white/[0.08] rounded-xl text-[12.5px] text-white outline-none focus:border-[#1472F5] cursor-pointer"
+          className="w-full h-10 px-3 bg-bg border border-line rounded-xl text-[12.5px] text-slate-800 outline-none focus:border-[#1472F5] cursor-pointer"
         >
           {COLLECTIONS.map((c) => (
-            <option key={c.id} value={c.id} className="bg-[#1C1D2A] text-slate-200">
+            <option key={c.id} value={c.id} className="bg-card text-slate-800">
               {c.name}
             </option>
           ))}
@@ -492,7 +492,7 @@ export function FilterSidebar({
             className={`py-2 px-3 rounded-lg border text-[11px] font-bold text-center transition-all ${
               subQuery === 'Кейс'
                 ? 'bg-[#1472F5] border-[#1472F5] text-white'
-                : 'bg-[#13141C] border-white/[0.04] text-[#8E92BC] hover:text-white hover:bg-white/[0.02]'
+                : 'bg-bg border-line text-mute hover:text-slate-800 hover:bg-black/[0.03]'
             }`}
           >
             Контейнер
@@ -502,7 +502,7 @@ export function FilterSidebar({
             className={`py-2 px-3 rounded-lg border text-[11px] font-bold text-center transition-all ${
               subQuery === 'Наклейка'
                 ? 'bg-[#1472F5] border-[#1472F5] text-white'
-                : 'bg-[#13141C] border-white/[0.04] text-[#8E92BC] hover:text-white hover:bg-white/[0.02]'
+                : 'bg-bg border-line text-mute hover:text-slate-800 hover:bg-black/[0.03]'
             }`}
           >
             Наклейка
@@ -515,19 +515,19 @@ export function FilterSidebar({
                 setExpandedGroups(p => ({ ...p, gloves: true }))
               }
             }}
-            className="py-2 px-3 bg-[#13141C] border border-white/[0.04] text-[#8E92BC] hover:text-white hover:bg-white/[0.02] rounded-lg text-[11px] font-bold text-center transition-all"
+            className="py-2 px-3 bg-bg border border-line text-mute hover:text-slate-800 hover:bg-black/[0.03] rounded-lg text-[11px] font-bold text-center transition-all"
           >
             Перчатки
           </button>
           <div className="relative group/other">
-            <button className="w-full py-2 px-3 bg-[#13141C] border border-white/[0.04] text-[#8E92BC] hover:text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 transition-all">
+            <button className="w-full py-2 px-3 bg-bg border border-line text-mute hover:text-slate-800 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 transition-all">
               <span>Прочее</span>
               <ChevronDown size={10} />
             </button>
-            <div className="absolute left-0 right-0 bottom-full mb-1 bg-[#13141C] border border-white/[0.08] rounded-lg shadow-xl overflow-hidden scale-0 group-hover/other:scale-100 origin-bottom transition-all z-35">
-              <button onClick={() => setSubQuery('Музыка')} className="w-full px-2 py-1.5 text-left text-[10px] hover:bg-white/[0.03] text-slate-300">Наборы музыки</button>
-              <button onClick={() => setSubQuery('Агент')} className="w-full px-2 py-1.5 text-left text-[10px] hover:bg-white/[0.03] text-slate-300">Агенты</button>
-              <button onClick={() => setSubQuery('Нашивка')} className="w-full px-2 py-1.5 text-left text-[10px] hover:bg-white/[0.03] text-slate-300">Нашивки</button>
+            <div className="absolute left-0 right-0 bottom-full mb-1 bg-bg border border-line rounded-lg shadow-xl overflow-hidden scale-0 group-hover/other:scale-100 origin-bottom transition-all z-35">
+              <button onClick={() => setSubQuery('Музыка')} className="w-full px-2 py-1.5 text-left text-[10px] hover:bg-black/[0.04] text-slate-700">Наборы музыки</button>
+              <button onClick={() => setSubQuery('Агент')} className="w-full px-2 py-1.5 text-left text-[10px] hover:bg-black/[0.04] text-slate-700">Агенты</button>
+              <button onClick={() => setSubQuery('Нашивка')} className="w-full px-2 py-1.5 text-left text-[10px] hover:bg-black/[0.04] text-slate-700">Нашивки</button>
             </div>
           </div>
         </div>
@@ -551,7 +551,7 @@ export function FilterSidebar({
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               placeholder="Мин."
-              className="w-full h-9 pl-6.5 pr-2.5 bg-[#13141C] border border-white/[0.08] rounded-xl text-[12.5px] text-white placeholder-slate-700 focus:border-[#1472F5] outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full h-9 pl-6.5 pr-2.5 bg-bg border border-line rounded-xl text-[12.5px] text-slate-800 placeholder-mute2 focus:border-[#1472F5] outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <span className="text-slate-600 text-xs select-none">—</span>
@@ -564,14 +564,14 @@ export function FilterSidebar({
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               placeholder="Макс."
-              className="w-full h-9 pl-6.5 pr-2.5 bg-[#13141C] border border-white/[0.08] rounded-xl text-[12.5px] text-white placeholder-slate-700 focus:border-[#1472F5] outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="w-full h-9 pl-6.5 pr-2.5 bg-bg border border-line rounded-xl text-[12.5px] text-slate-800 placeholder-mute2 focus:border-[#1472F5] outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
         </div>
 
         {/* Dual Slider */}
         <div className="relative pt-2 pb-3 select-none">
-          <div className="relative w-full h-1.5 bg-white/[0.04] rounded-lg">
+          <div className="relative w-full h-1.5 bg-line2 rounded-lg">
             <div
               className="absolute h-full bg-[#1472F5] rounded-lg shadow-[0_0_12px_rgba(20,114,245,0.4)]"
               style={{ left: `${minPercent}%`, right: `${100 - maxPercent}%` }}

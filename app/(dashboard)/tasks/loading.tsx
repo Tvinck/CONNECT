@@ -19,7 +19,7 @@ export default function Loading() {
             </div>
             {/* Task cards */}
             {[...Array(col === 0 ? 4 : col === 1 ? 3 : col === 2 ? 2 : 1)].map((_, i) => (
-              <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.03] p-4 space-y-3">
+              <div key={i} className="rounded-xl border border-line bg-card p-4 space-y-3">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-3 w-3/4" />
                 <div className="flex items-center justify-between pt-1">

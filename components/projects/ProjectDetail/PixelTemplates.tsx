@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Plus, Search, LayoutGrid, LayoutList, Eye, EyeOff, Edit, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { PixelEditTemplateModal } from './PixelEditTemplateModal'
 import { useAuthStore } from '@/store/auth'
 
@@ -99,7 +100,7 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
       <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <h3 className="text-[16px] font-semibold">Галерея шаблонов Pixel AI</h3>
-          <span className="text-[11px] text-mute2 font-mono bg-white/[0.04] px-2 h-5 rounded-md inline-flex items-center">
+          <span className="text-[11px] text-mute2 font-mono bg-black/[0.04] px-2 h-5 rounded-lg inline-flex items-center">
             {filteredTemplates.length}
           </span>
         </div>
@@ -114,7 +115,7 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
             <Search size={12} className="absolute left-2.5 top-2.5 text-mute2" />
           </div>
           {canEdit && (
-            <Button size="sm" onClick={handleOpenAdd} className="bg-accent text-white">
+            <Button size="sm" onClick={handleOpenAdd} className="bg-brand text-[#171821]">
               <Plus size={13} /> Шаблон
             </Button>
           )}
@@ -127,8 +128,8 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
           onClick={() => setSelectedCategory('all')}
           className={`h-8 px-3.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all ${
             selectedCategory === 'all'
-              ? 'bg-white text-bg-sidebar shadow'
-              : 'hover:bg-white/[0.04] text-mute'
+              ? 'bg-brand text-[#171821] shadow'
+              : 'hover:bg-black/[0.04] text-mute hover:text-slate-800'
           }`}
         >
           Все категории
@@ -139,8 +140,8 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
             onClick={() => setSelectedCategory(c.slug)}
             className={`h-8 px-3.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all ${
               selectedCategory === c.slug
-                ? 'bg-white text-bg-sidebar shadow'
-                : 'hover:bg-white/[0.04] text-mute'
+                ? 'bg-brand text-[#171821] shadow'
+                : 'hover:bg-black/[0.04] text-mute hover:text-slate-800'
             }`}
           >
             {c.label}
@@ -150,9 +151,8 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
 
       {/* Templates Grid */}
       {filteredTemplates.length === 0 ? (
-        <div className="text-center py-12 text-mute text-[13px]">
-          В этой категории шаблонов не найдено
-        </div>
+        <EmptyState icon={LayoutGrid} title="Шаблонов не найдено" description="В этой категории пока нет шаблонов." />
+
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filteredTemplates.map(t => {
@@ -184,7 +184,7 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
                     />
                   )
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/[0.02] text-mute2 text-[12px]">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/[0.03] text-mute2 text-[12px]">
                     Нет превью
                   </div>
                 )}
@@ -192,18 +192,18 @@ export function PixelTemplates({ initialTemplates, categories, stars }: PixelTem
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
                   {!t.is_active && (
-                    <span className="text-[9px] font-bold bg-err/10 text-err border border-err/20 px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                    <span className="text-[9px] font-bold bg-err/10 text-err border border-err/20 px-1.5 py-0.5 rounded-lg flex items-center gap-1">
                       <EyeOff size={9} /> Выкл
                     </span>
                   )}
                   {t.generation_cost > 1 && (
-                    <span className="text-[9px] font-bold bg-accent/20 text-accent px-1.5 py-0.5 rounded-md">
+                    <span className="text-[9px] font-bold bg-accent/20 text-accent px-1.5 py-0.5 rounded-lg">
                       {t.generation_cost} ⚡
                     </span>
                   )}
                 </div>
 
-                <div className="absolute top-2 right-2 text-[10px] bg-black/50 backdrop-blur-md px-1.5 py-0.5 rounded-md text-white font-mono font-medium">
+                <div className="absolute top-2 right-2 text-[10px] bg-black/50 backdrop-blur-md px-1.5 py-0.5 rounded-lg text-white font-mono font-medium">
                   {t.sort_order}
                 </div>
 

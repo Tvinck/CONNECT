@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Calendar, Users, ShieldCheck, Search } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Tag } from '@/components/ui/Tag'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { getInitials, colorFor } from '@/lib/utils'
 
 interface PixelSubscriptionsProps {
@@ -51,7 +52,7 @@ export function PixelSubscriptions({ initialSubscriptions }: PixelSubscriptionsP
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
-            className="h-8 px-2.5 rounded-lg border border-line bg-white/[0.02] text-[12.5px] text-mute hover:text-white transition-all outline-none"
+            className="h-8 px-2.5 rounded-lg border border-line bg-bg text-[12.5px] text-mute hover:text-slate-800 transition-all outline-none"
           >
             <option value="all">Все статусы</option>
             <option value="active">Активные</option>
@@ -71,7 +72,7 @@ export function PixelSubscriptions({ initialSubscriptions }: PixelSubscriptionsP
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="rounded-xl bg-white/[0.015] border border-line p-3.5 flex items-center justify-between">
+        <div className="rounded-xl bg-bg border border-line p-3.5 flex items-center justify-between">
           <div>
             <div className="text-[10.5px] text-mute2 uppercase tracking-[0.05em] font-semibold mb-1">Активные подписки</div>
             <div className="text-[18px] font-black text-ok font-mono">{stats.active}</div>
@@ -80,12 +81,12 @@ export function PixelSubscriptions({ initialSubscriptions }: PixelSubscriptionsP
             <ShieldCheck size={16} />
           </div>
         </div>
-        <div className="rounded-xl bg-white/[0.015] border border-line p-3.5 flex items-center justify-between">
+        <div className="rounded-xl bg-bg border border-line p-3.5 flex items-center justify-between">
           <div>
             <div className="text-[10.5px] text-mute2 uppercase tracking-[0.05em] font-semibold mb-1">Всего подписчиков</div>
-            <div className="text-[18px] font-black text-white font-mono">{stats.total}</div>
+            <div className="text-[18px] font-black text-slate-800 font-mono">{stats.total}</div>
           </div>
-          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-mute2">
+          <div className="w-8 h-8 rounded-full bg-black/[0.04] flex items-center justify-center text-mute2">
             <Users size={16} />
           </div>
         </div>
@@ -106,8 +107,8 @@ export function PixelSubscriptions({ initialSubscriptions }: PixelSubscriptionsP
           <tbody className="divide-y divide-line/30">
             {filteredSubs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-8 text-mute">
-                  Подписок не найдено
+                <td colSpan={5}>
+                  <EmptyState icon={ShieldCheck} title="Подписок не найдено" description="Активные подписки пользователей появятся здесь." />
                 </td>
               </tr>
             ) : (
@@ -116,7 +117,7 @@ export function PixelSubscriptions({ initialSubscriptions }: PixelSubscriptionsP
                 const planName = s.plan_id || s.plan_key || 'Premium Access'
                 
                 return (
-                  <tr key={s.id} className="hover:bg-white/[0.01] transition-colors">
+                  <tr key={s.id} className="hover:bg-black/[0.02] transition-colors">
                     <td className="py-3.5 pr-4 font-semibold flex items-center gap-2">
                       <Avatar
                         initials={getInitials(s.user?.first_name || s.user?.username || 'User')}
@@ -129,7 +130,7 @@ export function PixelSubscriptions({ initialSubscriptions }: PixelSubscriptionsP
                         {s.user?.username && <span className="text-[11px] text-mute2 font-normal ml-1">@{s.user.username}</span>}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-white font-mono text-[12.5px]">
+                    <td className="py-3.5 px-4 font-bold text-slate-800 font-mono text-[12.5px]">
                       {planName}
                     </td>
                     <td className="py-3.5 px-4">

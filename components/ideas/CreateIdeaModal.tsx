@@ -315,7 +315,7 @@ export function CreateIdeaModal({ projects, allTags, currentUser, onClose, onCre
                   <button
                     type="button"
                     onClick={() => deleteFile(index)}
-                    className="absolute top-1 right-1 w-6 h-6 rounded-md bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+                    className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
                   >
                     <Trash2 size={12} />
                   </button>
