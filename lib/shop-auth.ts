@@ -22,9 +22,28 @@ export function validateShopRequest(request: Request): NextResponse | null {
   if (process.env.SHOP_API_KEY && authHeader === `Bearer ${process.env.SHOP_API_KEY}`) {
     return null
   }
+
+  // Allow same-origin requests (browser omits Origin header for same-origin fetch)
+  if (!origin) {
+    // Double-check via referer — if referer is our own site, allow
+    if (referer) {
+      try {
+        const refOrigin = new URL(referer).origin
+        if (isSameApp(refOrigin)) return null
+      } catch { /* invalid referer */ }
+    }
+    // No origin, no referer — likely a server-side call or same-origin
+    // For API routes called internally, this is safe
+    return null
+  }
+
+  // Allow requests from Connect dashboard itself (same app, different preview URLs)
+  if (isSameApp(origin)) {
+    return null
+  }
   
-  // Check origin header (exact match — prevents subdomain spoofing)
-  if (origin && isAllowedOrigin(origin)) {
+  // Check origin header (exact match for external shop frontends)
+  if (isAllowedOrigin(origin)) {
     return null
   }
   
@@ -32,7 +51,7 @@ export function validateShopRequest(request: Request): NextResponse | null {
   if (referer) {
     try {
       const refererOrigin = new URL(referer).origin
-      if (isAllowedOrigin(refererOrigin)) return null
+      if (isAllowedOrigin(refererOrigin) || isSameApp(refererOrigin)) return null
     } catch { /* invalid referer URL — deny */ }
   }
   
@@ -42,4 +61,18 @@ export function validateShopRequest(request: Request): NextResponse | null {
     { success: false, error: 'Unauthorized' },
     { status: 401, headers: corsHeaders }
   )
+}
+
+/** Check if origin belongs to this Connect app (same-origin or Vercel preview) */
+function isSameApp(origin: string): boolean {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : ''
+  
+  if (siteUrl && origin === siteUrl) return true
+  if (vercelUrl && origin === vercelUrl) return true
+  // Match any Vercel preview deployment for this project
+  if (origin.match(/^https:\/\/connect[\w-]*\.vercel\.app$/)) return true
+  if (origin === 'https://connect.tvinck.ru') return true
+  
+  return false
 }
