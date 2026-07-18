@@ -43,7 +43,8 @@ export async function deleteBazzarProduct(id: string) {
 }
 
 export async function getBazzarUsers() {
-  const supabase = createClient();
+  const { createAdminClient } = await import('@/lib/supabase/admin');
+  const supabase = createAdminClient();
   const { data, error } = await supabase.from('bazzar_users').select('*').order('created_at', { ascending: false });
   if (error) return { success: false, error: error.message };
   return { success: true, data };
