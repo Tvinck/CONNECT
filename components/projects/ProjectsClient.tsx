@@ -174,7 +174,7 @@ export function ProjectsClient({ initialProjects }: { initialProjects: ProjectRo
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {projects.map(p => (
-            <Link key={p.id} href={`/projects/${p.slug}`} prefetch={false} className="card p-6 lift block">
+            <Link key={p.id} href={p.slug === 'bazzar-serts-2' ? '/b2' : `/projects/${p.slug}`} prefetch={false} className="card p-6 lift block">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-2xl inline-flex items-center justify-center text-2xl"
                   style={{ background: `${p.color}22` }}>
