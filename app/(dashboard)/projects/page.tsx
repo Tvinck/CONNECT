@@ -12,9 +12,23 @@ export default async function ProjectsPage() {
 
   const supabase = createClient()
 
+  const isCeoOrCoowner = profile.role === 'ceo' || profile.role === 'coowner'
+  
+  // For non-admins, get the list of project_ids they have access to.
+  let allowedProjectIds: string[] | null = null
+  if (!isCeoOrCoowner) {
+    const { data: mems } = await supabase.from('project_members').select('project_id').eq('user_id', profile.id)
+    allowedProjectIds = (mems ?? []).map(m => m.project_id)
+  }
+
+  let projectsQuery = supabase.from('projects').select('id, name, slug, emoji, color, status, progress, description').order('progress', { ascending: false })
+  
+  if (allowedProjectIds !== null) {
+    projectsQuery = projectsQuery.in('id', allowedProjectIds.length ? allowedProjectIds : ['00000000-0000-0000-0000-000000000000'])
+  }
+
   const [{ data: projects }, { data: tasks }] = await Promise.all([
-    supabase.from('projects').select('id, name, slug, emoji, color, status, progress, description')
-      .order('progress', { ascending: false }),
+    projectsQuery,
     supabase.from('tasks').select('project_id, assignee_id'),
   ])
 

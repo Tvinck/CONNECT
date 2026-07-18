@@ -168,19 +168,7 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
           </div>
         </div>
 
-        {/* Role switcher (demo) - visible only to actual CEOs */}
-        {user?.role === 'ceo' && (
-          <div className={collapsed ? 'lg:hidden' : ''}>
-            <RoleSwitcher
-              role={role}
-              onRoleChange={(r) => {
-                setRole(r)
-                const found = ROLES.find((x) => x.id === r)
-                addToast('Роль переключена', `Теперь ты — ${found?.label}`, 'accent')
-              }}
-            />
-          </div>
-        )}
+
 
         {/* Navigation */}
         <div className="px-3 flex-1 overflow-y-auto space-y-4">
@@ -288,83 +276,3 @@ export function Sidebar({ taskCount = 0, chatCount = 0 }: SidebarProps) {
   )
 }
 
-/**
- * Демонстрационный компонент для быстрого переключения ролей.
- * Виден только пользователю с фактической ролью 'ceo'.
- * 
- * @param {Object} props - Свойства
- * @param {UserRole} props.role - Текущая выбранная роль
- * @param {function} props.onRoleChange - Коллбек при смене роли
- * @returns {JSX.Element} Выпадающий список выбора роли
- */
-function RoleSwitcher({
-  role,
-  onRoleChange,
-}: {
-  role: UserRole
-  onRoleChange: (r: UserRole) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const current = ROLES.find((r) => r.id === role) || ROLES[0]
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  return (
-    <div className="mx-3 mb-4 relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center gap-2 px-3 h-9 rounded-lg border border-white/[0.05] bg-[#1C1D2A] hover:bg-white/[0.04] text-[12px] text-[#8E92BC] hover:text-white transition-all"
-      >
-        <span className="text-[10px] uppercase tracking-[0.12em] text-[#5A5D7F] font-semibold">
-          Demo роль:
-        </span>
-        <span className="font-semibold flex items-center gap-1" style={{ color: current.color }}>
-          {current.emoji} {current.label}
-        </span>
-        <ChevronDown size={12} className="ml-auto text-[#8E92BC]" />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -8 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute z-50 top-full left-0 right-0 mt-1.5 py-1.5 rounded-lg bg-[#1C1D2A] border border-white/[0.08] shadow-2xl origin-top"
-          >
-            {ROLES.map((r) => (
-              <button
-                key={r.id}
-                onClick={() => {
-                  onRoleChange(r.id as UserRole)
-                  setOpen(false)
-                }}
-                className={`w-full flex items-center gap-2 px-3 h-8 text-[12.5px] text-left hover:bg-white/[0.04] transition-colors
-                  ${role === r.id ? 'text-white' : 'text-[#8E92BC]'}`}
-              >
-                <span>{r.emoji}</span>
-                <span
-                  className="flex-1 font-medium"
-                  style={{ color: role === r.id ? r.color : undefined }}
-                >
-                  {r.label}
-                </span>
-                {role === r.id && <Check size={12} className="text-[#BFF128]" />}
-              </button>
-            ))}
-            <div className="border-t border-white/[0.04] mt-1.5 pt-1.5 px-3 text-[10.5px] text-[#5A5D7F]">
-              Для демонстрации UI разных ролей
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}

@@ -102,6 +102,9 @@ model User {
   status      String?
   mention_tag String?  @unique
   created_at  DateTime @default(now())
+  position    String?
+  last_seen   DateTime?
+  skills      String[] @default([])
   // relations
   projects    Project[]
   vpnSubs     VpnSubscription[]

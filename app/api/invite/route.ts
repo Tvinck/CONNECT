@@ -40,11 +40,14 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: 'Некорректный запрос' }, { status: 400 })
 
-  const fullName = String(body.fullName ?? '').trim()
-  const email    = String(body.email ?? '').trim().toLowerCase()
-  const password = String(body.password ?? '')
-  const position = String(body.position ?? '').trim()
-  const role     = (VALID_ROLES.includes(body.role) ? body.role : 'dev') as UserRole
+  const fullName  = String(body.fullName ?? '').trim()
+  const email     = String(body.email ?? '').trim().toLowerCase()
+  const password  = String(body.password ?? '')
+  const position  = String(body.position ?? '').trim()
+  const mention_tag = body.mention_tag ? String(body.mention_tag).trim() : null
+  const skills    = Array.isArray(body.skills) ? body.skills : []
+  const role      = (VALID_ROLES.includes(body.role) ? body.role : 'dev') as UserRole
+  const projectIds = Array.isArray(body.projects) ? body.projects : []
 
   if (!fullName)              return NextResponse.json({ error: 'Укажите имя и фамилию' }, { status: 400 })
   if (!EMAIL_RE.test(email))  return NextResponse.json({ error: 'Некорректный email' }, { status: 400 })
@@ -62,21 +65,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: authErr?.message ?? 'Не удалось создать пользователя' }, { status: 400 })
   }
 
-  // 4. Upsert the profile row (the handle_new_user trigger may have created a
-  //    stub already — set the real fields here).
+  // 4. Upsert the profile row
   const { error: profErr } = await admin.from('users').upsert({
-    id:        created.user.id,
+    id:          created.user.id,
     email,
-    full_name: fullName,
-    position:  position || null,
+    full_name:   fullName,
+    position:    position || null,
+    mention_tag: mention_tag,
+    skills:      skills,
     role,
-    is_active: true,
-    status:    'offline',
+    is_active:   true,
+    status:      'offline',
   })
+  
   if (profErr) {
     // Roll back the auth user so we don't leave an orphan.
     await admin.auth.admin.deleteUser(created.user.id)
     return NextResponse.json({ error: profErr.message }, { status: 400 })
+  }
+
+  // 5. Grant project access if provided
+  if (projectIds.length > 0) {
+    const memberRows = projectIds.map((pid: string) => ({
+      project_id: pid,
+      user_id: created.user.id,
+      role: 'member'
+    }))
+    await admin.from('project_members').insert(memberRows)
   }
 
   return NextResponse.json({ ok: true, id: created.user.id })

@@ -68,7 +68,6 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     label: 'Управление',
     items: [
-      { key: 'management', label: 'Управление', href: '/management', icon: Shield, ceoOnly: true },
       { key: 'monitoring', label: 'Мониторинг', href: '/monitoring', icon: Activity, ceoOnly: true },
       { key: 'profile',    label: 'Профиль',    href: '/profile',    icon: Settings },
     ],

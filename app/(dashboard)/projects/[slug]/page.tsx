@@ -44,6 +44,20 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
   if (!project) notFound()
 
+  const isCeoOrCoowner = profile.role === 'ceo' || profile.role === 'coowner'
+  
+  if (!isCeoOrCoowner) {
+    const { data: mems } = await supabase
+      .from('project_members')
+      .select('project_id')
+      .eq('user_id', profile.id)
+      .eq('project_id', project.id)
+      
+    if (!mems || mems.length === 0) {
+      redirect('/projects')
+    }
+  }
+
   // 3. Параллельный асинхронный запрос всех базовых сущностей проекта
   const [
     { data: members },
