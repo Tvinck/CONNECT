@@ -187,3 +187,18 @@ a:focus-visible {
   --color-mute2: #A4A7C1;
 }
 
+/* BazzarSerts 2.0 — shared input/select style */
+.b2-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--color-line);
+  color: #171821;
+  padding: 9px 12px;
+  border-radius: 12px;
+  outline: none;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+.b2-input:focus {
+  border-color: var(--color-accent);
+}
