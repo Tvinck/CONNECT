@@ -246,12 +246,13 @@ export function Header({ title, subtitle }: HeaderProps) {
 
   const clearAll = async () => {
     if (!user) return
+    const prev = notifs
     setNotifs([])
+    setShowNotifs(false)
     const { error } = await supabase.from('notifications').delete().eq('user_id', user.id)
     if (error) {
+      setNotifs(prev)
       addToast('Ошибка', 'Не удалось очистить уведомления', 'err')
-    } else {
-      addToast('Успешно', 'Все уведомления удалены', 'ok')
     }
   }
 
