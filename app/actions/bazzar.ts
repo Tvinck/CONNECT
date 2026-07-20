@@ -1,57 +1,56 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 export async function getBazzarProducts() {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { data, error } = await supabase.from('bazzar_products').select('*').order('created_at', { ascending: false });
   if (error) return { success: false, error: error.message };
   return { success: true, data };
 }
 
 export async function toggleProductStatus(id: string, currentStatus: boolean) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('bazzar_products').update({ active: !currentStatus }).eq('id', id);
   if (error) return { success: false, error: error.message };
-  revalidatePath('/[slug]');
+  revalidatePath('/b2/catalog');
   return { success: true };
 }
 
 export async function createBazzarProduct(data: any) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('bazzar_products').insert([data]);
   if (error) return { success: false, error: error.message };
-  revalidatePath('/[slug]');
+  revalidatePath('/b2/catalog');
   return { success: true };
 }
 
 export async function updateBazzarProduct(id: string, data: any) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('bazzar_products').update(data).eq('id', id);
   if (error) return { success: false, error: error.message };
-  revalidatePath('/[slug]');
+  revalidatePath('/b2/catalog');
   return { success: true };
 }
 
 export async function deleteBazzarProduct(id: string) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('bazzar_products').delete().eq('id', id);
   if (error) return { success: false, error: error.message };
-  revalidatePath('/[slug]');
+  revalidatePath('/b2/catalog');
   return { success: true };
 }
 
 export async function getBazzarUsers() {
-  const { createAdminClient } = await import('@/lib/supabase/admin');
-  const supabase = createAdminClient();
+  const supabase = createServiceClient();
   const { data, error } = await supabase.from('bazzar_users').select('*').order('created_at', { ascending: false });
   if (error) return { success: false, error: error.message };
   return { success: true, data };
 }
 
 export async function getBazzarReviews() {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { data, error } = await supabase
     .from('bazzar_reviews')
     .select(`
@@ -76,24 +75,25 @@ export async function getBazzarReviews() {
 }
 
 export async function updateReviewStatus(id: string, status: string) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('bazzar_reviews').update({ status }).eq('id', id);
   if (error) return { success: false, error: error.message };
-  revalidatePath('/[slug]');
+  revalidatePath('/b2/catalog');
   return { success: true };
 }
 
 export async function deleteReview(id: string) {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { error } = await supabase.from('bazzar_reviews').delete().eq('id', id);
   if (error) return { success: false, error: error.message };
-  revalidatePath('/[slug]');
+  revalidatePath('/b2/catalog');
   return { success: true };
 }
 
 export async function getBazzarAnalytics() {
-  const supabase = createClient();
+  const supabase = createServiceClient();
   const { data, error } = await supabase.from('bazzar_analytics').select('*').order('date', { ascending: true });
   if (error) return { success: false, error: error.message };
   return { success: true, data };
 }
+
