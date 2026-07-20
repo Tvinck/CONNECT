@@ -142,22 +142,17 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
 
   const uploadIpa = async (file: File) => {
     setUploading(true)
-    setProgress('Получаю URL…')
+    setProgress(`Загрузка ${formatSize(file.size)}…`)
     try {
-      const { uploadUrl, key } = await getIpaUploadUrl(app.id, file.name)
-      if (!uploadUrl || !key) throw new Error('Не удалось получить URL')
-
-      setProgress(`Загрузка ${formatSize(file.size)}…`)
-      const res = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/octet-stream' },
-        body: file,
+      // Upload through server-side proxy (bypasses R2 SSL browser issue)
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch(`/api/apps/upload?appId=${app.id}`, {
+        method: 'POST',
+        body: formData,
       })
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
-
-      setProgress('Сохраняю…')
-      const result = await confirmIpaUpload(app.id, key, file.size)
-      if (!result.success) throw new Error(result.error)
+      const result = await res.json()
+      if (!result.success) throw new Error(result.error || 'Upload failed')
 
       addToast('IPA загружен в R2', formatSize(file.size), 'ok')
       router.refresh()

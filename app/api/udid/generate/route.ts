@@ -1,55 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  // Get the host dynamically so it works locally and in production
+  // Use the canonical URL for the receive endpoint.
+  // On Vercel, req.headers.get('host') may return the internal hostname,
+  // so we use the production URL explicitly, with localhost fallback for dev.
   const host = req.headers.get('host') || 'localhost:3000';
-  const protocol = host.includes('localhost') ? 'http' : 'https';
+  const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
   
-  // The URL where the iPhone will POST the device info
-  const receiveUrl = `${protocol}://${host}/api/udid/receive`;
+  // Always use the production domain for the callback URL,
+  // because iOS will POST to this URL from the device (not from the browser).
+  const receiveUrl = isLocal
+    ? `http://${host}/api/udid/receive`
+    : `https://connect-4va6.vercel.app/api/udid/receive`;
 
   // Apple OTA Profile Service — correct structure per Apple documentation.
-  // Top-level payload is "Configuration", PayloadContent is an array containing
-  // a single "Profile Service" dict with the URL and DeviceAttributes.
+  // IMPORTANT: The XML must have NO leading whitespace before <?xml ...>
+  // otherwise iOS will reject it as invalid.
   const mobileConfig = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>PayloadContent</key>
-    <array>
-        <dict>
-            <key>URL</key>
-            <string>${receiveUrl}</string>
-            <key>DeviceAttributes</key>
-            <array>
-                <string>UDID</string>
-                <string>IMEI</string>
-                <string>ICCID</string>
-                <string>VERSION</string>
-                <string>PRODUCT</string>
-                <string>SERIAL</string>
-                <string>MAC_ADDRESS_EN0</string>
-            </array>
-            <key>PayloadOrganization</key>
-            <string>Bazzar Certs</string>
-            <key>PayloadDisplayName</key>
-            <string>Bazzar Certs UDID</string>
-            <key>PayloadVersion</key>
-            <integer>1</integer>
-            <key>PayloadUUID</key>
-            <string>A40E6B5E-8FA1-4270-8C3B-3E1D5E900E50</string>
-            <key>PayloadIdentifier</key>
-            <string>com.bazzar.certs.udid-service</string>
-            <key>PayloadDescription</key>
-            <string>Этот временный профиль используется для получения UDID вашего устройства. Он будет автоматически удалён.</string>
-            <key>PayloadType</key>
-            <string>Profile Service</string>
-        </dict>
-    </array>
+    <dict>
+        <key>URL</key>
+        <string>${receiveUrl}</string>
+        <key>DeviceAttributes</key>
+        <array>
+            <string>UDID</string>
+            <string>IMEI</string>
+            <string>ICCID</string>
+            <string>VERSION</string>
+            <string>PRODUCT</string>
+            <string>SERIAL</string>
+            <string>MAC_ADDRESS_EN0</string>
+        </array>
+    </dict>
     <key>PayloadOrganization</key>
     <string>Bazzar Certs</string>
     <key>PayloadDisplayName</key>
-    <string>Регистрация устройства Bazzar Certs</string>
+    <string>Bazzar Certs — UDID</string>
     <key>PayloadVersion</key>
     <integer>1</integer>
     <key>PayloadUUID</key>
@@ -57,13 +46,13 @@ export async function GET(req: NextRequest) {
     <key>PayloadIdentifier</key>
     <string>com.bazzar.certs.enroll</string>
     <key>PayloadDescription</key>
-    <string>Установите этот профиль для автоматического получения UDID устройства.</string>
+    <string>Этот профиль нужен для получения UDID вашего устройства. Он будет автоматически удалён после установки.</string>
     <key>PayloadType</key>
-    <string>Configuration</string>
+    <string>Profile Service</string>
 </dict>
 </plist>`;
 
-  return new NextResponse(mobileConfig, {
+  return new NextResponse(mobileConfig.trim(), {
     status: 200,
     headers: {
       'Content-Type': 'application/x-apple-aspen-config; charset=utf-8',
