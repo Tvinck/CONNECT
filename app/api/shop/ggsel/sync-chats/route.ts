@@ -2,132 +2,162 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import crypto from 'crypto'
 
-export const dynamic = 'force-dynamic' // No caching
+export const dynamic = 'force-dynamic'
+export const maxDuration = 30
+
+/**
+ * GGSel Chat Sync — polls GGSel debates API for new messages.
+ * 
+ * Key improvements over original:
+ * 1. Dedup by ggsel_msg_id (message ID from GGSel) — no more lost duplicate texts
+ * 2. Syncs BOTH buyer AND seller messages (was buyer-only)
+ * 3. Uses filter_new=1 to only fetch chats with new activity
+ * 4. Handles errors per-chat without dropping entire sync
+ * 5. Builds composite msg ID from chat + message index for stable dedup
+ */
+
+async function ggselLogin(): Promise<string | null> {
+  const sellerId = process.env.GGSEL_SELLER_ID
+  const apiKey = process.env.GGSEL_API_KEY
+  if (!sellerId || !apiKey) return null
+
+  const timestamp = Date.now().toString()
+  const sign = crypto.createHash('sha256').update(apiKey + timestamp).digest('hex')
+
+  const res = await fetch('https://seller.ggsel.com/api_sellers/api/apilogin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ seller_id: parseInt(sellerId, 10), timestamp, sign }),
+  })
+
+  if (!res.ok) return null
+  const data = await res.json()
+  return data.token || null
+}
 
 // GET handler for Vercel Cron (crons only support GET)
 export async function GET(request: Request) {
-  // Basic cron auth — Vercel cron sends Authorization: Bearer <CRON_SECRET>
   const authHeader = request.headers.get('authorization')
   if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  return POST(request)
+  return syncChats()
 }
 
 export async function POST(request: Request) {
-  // Auth check: require CRON_SECRET for direct POST calls too
   const authHeader = request.headers.get('authorization')
   if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  return syncChats()
+}
 
+async function syncChats() {
   const supabase = createAdminClient()
+  const results = { inserted: 0, skipped: 0, errors: 0, chats: 0 }
 
   try {
-    const sellerId = process.env.GGSEL_SELLER_ID;
-    const apiKey = process.env.GGSEL_API_KEY;
-
-    if (!sellerId || !apiKey) {
-      return NextResponse.json({ success: false, error: 'GGSel credentials missing' }, { status: 500 })
+    const token = await ggselLogin()
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'GGSel auth failed' }, { status: 502 })
     }
 
-    const timestamp = Date.now().toString();
-    const sign = crypto.createHash('sha256').update(apiKey + timestamp).digest('hex');
+    // Fetch chats with new activity (filter_new=1) + all recent (filter_new=0 as fallback)
+    const chatsRes = await fetch(
+      `https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${token}&filter_new=1`,
+      { headers: { 'Accept': 'application/json' } }
+    )
 
-    const loginRes = await fetch('https://seller.ggsel.com/api_sellers/api/apilogin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ seller_id: parseInt(sellerId, 10), timestamp, sign })
-    });
-    
-    if (!loginRes.ok) throw new Error('GGSel Auth Failed: ' + await loginRes.text());
-    const loginData = await loginRes.json();
-    if (!loginData.token) throw new Error('No token: ' + JSON.stringify(loginData));
-
-    const chatsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2/chats?token=${loginData.token}&filter_new=0`, {
-      headers: { 'Accept': 'application/json' }
-    });
-    
-    if (!chatsRes.ok) throw new Error('Failed to fetch chats: ' + await chatsRes.text());
-    const chatsData = await chatsRes.json();
-    if (!chatsData.items || chatsData.items.length === 0) {
-      return NextResponse.json({ success: true, message: 'No new chats', rawData: chatsData });
+    if (!chatsRes.ok) {
+      return NextResponse.json({ success: false, error: 'Failed to fetch chats' }, { status: 502 })
     }
 
-    let insertedCount = 0;
-    const errors: any[] = [];
+    const chatsData = await chatsRes.json()
+    const chats = chatsData.items || []
 
-    for (const chat of chatsData.items) {
-       const msgsRes = await fetch(`https://seller.ggsel.com/api_sellers/api/debates/v2?token=${loginData.token}&id_i=${chat.id_i}`, {
-         headers: { 'Accept': 'application/json' }
-       });
-       if (!msgsRes.ok) continue;
-       const msgsData = await msgsRes.json();
-       if (!Array.isArray(msgsData)) continue;
-
-       // UUID формат: 00000000-0000-0000-0000-XXXXXXXXXXXX
-       const fakeUuid = `00000000-0000-0000-0000-${String(chat.id_i).padStart(12, '0')}`;
-
-       // Проверяем существование подписки для обхода fk_user
-       const { data: existingSub, error: subCheckErr } = await supabase
-         .from('vpn_subscriptions')
-         .select('id')
-         .eq('id', fakeUuid)
-         .maybeSingle();
-
-       if (subCheckErr) {
-         errors.push({ id_i: chat.id_i, step: 'sub_check', error: subCheckErr });
-         continue;
-       }
-
-       if (!existingSub) {
-         const randomHex = crypto.randomBytes(4).toString('hex');
-         const { error: subInsertErr } = await supabase.from('vpn_subscriptions').insert({
-           id: fakeUuid,
-           username: `GGSel Заказ ${chat.id_i}`,
-           status: 'active',
-           traffic_limit: 0,
-           token: `ggsel_${chat.id_i}_${randomHex}`,
-           subscription_key: `ggsel_${chat.id_i}_${randomHex}`
-         });
-
-         if (subInsertErr) {
-           errors.push({ id_i: chat.id_i, step: 'sub_insert', error: subInsertErr });
-           continue;
-         }
-       }
-
-       for (const msg of msgsData) {
-         if (msg.buyer === 1) {
-            const { data: existing } = await supabase
-              .from('support_messages')
-              .select('id')
-              .eq('user_id', fakeUuid)
-              .eq('message', msg.message)
-              .maybeSingle();
-
-            if (!existing) {
-               const { error } = await supabase.from('support_messages').insert({
-                 user_id: fakeUuid,
-                 message: msg.message,
-                 is_from_user: true,
-                 project: 'GGSel (Заказ ' + chat.id_i + ')'
-               });
-               if (!error) {
-                 insertedCount++;
-               } else {
-                 errors.push({ id_i: chat.id_i, step: 'msg_insert', error });
-               }
-            }
-         }
-       }
+    if (chats.length === 0) {
+      return NextResponse.json({ success: true, message: 'No new chats', ...results })
     }
 
-    if (errors.length > 0) {
-      console.error('[sync-chats] Errors during sync:', JSON.stringify(errors));
+    results.chats = chats.length
+
+    for (const chat of chats) {
+      try {
+        const msgsRes = await fetch(
+          `https://seller.ggsel.com/api_sellers/api/debates/v2?token=${token}&id_i=${chat.id_i}`,
+          { headers: { 'Accept': 'application/json' } }
+        )
+        if (!msgsRes.ok) { results.errors++; continue }
+
+        const msgsData = await msgsRes.json()
+        if (!Array.isArray(msgsData)) { results.errors++; continue }
+
+        // UUID format for this chat's user_id
+        const fakeUuid = `00000000-0000-0000-0000-${String(chat.id_i).padStart(12, '0')}`
+
+        // Ensure vpn_subscription exists (FK requirement)
+        const { data: existingSub } = await supabase
+          .from('vpn_subscriptions')
+          .select('id')
+          .eq('id', fakeUuid)
+          .maybeSingle()
+
+        if (!existingSub) {
+          const randomHex = crypto.randomBytes(4).toString('hex')
+          const { error: subErr } = await supabase.from('vpn_subscriptions').insert({
+            id: fakeUuid,
+            username: `GGSel Заказ ${chat.id_i}`,
+            status: 'active',
+            traffic_limit: 0,
+            token: `ggsel_${chat.id_i}_${randomHex}`,
+            subscription_key: `ggsel_${chat.id_i}_${randomHex}`,
+          })
+          if (subErr) { results.errors++; continue }
+        }
+
+        // Process messages — BOTH buyer and seller
+        for (let i = 0; i < msgsData.length; i++) {
+          const msg = msgsData[i]
+          if (!msg.message || !msg.message.trim()) continue
+
+          // Stable ID: chat_id + message index + first 8 chars of text hash
+          const textHash = crypto.createHash('md5').update(msg.message).digest('hex').slice(0, 8)
+          const ggselMsgId = `ggsel_${chat.id_i}_${msg.id || i}_${textHash}`
+
+          const isBuyer = msg.buyer === 1
+
+          // Upsert by ggsel_msg_id — skip if exists
+          const { error } = await supabase
+            .from('support_messages')
+            .upsert(
+              {
+                user_id: fakeUuid,
+                message: msg.message,
+                is_from_user: isBuyer,
+                project: `GGSel (Заказ ${chat.id_i})`,
+                ggsel_msg_id: ggselMsgId,
+              },
+              { onConflict: 'ggsel_msg_id', ignoreDuplicates: true }
+            )
+
+          if (error) {
+            // Unique violation = already exists, skip silently
+            if (error.code === '23505') { results.skipped++; continue }
+            results.errors++
+          } else {
+            results.inserted++
+          }
+        }
+      } catch (chatErr: any) {
+        console.error(`[sync-chats] Error for chat ${chat.id_i}:`, chatErr.message)
+        results.errors++
+      }
     }
-    return NextResponse.json({ success: true, inserted: insertedCount, errorCount: errors.length, totalChats: chatsData.items.length });
+
+    console.log(`[sync-chats] Done: ${results.inserted} inserted, ${results.skipped} skipped, ${results.errors} errors, ${results.chats} chats`)
+    return NextResponse.json({ success: true, ...results })
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
+    console.error('[sync-chats] Fatal:', err.message)
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }

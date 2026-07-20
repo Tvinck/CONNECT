@@ -48,27 +48,30 @@ export function TopNav() {
           <Header title="BazzarSerts 2.0" subtitle={`Командный центр · ${b2Label(active)}`} />
         </div>
 
-        {/* Ряд разделов */}
-        <nav className="flex items-center gap-1 overflow-x-auto py-2.5" style={{ scrollbarWidth: 'none' }}>
+        {/* Ряд разделов: прокручиваются только primary-ссылки; «Ещё» — снаружи
+            overflow-контейнера, чтобы выпадающее меню не обрезалось. */}
+        <div className="flex items-center gap-1">
           <Link href="/b2/overview" prefetch={false} className="shrink-0 mr-1.5" title="BazzarSerts 2.0">
             <BazzarMark size={24} />
           </Link>
 
-          {/* Primary разделы */}
-          {primary.map((s) => {
-            const on = active === s.key
-            const Icon = s.icon
-            return (
-              <Link key={s.key} href={`/b2/${s.key}`} prefetch={false} className={linkCls(on)}>
-                <Icon size={15} strokeWidth={2.2} />
-                {s.label}
-              </Link>
-            )
-          })}
+          {/* Primary разделы (скроллятся) */}
+          <nav className="flex items-center gap-1 overflow-x-auto py-2.5 flex-1 min-w-0" style={{ scrollbarWidth: 'none' }}>
+            {primary.map((s) => {
+              const on = active === s.key
+              const Icon = s.icon
+              return (
+                <Link key={s.key} href={`/b2/${s.key}`} prefetch={false} className={linkCls(on)}>
+                  <Icon size={15} strokeWidth={2.2} />
+                  {s.label}
+                </Link>
+              )
+            })}
+          </nav>
 
-          {/* Overflow «Ещё» */}
+          {/* «Ещё» — вне overflow, поэтому дропдаун виден полностью */}
           {secondary.length > 0 && (
-            <div ref={moreRef} className="relative shrink-0">
+            <div ref={moreRef} className="relative shrink-0 flex items-center py-2.5">
               <button
                 onClick={() => setMoreOpen((v) => !v)}
                 className={linkCls(isSecondaryActive && !moreOpen)}
@@ -77,7 +80,7 @@ export function TopNav() {
                 Ещё
               </button>
               {moreOpen && (
-                <div className="absolute right-0 top-full mt-1.5 bg-card border border-line rounded-xl shadow-xl py-1.5 min-w-[180px] z-40">
+                <div className="absolute right-0 top-full mt-1.5 bg-card border border-line rounded-xl shadow-xl py-1.5 min-w-[190px] z-50">
                   {secondary.map((s) => {
                     const on = active === s.key
                     const Icon = s.icon
@@ -102,7 +105,7 @@ export function TopNav() {
               )}
             </div>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   )
