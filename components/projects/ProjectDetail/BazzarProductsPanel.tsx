@@ -132,7 +132,7 @@ export function BazzarProductsPanel() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card">
         <table className="w-full text-left text-[13px]">
           <thead className="bg-bg text-mute border-b border-line text-[11px] uppercase tracking-[0.05em]">
             <tr>

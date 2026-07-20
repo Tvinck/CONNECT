@@ -20,6 +20,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore } from '@/store/auth'
 import { useUIStore } from '@/store/ui'
 import { createClient } from '@/lib/supabase/client'
+import { clearMyNotifications, markAllMyNotificationsRead } from '@/app/actions/notifications'
 import { timeAgo, getInitials, colorFor } from '@/lib/utils'
 import Link from 'next/link'
 import type { Notification } from '@/types'
@@ -241,7 +242,8 @@ export function Header({ title, subtitle }: HeaderProps) {
   const markAllRead = async () => {
     if (!user) return
     setNotifs(prev => prev.map(n => ({ ...n, is_read: true })))
-    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false)
+    // Через server-action (admin) — надёжно, минуя возможные пробелы RLS на UPDATE.
+    await markAllMyNotificationsRead()
   }
 
   const clearAll = async () => {
@@ -249,8 +251,10 @@ export function Header({ title, subtitle }: HeaderProps) {
     const prev = notifs
     setNotifs([])
     setShowNotifs(false)
-    const { error } = await supabase.from('notifications').delete().eq('user_id', user.id)
-    if (error) {
+    // Через server-action (admin): клиентский delete тихо блокировался RLS
+    // (0 строк, без ошибки) — уведомления «возвращались» после переоткрытия.
+    const res = await clearMyNotifications()
+    if (!res.success) {
       setNotifs(prev)
       addToast('Ошибка', 'Не удалось очистить уведомления', 'err')
     }

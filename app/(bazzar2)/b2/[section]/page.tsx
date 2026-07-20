@@ -2,9 +2,10 @@ import { notFound } from 'next/navigation'
 import { B2_SECTION_KEYS, b2Label } from '@/components/bazzar2/sections'
 import {
   loadOverview, loadSales, loadRegistrations, loadFinance, loadTeam,
-  loadActivity, loadSubscriptions, loadCatalogExtras, loadUsers,
+  loadActivity, loadSubscriptions, loadCatalogExtras, loadUsers, loadArticles,
 } from '@/lib/bazzar2/load'
 import { UsersSection } from '@/components/bazzar2/UsersSection'
+import { BlogSection } from '@/components/bazzar2/BlogSection'
 import { OverviewSection } from '@/components/bazzar2/OverviewSection'
 import { SalesSection } from '@/components/bazzar2/SalesSection'
 import { RegistrationsSection } from '@/components/bazzar2/RegistrationsSection'
@@ -68,6 +69,10 @@ export default async function B2SectionPage({ params }: { params: { section: str
     case 'activity': {
       const { logs, users } = await loadActivity()
       return <ActivitySection logs={logs} users={users} />
+    }
+    case 'blog': {
+      const { articles } = await loadArticles()
+      return <BlogSection articles={articles} />
     }
     default:
       return (

@@ -99,6 +99,15 @@ export async function loadUsers() {
   }
 }
 
+export async function loadArticles() {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('bazzar_articles')
+    .select('*')
+    .order('created_at', { ascending: false })
+  return { articles: (data ?? []) as any[] }
+}
+
 export async function loadActivity() {
   const supabase = createClient()
   const [logsRes, usersRes] = await Promise.all([

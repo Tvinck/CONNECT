@@ -23,7 +23,7 @@ export function CatalogSection({ apps, products, variants, variantsReady }: { ap
   ]
 
   return (
-    <div className="page-enter px-4 sm:px-6 lg:px-8 py-6 lg:py-7 max-w-[1400px] mx-auto space-y-5">
+    <div className="page-enter px-4 sm:px-6 lg:px-8 py-6 lg:py-7 pb-20 max-w-[1400px] mx-auto space-y-5">
       <h1 className="text-[22px] font-bold tracking-tight">Каталог</h1>
       <div className="flex items-center gap-1.5">
         {tabs.map((t) => (

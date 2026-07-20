@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "typecheck:b2": "node scripts/typecheck-b2.mjs",
     "start:operator": "node operator_bot.js",
     "start:notifications": "node pachca_bot.js"
   },

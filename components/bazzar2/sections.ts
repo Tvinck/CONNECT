@@ -10,6 +10,7 @@ import {
   BarChart3,
   Users2,
   History,
+  Newspaper,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -31,6 +32,7 @@ export const B2_SECTIONS: B2Section[] = [
   { key: 'reputation', label: 'Репутация', icon: MessageSquareWarning, primary: true },
   { key: 'finance', label: 'Финансы', icon: Wallet, primary: true },
   { key: 'analytics', label: 'Аналитика', icon: BarChart3, primary: false },
+  { key: 'blog', label: 'Блог', icon: Newspaper, primary: false },
   { key: 'team', label: 'Команда и задачи', icon: Users2, primary: false },
   { key: 'activity', label: 'Активность', icon: History, primary: false },
 ]
