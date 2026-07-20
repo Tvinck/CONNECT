@@ -6,7 +6,6 @@ import { Plus, Upload, Download, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
 import { BazzarProductsPanel } from '@/components/projects/ProjectDetail/BazzarProductsPanel'
-import { getIpaUploadUrl, confirmIpaUpload, getIpaDownloadUrl, deleteIpa } from '@/app/actions/r2'
 import { money } from './kit'
 
 interface App { id: string; name: string; version: string; description: string | null; icon_url: string | null; ipa_url: string | null; bundle_id: string | null; size_bytes: number | null; is_active: boolean }
@@ -140,19 +139,35 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   }
 
+  const R2_WORKER = process.env.NEXT_PUBLIC_R2_WORKER_URL || ''
+
   const uploadIpa = async (file: File) => {
+    if (!R2_WORKER) { addToast('R2 Worker не настроен', 'Добавьте NEXT_PUBLIC_R2_WORKER_URL', 'err'); return }
     setUploading(true)
     setProgress(`Загрузка ${formatSize(file.size)}…`)
     try {
-      // Upload through server-side proxy (bypasses R2 SSL browser issue)
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await fetch(`/api/apps/upload?appId=${app.id}`, {
-        method: 'POST',
-        body: formData,
+      const safeName = file.name.replace(/[^\w.\-]/g, '_')
+      const key = `ipa/${app.id}/${safeName}`
+
+      // Upload through Cloudflare Worker (proper SSL, no size limits)
+      const res = await fetch(`${R2_WORKER}/${key}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'X-Upload-Token': process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || '',
+        },
+        body: file,
       })
       const result = await res.json()
       if (!result.success) throw new Error(result.error || 'Upload failed')
+
+      // Save to DB
+      const supabase = createClient()
+      const { error: dbErr } = await supabase
+        .from('bazzar_apps')
+        .update({ ipa_url: `${R2_WORKER}/${key}`, size_bytes: file.size, updated_at: new Date().toISOString() })
+        .eq('id', app.id)
+      if (dbErr) throw dbErr
 
       addToast('IPA загружен в R2', formatSize(file.size), 'ok')
       router.refresh()
@@ -164,18 +179,24 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
     }
   }
 
-  const downloadIpa = async () => {
-    try {
-      const result = await getIpaDownloadUrl(app.id)
-      if (!result.success || !result.downloadUrl) { addToast('IPA не найден', '', 'warn'); return }
-      window.open(result.downloadUrl, '_blank')
-    } catch { addToast('Ошибка', '', 'err') }
+  const downloadIpa = () => {
+    if (app.ipa_url) window.open(app.ipa_url, '_blank')
   }
 
   const removeIpa = async () => {
-    if (!confirm('Удалить IPA из R2?')) return
+    if (!confirm('Удалить IPA?')) return
     try {
-      await deleteIpa(app.id)
+      // Delete from R2 via Worker
+      if (R2_WORKER && app.ipa_url?.includes(R2_WORKER)) {
+        const key = app.ipa_url.replace(R2_WORKER + '/', '')
+        await fetch(`${R2_WORKER}/${key}`, {
+          method: 'DELETE',
+          headers: { 'X-Upload-Token': process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || '' },
+        })
+      }
+      // Clear from DB
+      const supabase = createClient()
+      await supabase.from('bazzar_apps').update({ ipa_url: null, size_bytes: null }).eq('id', app.id)
       addToast('IPA удалён', '', 'ok')
       router.refresh()
     } catch { addToast('Ошибка', '', 'err') }
