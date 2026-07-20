@@ -75,14 +75,17 @@ export async function POST(request: Request) {
               const email = verifyData.email || '';
 
               // Создаём заказ
+              const invoiceId = verifyData.inv || verifyData.id_invoice || null;
               const { data: newOrder, error: insertErr } = await supabase
                 .from('bazzar_orders')
                 .upsert({
                   uniquecode,
+                  invoice_id: invoiceId ? String(invoiceId) : null,
                   item_name: itemName,
                   amount: Number(amount) || 0,
                   email,
                   status: 'pending_udid',
+                  source: 'ggsel_link_fallback',
                   created_at: new Date().toISOString()
                 }, { onConflict: 'uniquecode' })
                 .select()
@@ -131,19 +134,23 @@ export async function POST(request: Request) {
     // 6. Меняем статус заказа
     await supabase.from('bazzar_orders').update({ status: 'linked', udid: udid }).eq('uniquecode', uniquecode)
 
-    // 7. Отправляем в apple_certificates для CRM
-    await supabase.from('apple_certificates').insert({
+    // 7. Отправляем в apple_certificates для CRM (upsert — без дублей)
+    const { error: certErr } = await supabase.from('apple_certificates').upsert({
       udid: udid,
       plan_id: order?.item_name || 'base',
       source: 'GGSel',
-      sale_price: order?.amount || 0
-    });
+      sale_price: order?.amount || 0,
+      status: 'paid',
+    }, { onConflict: 'udid' });
+    if (certErr) console.error('[GGSel link] apple_certificates upsert failed:', certErr.message);
 
-    // 8. Фиксируем в финансах
+    // 8. Фиксируем в финансах (единственное место записи транзакции)
+    // Дедуп: проверяем есть ли уже транзакция с этим uniquecode в описании
+    const safeCode = uniquecode.replace(/[%_\\]/g, '')
     const { data: existingTx } = await supabase
       .from('transactions')
       .select('id')
-      .ilike('description', `%${uniquecode.replace(/[%_]/g, '\\$&')}%`)
+      .ilike('description', `%${safeCode}%`)
       .maybeSingle();
 
     if (!existingTx && order.amount) {

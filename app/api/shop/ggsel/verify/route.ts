@@ -101,34 +101,16 @@ export async function GET(request: Request) {
     const itemName = verifyData.name_invoice || verifyData.name_goods || 'Сертификат Apple ESign';
     const invoiceId = verifyData.inv || verifyData.id_invoice || null;
 
-    // 3. Сохраняем заказ и финансы, если заказа еще нет в базе
-    // Проверяем и по uniquecode, и по invoice_id (cron сохраняет invoice_id)
+    // 3. Сохраняем заказ, если его еще нет в базе
+    // Транзакция создаётся только при link (привязке UDID) — не здесь,
+    // чтобы избежать дублей между verify и link.
     const { data: existingOrder } = await supabase
       .from('bazzar_orders')
       .select('id')
-      .or(`uniquecode.eq.${uniquecode},invoice_id.eq.${uniquecode}`)
+      .eq('uniquecode', uniquecode)
       .maybeSingle();
 
     if (!existingOrder) {
-      // Проверяем нет ли уже транзакции с этим кодом
-      const { data: existingTx } = await supabase
-        .from('transactions')
-        .select('id')
-        .ilike('description', `%${uniquecode.replace(/[%_]/g, '\\$&')}%`)
-        .maybeSingle();
-
-      if (!existingTx) {
-        const txAmount = Math.max(Number(amount) || 0, 0.01);
-        const { error: txErr } = await supabase.from('transactions').insert({
-          date: new Date().toISOString().slice(0, 10),
-          description: `GGSel: ${itemName} (код: ${uniquecode})`,
-          category: 'revenue',
-          type: 'income',
-          amount: txAmount,
-        });
-        if (txErr) console.error('[GGSel verify] transactions insert failed:', txErr.message);
-      }
-
       // Сохраняем в базу заказов
       const { error: orderErr } = await supabase.from('bazzar_orders').upsert({
         uniquecode: uniquecode,
@@ -146,8 +128,8 @@ export async function GET(request: Request) {
       await supabase.from('notifications').insert({
         user_id: 'ggsel-system',
         type: 'mention',
-        title: 'Упомянул',
-        body: `💳 **Новая оплата на GGSel!**\nТовар: ${itemName}\nСумма: ${amount} ₽\nКод: \`${uniquecode}\`\nEmail: ${email}\nКлиент скоро привяжет UDID.`,
+        title: 'GGSel: Новая оплата',
+        body: `💳 **Новая оплата на GGSel!**\nТовар: ${itemName}\nСумма: ${amount} ₽\nКод: \`${uniquecode}\`\nEmail: ${email}\nОжидаем привязку UDID.`,
         link: '/finances'
       }).then(({ error: notifErr }) => {
         if (notifErr) console.error('[GGSel verify] notifications insert failed:', notifErr.message);
