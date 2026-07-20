@@ -125,13 +125,25 @@ function AppsManager({ apps }: { apps: App[] }) {
   )
 }
 
-// ── App Row с R2 Upload ─────────────────────────────────────────────────────
+// ── App Row с R2 Upload + Inline Edit ───────────────────────────────────────
 function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onToggle: () => void }) {
   const router = useRouter()
   const { addToast } = useUIStore()
   const fileRef = useRef<HTMLInputElement>(null)
+  const reuploadRef = useRef<HTMLInputElement>(null)
+  const iconRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [iconUploading, setIconUploading] = useState(false)
+  const [f, setF] = useState({
+    name: app.name,
+    version: app.version,
+    description: app.description || '',
+    bundle_id: app.bundle_id || '',
+    icon_url: app.icon_url || '',
+  })
 
   const formatSize = (bytes: number | null) => {
     if (!bytes) return ''
@@ -149,7 +161,6 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
       const safeName = file.name.replace(/[^\w.\-]/g, '_')
       const key = `ipa/${app.id}/${safeName}`
 
-      // Upload through Cloudflare Worker (proper SSL, no size limits)
       const res = await fetch(`${R2_WORKER}/${key}`, {
         method: 'PUT',
         headers: {
@@ -161,7 +172,6 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
       const result = await res.json()
       if (!result.success) throw new Error(result.error || 'Upload failed')
 
-      // Save to DB
       const supabase = createClient()
       const { error: dbErr } = await supabase
         .from('bazzar_apps')
@@ -186,7 +196,6 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
   const removeIpa = async () => {
     if (!confirm('Удалить IPA?')) return
     try {
-      // Delete from R2 via Worker
       if (R2_WORKER && app.ipa_url?.includes(R2_WORKER)) {
         const key = app.ipa_url.replace(R2_WORKER + '/', '')
         await fetch(`${R2_WORKER}/${key}`, {
@@ -194,7 +203,6 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
           headers: { 'X-Upload-Token': process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || '' },
         })
       }
-      // Clear from DB
       const supabase = createClient()
       await supabase.from('bazzar_apps').update({ ipa_url: null, size_bytes: null }).eq('id', app.id)
       addToast('IPA удалён', '', 'ok')
@@ -202,46 +210,150 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
     } catch { addToast('Ошибка', '', 'err') }
   }
 
+  const uploadIcon = async (file: File) => {
+    setIconUploading(true)
+    try {
+      const supabase = createClient()
+      const path = `icons/${Date.now()}-${file.name.replace(/[^\w.\-]/g, '_')}`
+      const { error } = await supabase.storage.from('bazzar-apps').upload(path, file, { upsert: false })
+      if (error) throw error
+      const { data } = supabase.storage.from('bazzar-apps').getPublicUrl(path)
+      setF(prev => ({ ...prev, icon_url: data.publicUrl }))
+      addToast('Иконка загружена', '', 'ok')
+    } catch (e: any) { addToast('Ошибка', e.message || '', 'err') }
+    finally { setIconUploading(false) }
+  }
+
+  const saveEdit = async () => {
+    if (!f.name.trim()) { addToast('Укажите название', '', 'warn'); return }
+    setSaving(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('bazzar_apps').update({
+        name: f.name.trim(),
+        version: f.version.trim() || '1.0',
+        description: f.description.trim() || null,
+        bundle_id: f.bundle_id.trim() || null,
+        icon_url: f.icon_url.trim() || null,
+        updated_at: new Date().toISOString(),
+      }).eq('id', app.id)
+      if (error) throw error
+      addToast('Сохранено', '', 'ok')
+      setEditing(false)
+      router.refresh()
+    } catch (e: any) { addToast('Ошибка', e.message || '', 'err') }
+    finally { setSaving(false) }
+  }
+
+  const deleteApp = async () => {
+    if (!confirm(`Удалить «${app.name}» полностью?`)) return
+    try {
+      if (R2_WORKER && app.ipa_url?.includes(R2_WORKER)) {
+        const key = app.ipa_url.replace(R2_WORKER + '/', '')
+        await fetch(`${R2_WORKER}/${key}`, { method: 'DELETE', headers: { 'X-Upload-Token': process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || '' } })
+      }
+      const supabase = createClient()
+      await supabase.from('bazzar_apps').delete().eq('id', app.id)
+      addToast('Приложение удалено', '', 'ok')
+      router.refresh()
+    } catch { addToast('Ошибка', '', 'err') }
+  }
+
   return (
-    <div className="p-3.5 flex items-center gap-3 text-[13px]">
-      <span className="shrink-0 w-9 h-9 rounded-xl bg-black/[0.05] inline-flex items-center justify-center overflow-hidden">
-        {app.icon_url ? <img src={app.icon_url} alt="" className="w-full h-full object-cover" /> : <span className="text-mute text-[11px]">app</span>}
-      </span>
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold truncate">{app.name} <span className="text-mute font-normal">v{app.version}</span></div>
-        <div className="text-[11px] text-mute truncate">
-          {app.bundle_id || app.description || ''}
-          {app.ipa_url && app.size_bytes ? <span className="ml-1.5 text-ok">· IPA {formatSize(app.size_bytes)}</span> : null}
-          {app.ipa_url && !app.size_bytes ? <span className="ml-1.5 text-ok">· IPA ✓</span> : null}
+    <div className="border-b border-black/[0.05] last:border-b-0">
+      {/* Compact row */}
+      <div className="p-3.5 flex items-center gap-3 text-[13px] cursor-pointer hover:bg-black/[0.015]" onClick={() => setEditing(v => !v)}>
+        <span className="shrink-0 w-9 h-9 rounded-xl bg-black/[0.05] inline-flex items-center justify-center overflow-hidden">
+          {app.icon_url ? <img src={app.icon_url} alt="" className="w-full h-full object-cover" /> : <span className="text-mute text-[11px]">app</span>}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold truncate">{app.name} <span className="text-mute font-normal">v{app.version}</span></div>
+          <div className="text-[11px] text-mute truncate">
+            {app.bundle_id || app.description || ''}
+            {app.ipa_url && app.size_bytes ? <span className="ml-1.5 text-ok">· IPA {formatSize(app.size_bytes)}</span> : null}
+            {app.ipa_url && !app.size_bytes ? <span className="ml-1.5 text-ok">· IPA ✓</span> : null}
+          </div>
         </div>
+
+        {/* IPA actions */}
+        <div className="shrink-0 flex items-center gap-1" onClick={e => e.stopPropagation()}>
+          {app.ipa_url ? (
+            <>
+              <button onClick={downloadIpa} title="Скачать IPA" className="p-1.5 rounded-lg hover:bg-black/[0.04] text-mute hover:text-foreground">
+                <Download size={14} />
+              </button>
+              <button onClick={removeIpa} title="Удалить IPA" className="p-1.5 rounded-lg hover:bg-err/10 text-mute hover:text-err">
+                <Trash2 size={14} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-line text-[11px] text-mute hover:text-foreground hover:border-brand"
+            >
+              <Upload size={12} /> {uploading ? progress : 'Загрузить IPA'}
+            </button>
+          )}
+          <input ref={fileRef} type="file" accept=".ipa" hidden onChange={(e) => e.target.files?.[0] && uploadIpa(e.target.files[0])} />
+        </div>
+
+        <button onClick={(e) => { e.stopPropagation(); onToggle() }} disabled={pending} className={`shrink-0 px-2.5 py-1 rounded-lg text-[12px] font-semibold ${app.is_active ? 'bg-ok/15 text-ok' : 'bg-black/[0.06] text-mute'}`}>
+          {app.is_active ? 'Активно' : 'Скрыто'}
+        </button>
       </div>
 
-      {/* IPA actions */}
-      <div className="shrink-0 flex items-center gap-1">
-        {app.ipa_url ? (
-          <>
-            <button onClick={downloadIpa} title="Скачать IPA" className="p-1.5 rounded-lg hover:bg-black/[0.04] text-mute hover:text-foreground">
-              <Download size={14} />
-            </button>
-            <button onClick={removeIpa} title="Удалить IPA" className="p-1.5 rounded-lg hover:bg-err/10 text-mute hover:text-err">
-              <Trash2 size={14} />
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-line text-[11px] text-mute hover:text-foreground hover:border-brand"
-          >
-            <Upload size={12} /> {uploading ? progress : 'Загрузить IPA'}
-          </button>
-        )}
-        <input ref={fileRef} type="file" accept=".ipa" hidden onChange={(e) => e.target.files?.[0] && uploadIpa(e.target.files[0])} />
-      </div>
+      {/* Edit panel */}
+      {editing && (
+        <div className="px-3.5 pb-4 pt-1 bg-black/[0.01] border-t border-black/[0.04]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mb-3">
+            <L label="Название"><input className="b2-input" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} /></L>
+            <L label="Версия"><input className="b2-input" value={f.version} onChange={e => setF({ ...f, version: e.target.value })} /></L>
+            <L label="Bundle ID"><input className="b2-input" value={f.bundle_id} onChange={e => setF({ ...f, bundle_id: e.target.value })} placeholder="com.example.app" /></L>
+            <L label="Иконка">
+              <div className="flex gap-2">
+                <input className="b2-input flex-1" value={f.icon_url} onChange={e => setF({ ...f, icon_url: e.target.value })} placeholder="URL" />
+                <label className={`shrink-0 inline-flex items-center px-3 rounded-xl border border-line text-[12px] font-semibold cursor-pointer ${iconUploading ? 'opacity-50' : 'hover:bg-black/[0.04]'}`}>
+                  <input ref={iconRef} type="file" accept="image/*" hidden disabled={iconUploading} onChange={e => e.target.files?.[0] && uploadIcon(e.target.files[0])} />
+                  {iconUploading ? '…' : 'Файл'}
+                </label>
+              </div>
+            </L>
+            <div className="md:col-span-2"><L label="Описание"><input className="b2-input" value={f.description} onChange={e => setF({ ...f, description: e.target.value })} /></L></div>
+          </div>
 
-      <button onClick={onToggle} disabled={pending} className={`shrink-0 px-2.5 py-1 rounded-lg text-[12px] font-semibold ${app.is_active ? 'bg-ok/15 text-ok' : 'bg-black/[0.06] text-mute'}`}>
-        {app.is_active ? 'Активно' : 'Скрыто'}
-      </button>
+          {/* IPA re-upload */}
+          <div className="flex items-center gap-2 mb-3 text-[12px]">
+            <span className="text-mute">IPA:</span>
+            {app.ipa_url ? (
+              <span className="text-ok">{formatSize(app.size_bytes)} загружен</span>
+            ) : (
+              <span className="text-mute">не загружен</span>
+            )}
+            <button
+              onClick={() => reuploadRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-dashed border-line text-[11px] text-mute hover:text-foreground hover:border-brand"
+            >
+              <Upload size={11} /> {uploading ? progress : (app.ipa_url ? 'Заменить IPA' : 'Загрузить IPA')}
+            </button>
+            <input ref={reuploadRef} type="file" accept=".ipa" hidden onChange={e => e.target.files?.[0] && uploadIpa(e.target.files[0])} />
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <button onClick={saveEdit} disabled={saving} className="px-4 py-2 rounded-xl bg-ok text-white text-[13px] font-semibold disabled:opacity-50">
+              {saving ? '…' : 'Сохранить'}
+            </button>
+            <button onClick={() => setEditing(false)} className="px-4 py-2 rounded-xl bg-black/[0.04] text-[13px] font-semibold text-mute">
+              Отмена
+            </button>
+            <button onClick={deleteApp} className="ml-auto px-3 py-2 rounded-xl text-[12px] font-semibold text-err hover:bg-err/10">
+              Удалить приложение
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
