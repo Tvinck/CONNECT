@@ -35,18 +35,24 @@ async function ggselLogin(): Promise<string | null> {
   return data.token || null
 }
 
-// GET handler for Vercel Cron (crons only support GET)
+function checkAuth(request: Request): boolean {
+  const secret =
+    request.headers.get('x-cron-secret') ??
+    new URL(request.url).searchParams.get('secret') ??
+    request.headers.get('authorization')?.replace('Bearer ', '')
+  return !!process.env.CRON_SECRET && secret === process.env.CRON_SECRET
+}
+
+// GET handler for Vercel Cron + pg_cron
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   return syncChats()
 }
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!checkAuth(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   return syncChats()

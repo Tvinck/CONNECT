@@ -11,14 +11,6 @@
     {
       "path": "/api/cron/daily-tasks",
       "schedule": "0 21 * * *"
-    },
-    {
-      "path": "/api/shop/ggsel/sync-chats",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/ggsel-sync-orders",
-      "schedule": "*/10 * * * *"
     }
   ]
 }
