@@ -18,7 +18,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "font-src 'self' data:",
       "img-src 'self' data: blob: https://*.supabase.co https://*.suno.ai https://*.suno.co https://www.google.com https://*.gstatic.com https://*.steamstatic.com https://*.akamaihd.net",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.suno.ai https://*.suno.co wss://*.suno.ai",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.suno.ai https://*.suno.co wss://*.suno.ai https://*.r2.cloudflarestorage.com",
       "media-src 'self' https://*.suno.ai https://*.suno.co https://*.supabase.co https://catbox.moe https://*.catbox.moe blob: data:",
 
       "frame-ancestors 'none'",
