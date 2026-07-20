@@ -18,6 +18,7 @@ export const r2 = new S3Client({
   region: 'auto',
   endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
   credentials: { accessKeyId, secretAccessKey },
+  forcePathStyle: true, // R2 requires path-style: endpoint/bucket/key (not bucket.endpoint/key)
 })
 
 /** Generate a presigned URL for uploading a file to R2. */
