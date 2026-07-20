@@ -9,9 +9,11 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PU
 const supabase = createClient(supabaseUrl!, supabaseKey!);
 
 export async function GET(req: Request) {
-  // Vercel Cron sends a special header that you can check
-  const authHeader = req.headers.get('authorization');
-  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret =
+    req.headers.get('x-cron-secret') ??
+    new URL(req.url).searchParams.get('secret') ??
+    req.headers.get('authorization')?.replace('Bearer ', '')
+  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -1,16 +1,2 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/stuck-orders",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/sync-servers",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/daily-tasks",
-      "schedule": "0 21 * * *"
-    }
-  ]
 }
