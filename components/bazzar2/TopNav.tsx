@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, ArrowLeft } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { B2_SECTIONS, b2Label } from './sections'
 import { BazzarMark } from './BazzarMark'
@@ -41,7 +41,10 @@ export function TopNav() {
     <header className="sticky top-0 z-30 bg-card/95 backdrop-blur border-b border-line">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-3">
         {/* Утилиты (поиск / уведомления / профиль) */}
-        <div className="[&>header]:mb-0">
+        <div className="[&>header]:mb-0 flex items-center gap-3">
+          <Link href="/" prefetch={false} className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 -ml-2 rounded-lg text-mute hover:text-foreground hover:bg-black/[0.04] transition-colors text-[13px] font-medium" title="Назад в Connect">
+            <ArrowLeft size={16} strokeWidth={2.2} />
+          </Link>
           <Header title="BazzarSerts 2.0" subtitle={`Командный центр · ${b2Label(active)}`} />
         </div>
 
