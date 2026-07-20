@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus } from 'lucide-react'
+import { Plus, Upload, Download, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
 import { BazzarProductsPanel } from '@/components/projects/ProjectDetail/BazzarProductsPanel'
+import { getIpaUploadUrl, confirmIpaUpload, getIpaDownloadUrl, deleteIpa } from '@/app/actions/r2'
 import { money } from './kit'
 
-interface App { id: string; name: string; version: string; description: string | null; icon_url: string | null; ipa_url: string | null; bundle_id: string | null; is_active: boolean }
+interface App { id: string; name: string; version: string; description: string | null; icon_url: string | null; ipa_url: string | null; bundle_id: string | null; size_bytes: number | null; is_active: boolean }
 interface Product { id: string; title: string; price: number; active: boolean }
 interface Variant { id: string; product_id: string; name: string; guarantee_months: number; price: number; api_cost: number; active: boolean }
 
@@ -110,7 +111,7 @@ function AppsManager({ apps }: { apps: App[] }) {
               </label>
             </div>
           </L>
-          <L label="IPA (URL)"><input className="b2-input" value={f.ipa_url} onChange={(e) => setF({ ...f, ipa_url: e.target.value })} /></L>
+          <L label="IPA (URL — опционально)"><input className="b2-input" value={f.ipa_url} onChange={(e) => setF({ ...f, ipa_url: e.target.value })} placeholder="Можно загрузить позже" /></L>
           <L label="Описание"><input className="b2-input" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></L>
           <button disabled={pending} onClick={add} className="px-4 py-2.5 rounded-xl bg-ok text-white text-[13px] font-semibold disabled:opacity-50">{pending ? '…' : 'Добавить'}</button>
         </div>
@@ -118,20 +119,113 @@ function AppsManager({ apps }: { apps: App[] }) {
       <div className="card divide-y divide-black/[0.05]">
         {apps.length === 0 && <div className="p-10 text-center text-mute">Приложений пока нет.</div>}
         {apps.map((a) => (
-          <div key={a.id} className="p-3.5 flex items-center gap-3 text-[13px]">
-            <span className="shrink-0 w-9 h-9 rounded-xl bg-black/[0.05] inline-flex items-center justify-center overflow-hidden">
-              {a.icon_url ? <img src={a.icon_url} alt="" className="w-full h-full object-cover" /> : <span className="text-mute text-[11px]">app</span>}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">{a.name} <span className="text-mute font-normal">v{a.version}</span></div>
-              <div className="text-[11px] text-mute truncate">{a.bundle_id || a.description || ''}</div>
-            </div>
-            <button onClick={() => toggle(a)} disabled={pending} className={`shrink-0 px-2.5 py-1 rounded-lg text-[12px] font-semibold ${a.is_active ? 'bg-ok/15 text-ok' : 'bg-black/[0.06] text-mute'}`}>
-              {a.is_active ? 'Активно' : 'Скрыто'}
-            </button>
-          </div>
+          <AppRow key={a.id} app={a} pending={pending} onToggle={() => toggle(a)} />
         ))}
       </div>
+    </div>
+  )
+}
+
+// ── App Row с R2 Upload ─────────────────────────────────────────────────────
+function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onToggle: () => void }) {
+  const router = useRouter()
+  const { addToast } = useUIStore()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState('')
+
+  const formatSize = (bytes: number | null) => {
+    if (!bytes) return ''
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+  }
+
+  const uploadIpa = async (file: File) => {
+    setUploading(true)
+    setProgress('Получаю URL…')
+    try {
+      const { uploadUrl, key } = await getIpaUploadUrl(app.id, file.name)
+      if (!uploadUrl || !key) throw new Error('Не удалось получить URL')
+
+      setProgress(`Загрузка ${formatSize(file.size)}…`)
+      const res = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: file,
+      })
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+
+      setProgress('Сохраняю…')
+      const result = await confirmIpaUpload(app.id, key, file.size)
+      if (!result.success) throw new Error(result.error)
+
+      addToast('IPA загружен в R2', formatSize(file.size), 'ok')
+      router.refresh()
+    } catch (e: any) {
+      addToast('Ошибка загрузки IPA', e.message || '', 'err')
+    } finally {
+      setUploading(false)
+      setProgress('')
+    }
+  }
+
+  const downloadIpa = async () => {
+    try {
+      const result = await getIpaDownloadUrl(app.id)
+      if (!result.success || !result.downloadUrl) { addToast('IPA не найден', '', 'warn'); return }
+      window.open(result.downloadUrl, '_blank')
+    } catch { addToast('Ошибка', '', 'err') }
+  }
+
+  const removeIpa = async () => {
+    if (!confirm('Удалить IPA из R2?')) return
+    try {
+      await deleteIpa(app.id)
+      addToast('IPA удалён', '', 'ok')
+      router.refresh()
+    } catch { addToast('Ошибка', '', 'err') }
+  }
+
+  return (
+    <div className="p-3.5 flex items-center gap-3 text-[13px]">
+      <span className="shrink-0 w-9 h-9 rounded-xl bg-black/[0.05] inline-flex items-center justify-center overflow-hidden">
+        {app.icon_url ? <img src={app.icon_url} alt="" className="w-full h-full object-cover" /> : <span className="text-mute text-[11px]">app</span>}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="font-semibold truncate">{app.name} <span className="text-mute font-normal">v{app.version}</span></div>
+        <div className="text-[11px] text-mute truncate">
+          {app.bundle_id || app.description || ''}
+          {app.ipa_url && app.size_bytes ? <span className="ml-1.5 text-ok">· IPA {formatSize(app.size_bytes)}</span> : null}
+          {app.ipa_url && !app.size_bytes ? <span className="ml-1.5 text-ok">· IPA ✓</span> : null}
+        </div>
+      </div>
+
+      {/* IPA actions */}
+      <div className="shrink-0 flex items-center gap-1">
+        {app.ipa_url ? (
+          <>
+            <button onClick={downloadIpa} title="Скачать IPA" className="p-1.5 rounded-lg hover:bg-black/[0.04] text-mute hover:text-foreground">
+              <Download size={14} />
+            </button>
+            <button onClick={removeIpa} title="Удалить IPA" className="p-1.5 rounded-lg hover:bg-err/10 text-mute hover:text-err">
+              <Trash2 size={14} />
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-dashed border-line text-[11px] text-mute hover:text-foreground hover:border-brand"
+          >
+            <Upload size={12} /> {uploading ? progress : 'Загрузить IPA'}
+          </button>
+        )}
+        <input ref={fileRef} type="file" accept=".ipa" hidden onChange={(e) => e.target.files?.[0] && uploadIpa(e.target.files[0])} />
+      </div>
+
+      <button onClick={onToggle} disabled={pending} className={`shrink-0 px-2.5 py-1 rounded-lg text-[12px] font-semibold ${app.is_active ? 'bg-ok/15 text-ok' : 'bg-black/[0.06] text-mute'}`}>
+        {app.is_active ? 'Активно' : 'Скрыто'}
+      </button>
     </div>
   )
 }
