@@ -8,7 +8,7 @@ import { useUIStore } from '@/store/ui'
 import { BazzarProductsPanel } from '@/components/projects/ProjectDetail/BazzarProductsPanel'
 import { money } from './kit'
 
-interface App { id: string; name: string; version: string; description: string | null; icon_url: string | null; ipa_url: string | null; bundle_id: string | null; size_bytes: number | null; is_active: boolean }
+interface App { id: string; name: string; version: string; description: string | null; icon_url: string | null; ipa_url: string | null; bundle_id: string | null; size_bytes: number | null; price: number | null; is_active: boolean }
 interface Product { id: string; title: string; price: number; active: boolean }
 interface Variant { id: string; product_id: string; name: string; guarantee_months: number; price: number; api_cost: number; active: boolean }
 
@@ -143,6 +143,7 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
     description: app.description || '',
     bundle_id: app.bundle_id || '',
     icon_url: app.icon_url || '',
+    price: String(app.price ?? 0),
   })
 
   const formatSize = (bytes: number | null) => {
@@ -235,6 +236,7 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
         description: f.description.trim() || null,
         bundle_id: f.bundle_id.trim() || null,
         icon_url: f.icon_url.trim() || null,
+        price: parseFloat(f.price) || 0,
         updated_at: new Date().toISOString(),
       }).eq('id', app.id)
       if (error) throw error
@@ -270,6 +272,7 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
           <div className="font-semibold truncate">{app.name} <span className="text-mute font-normal">v{app.version}</span></div>
           <div className="text-[11px] text-mute truncate">
             {app.bundle_id || app.description || ''}
+            {app.price ? <span className="ml-1.5 font-semibold">{app.price} ₽</span> : <span className="ml-1.5 text-ok">Бесплатно</span>}
             {app.ipa_url && app.size_bytes ? <span className="ml-1.5 text-ok">· IPA {formatSize(app.size_bytes)}</span> : null}
             {app.ipa_url && !app.size_bytes ? <span className="ml-1.5 text-ok">· IPA ✓</span> : null}
           </div>
@@ -310,6 +313,7 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
             <L label="Название"><input className="b2-input" value={f.name} onChange={e => setF({ ...f, name: e.target.value })} /></L>
             <L label="Версия"><input className="b2-input" value={f.version} onChange={e => setF({ ...f, version: e.target.value })} /></L>
             <L label="Bundle ID"><input className="b2-input" value={f.bundle_id} onChange={e => setF({ ...f, bundle_id: e.target.value })} placeholder="com.example.app" /></L>
+            <L label="Цена (₽, 0 = бесплатно)"><input className="b2-input" type="number" min="0" step="1" value={f.price} onChange={e => setF({ ...f, price: e.target.value })} placeholder="0" /></L>
             <L label="Иконка">
               <div className="flex gap-2">
                 <input className="b2-input flex-1" value={f.icon_url} onChange={e => setF({ ...f, icon_url: e.target.value })} placeholder="URL" />
