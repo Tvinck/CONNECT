@@ -74,10 +74,13 @@ export default function BazzarAppsPage() {
     }
 
     setIsUploading(true)
-    setUploadProgress(10)
+    setUploadProgress(5)
+
+    const R2_BASE = 'https://bazzar-r2.artyomkoshelev-04.workers.dev'
+    const R2_TOKEN = process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || ''
 
     try {
-      // 1. Upload Icon
+      // 1. Upload Icon (small file → Supabase Storage)
       const iconExt = iconFile.name.split('.').pop()
       const iconPath = `icons/${Date.now()}_${Math.random().toString(36).substring(7)}.${iconExt}`
       const { error: iconError } = await supabase.storage
@@ -85,21 +88,81 @@ export default function BazzarAppsPage() {
         .upload(iconPath, iconFile)
 
       if (iconError) throw iconError
-      setUploadProgress(30)
+      setUploadProgress(15)
 
-      // 2. Upload IPA
-      const ipaExt = ipaFile.name.split('.').pop()
-      const ipaPath = `ipas/${Date.now()}_${Math.random().toString(36).substring(7)}.${ipaExt}`
-      const { error: ipaError } = await supabase.storage
-        .from('bazzar-apps')
-        .upload(ipaPath, ipaFile)
+      // 2. Upload IPA via R2 multipart upload (supports large files)
+      const ipaKey = `ipa/${crypto.randomUUID()}/${ipaFile.name.replace(/\s+/g, '_')}`
+      const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB chunks
 
-      if (ipaError) throw ipaError
-      setUploadProgress(80)
+      if (ipaFile.size < 90 * 1024 * 1024) {
+        // Small IPA (<90MB) — direct PUT
+        const putRes = await fetch(`${R2_BASE}/${ipaKey}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'X-Upload-Token': R2_TOKEN,
+          },
+          body: ipaFile,
+        })
+        if (!putRes.ok) throw new Error(`R2 upload failed: ${putRes.status}`)
+        setUploadProgress(80)
+      } else {
+        // Large IPA — multipart upload
+        // Step A: Create multipart upload
+        const createRes = await fetch(`${R2_BASE}/multipart/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
+          body: JSON.stringify({ key: ipaKey }),
+        })
+        if (!createRes.ok) throw new Error('Failed to create multipart upload')
+        const { uploadId } = await createRes.json()
 
-      // Get public URLs
+        // Step B: Upload parts
+        const totalParts = Math.ceil(ipaFile.size / CHUNK_SIZE)
+        const parts: { partNumber: number; etag: string }[] = []
+
+        for (let i = 0; i < totalParts; i++) {
+          const start = i * CHUNK_SIZE
+          const end = Math.min(start + CHUNK_SIZE, ipaFile.size)
+          const chunk = ipaFile.slice(start, end)
+
+          const partRes = await fetch(
+            `${R2_BASE}/multipart/part?uploadId=${uploadId}&partNumber=${i + 1}&key=${encodeURIComponent(ipaKey)}`,
+            {
+              method: 'PUT',
+              headers: { 'X-Upload-Token': R2_TOKEN },
+              body: chunk,
+            }
+          )
+          if (!partRes.ok) {
+            // Abort on failure
+            await fetch(`${R2_BASE}/multipart/abort`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
+              body: JSON.stringify({ uploadId, key: ipaKey }),
+            })
+            throw new Error(`Part ${i + 1}/${totalParts} upload failed`)
+          }
+
+          const partData = await partRes.json()
+          parts.push({ partNumber: partData.partNumber, etag: partData.etag })
+          setUploadProgress(15 + Math.round((i + 1) / totalParts * 65))
+        }
+
+        // Step C: Complete multipart upload
+        const completeRes = await fetch(`${R2_BASE}/multipart/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
+          body: JSON.stringify({ uploadId, key: ipaKey, parts }),
+        })
+        if (!completeRes.ok) throw new Error('Failed to complete multipart upload')
+      }
+
+      setUploadProgress(85)
+      const ipaPublicUrl = `${R2_BASE}/${ipaKey}`
+
+      // Get icon public URL
       const { data: iconData } = supabase.storage.from('bazzar-apps').getPublicUrl(iconPath)
-      const { data: ipaData } = supabase.storage.from('bazzar-apps').getPublicUrl(ipaPath)
 
       // 3. Insert into DB
       const { error: dbError } = await supabase
@@ -110,7 +173,7 @@ export default function BazzarAppsPage() {
           description,
           bundle_id: bundleId,
           icon_url: iconData.publicUrl,
-          ipa_url: ipaData.publicUrl,
+          ipa_url: ipaPublicUrl,
           size_bytes: ipaFile.size,
           is_active: true
         })
