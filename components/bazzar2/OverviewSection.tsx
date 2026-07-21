@@ -10,12 +10,13 @@ interface OverviewData {
   reviews: { id: string; author: string; rating: number; text: string; status: string; created_at: string }[]
   pending: { id: string; created_at: string; sale_price: number; source: string; udid: string; plan_id: string; crm_status: string }[]
   manual: { id: string; code: string; platform: string; guarantee_months: number; price: number; status: string; udid: string | null; created_at: string }[]
+  orders: { id: string; uniquecode: string; item_name: string; amount: number; source: string; status: string; created_at: string }[]
 }
 
 const DAY = 86_400_000
 
 export function OverviewSection({ data }: { data: OverviewData }) {
-  const { certs, users, tickets, reviews, pending } = data
+  const { certs, users, tickets, reviews, pending, orders } = data
 
   const startOfToday = new Date()
   startOfToday.setHours(0, 0, 0, 0)
@@ -37,16 +38,26 @@ export function OverviewSection({ data }: { data: OverviewData }) {
   })
   const pctTrend = (c: number, p: number): number | null => (p > 0 ? ((c - p) / p) * 100 : c > 0 ? 100 : null)
 
-  const revenue30 = cur.reduce((s, c) => s + (c.sale_price || 0), 0)
+  // GGSel orders split by period
+  const curOrders = (orders || []).filter((o: any) => new Date(o.created_at).getTime() >= d30)
+  const prevOrders = (orders || []).filter((o: any) => {
+    const t = new Date(o.created_at).getTime()
+    return t >= d60 && t < d30
+  })
+
+  const certRevenue30 = cur.reduce((s, c) => s + (c.sale_price || 0), 0)
+  const orderRevenue30 = curOrders.reduce((s: number, o: any) => s + (o.amount || 0), 0)
+  const revenue30 = certRevenue30 + orderRevenue30
   const cost30 = cur.reduce((s, c) => s + (c.api_cost || 0), 0)
   const margin30 = revenue30 - cost30
-  const sales30 = cur.length
-  const prevRevenue = prev.reduce((s, c) => s + (c.sale_price || 0), 0)
+  const sales30 = cur.length + curOrders.length
+  const prevRevenue = prev.reduce((s, c) => s + (c.sale_price || 0), 0) + prevOrders.reduce((s: number, o: any) => s + (o.amount || 0), 0)
   const revenueTrend = pctTrend(revenue30, prevRevenue)
-  const salesTrend = pctTrend(sales30, prev.length)
+  const salesTrend = pctTrend(sales30, prev.length + prevOrders.length)
   const usersTrend = pctTrend(curUsers.length, prevUsers.length)
   const todayCerts = cur.filter((c) => new Date(c.created_at).getTime() >= todayMs)
-  const revenueToday = todayCerts.reduce((s, c) => s + (c.sale_price || 0), 0)
+  const todayOrders = curOrders.filter((o: any) => new Date(o.created_at).getTime() >= todayMs)
+  const revenueToday = todayCerts.reduce((s, c) => s + (c.sale_price || 0), 0) + todayOrders.reduce((s: number, o: any) => s + (o.amount || 0), 0)
   const avgCheck = sales30 ? revenue30 / sales30 : 0
   const unanswered = tickets.filter((t) => !t.admin_reply).length
 
@@ -54,10 +65,17 @@ export function OverviewSection({ data }: { data: OverviewData }) {
   const byChannel = new Map<string, { label: string; color: string; revenue: number; count: number }>()
   for (const c of cur) {
     const m = channelMeta(c.source)
-    const cur = byChannel.get(m.label) || { label: m.label, color: m.color, revenue: 0, count: 0 }
-    cur.revenue += c.sale_price || 0
-    cur.count += 1
-    byChannel.set(m.label, cur)
+    const ch = byChannel.get(m.label) || { label: m.label, color: m.color, revenue: 0, count: 0 }
+    ch.revenue += c.sale_price || 0
+    ch.count += 1
+    byChannel.set(m.label, ch)
+  }
+  for (const o of curOrders) {
+    const m = channelMeta((o as any).source || 'ggsel')
+    const ch = byChannel.get(m.label) || { label: m.label, color: m.color, revenue: 0, count: 0 }
+    ch.revenue += (o as any).amount || 0
+    ch.count += 1
+    byChannel.set(m.label, ch)
   }
   const channels = Array.from(byChannel.values()).sort((a, b) => b.revenue - a.revenue)
 
@@ -66,13 +84,19 @@ export function OverviewSection({ data }: { data: OverviewData }) {
   for (let i = 13; i >= 0; i--) {
     const day = new Date(todayMs - i * DAY)
     const next = day.getTime() + DAY
-    const val = cur
+    const certVal = cur
       .filter((c) => {
         const t = new Date(c.created_at).getTime()
         return t >= day.getTime() && t < next
       })
       .reduce((s, c) => s + (c.sale_price || 0), 0)
-    bars.push({ label: dateShort(day.toISOString()), value: val })
+    const orderVal = curOrders
+      .filter((o: any) => {
+        const t = new Date(o.created_at).getTime()
+        return t >= day.getTime() && t < next
+      })
+      .reduce((s: number, o: any) => s + (o.amount || 0), 0)
+    bars.push({ label: dateShort(day.toISOString()), value: certVal + orderVal })
   }
 
   return (

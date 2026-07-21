@@ -41,7 +41,7 @@ export interface ManualReg {
 export async function loadOverview() {
   const supabase = createClient()
   const since = daysAgoIso(60) // 60 дней — чтобы сравнить текущий период с прошлым
-  const [certsRes, usersRes, ticketsRes, reviewsRes, pendingRes, manualRes] = await Promise.all([
+  const [certsRes, usersRes, ticketsRes, reviewsRes, pendingRes, manualRes, ordersRes] = await Promise.all([
     supabase
       .from('apple_certificates')
       .select('id, created_at, sale_price, api_cost, source, crm_status, udid, plan_id')
@@ -52,6 +52,7 @@ export async function loadOverview() {
     supabase.from('bazzar_reviews').select('id, author, rating, text, status, created_at').order('created_at', { ascending: false }).limit(6),
     supabase.from('apple_certificates').select('id, created_at, sale_price, source, udid, plan_id, crm_status').in('crm_status', ['pending', 'in_progress']).order('created_at', { ascending: false }).limit(30),
     supabase.from('manual_registrations').select('id, code, platform, guarantee_months, price, status, udid, created_at').order('created_at', { ascending: false }).limit(10),
+    supabase.from('bazzar_orders').select('id, uniquecode, item_name, amount, source, status, created_at').gte('created_at', since).order('created_at', { ascending: false }),
   ])
   return {
     certs: (certsRes.data ?? []) as Cert[],
@@ -60,6 +61,7 @@ export async function loadOverview() {
     reviews: reviewsRes.data ?? [],
     pending: pendingRes.data ?? [],
     manual: manualRes.data ?? [],
+    orders: ordersRes.data ?? [],
   }
 }
 
