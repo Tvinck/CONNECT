@@ -1,8 +1,2 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/ggsel-sync-orders",
-      "schedule": "*/5 * * * *"
-    }
-  ]
 }
