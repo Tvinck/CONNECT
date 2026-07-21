@@ -36,8 +36,47 @@ export async function POST(request: Request) {
   const success = body.Success === true
 
   if (status === 'CONFIRMED' && success) {
-    const code = String(body.OrderId || '').replace(/^mr_/, '')
+    const orderId = String(body.OrderId || '')
     const supabase = createAdminClient()
+
+    // ── App purchase ──────────────────────────────
+    if (orderId.startsWith('app_')) {
+      const { data: purchase } = await supabase
+        .from('user_app_purchases')
+        .select('*')
+        .eq('order_code', orderId)
+        .maybeSingle()
+
+      if (purchase && purchase.status === 'pending') {
+        await supabase
+          .from('user_app_purchases')
+          .update({
+            status: 'paid',
+            payment_id: body.PaymentId ? String(body.PaymentId) : purchase.payment_id,
+          })
+          .eq('order_code', orderId)
+
+        // Record revenue
+        const { data: app } = await supabase
+          .from('bazzar_apps')
+          .select('name')
+          .eq('id', purchase.app_id)
+          .maybeSingle()
+
+        await supabase.from('transactions').insert({
+          date: new Date().toISOString().slice(0, 10),
+          description: `Покупка приложения: ${app?.name || 'unknown'} (${orderId})`,
+          category: 'revenue',
+          type: 'income',
+          amount: Math.max(Number(purchase.amount) || 0, 0.01),
+        })
+      }
+
+      return new NextResponse('OK')
+    }
+
+    // ── Certificate purchase (existing) ───────────
+    const code = orderId.replace(/^mr_/, '')
 
     const { data: reg } = await supabase
       .from('manual_registrations')
