@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, Search, Download, Plus, Copy } from 'lucide-react'
+import { Check, X, Search, Download, Plus, Copy, Upload, FileUp, Lock } from 'lucide-react'
 import { useUIStore } from '@/store/ui'
 import { createClient } from '@/lib/supabase/client'
 import { updateCertStatus } from '@/app/actions/apple-certs'
@@ -115,17 +115,33 @@ export function RegistrationsSection({ certs, manual }: { certs: Cert[]; manual:
     }
   }
 
+  // ── Approval modal state ──────────────────────
+  const [approvalCert, setApprovalCert] = useState<Cert | null>(null)
+  const [certFile, setCertFile] = useState<File | null>(null)
+  const [provFile, setProvFile] = useState<File | null>(null)
+  const [certPassword, setCertPassword] = useState('')
+  const [approvalComment, setApprovalComment] = useState('')
+  const [uploading, setUploading] = useState(false)
+
   const act = (cert: Cert, status: 'approved' | 'rejected') => {
-    let comment: string | undefined
-    if (status === 'rejected') {
-      comment = window.prompt('Причина отклонения (необязательно):') || undefined
+    if (status === 'approved') {
+      // Open approval modal
+      setApprovalCert(cert)
+      setCertFile(null)
+      setProvFile(null)
+      setCertPassword('')
+      setApprovalComment('')
+      return
     }
+
+    // Reject immediately
+    const comment = window.prompt('Причина отклонения (необязательно):') || undefined
     setBusyId(cert.id)
     startTransition(async () => {
       try {
         const res = await updateCertStatus(cert.id, status, comment)
         if (!res?.success) throw new Error(res?.error || 'Ошибка')
-        addToast(status === 'approved' ? 'Сертификат согласован' : 'Сертификат отклонён', undefined, 'ok')
+        addToast('Сертификат отклонён', undefined, 'ok')
         router.refresh()
       } catch (e: any) {
         addToast('Ошибка', e.message || '', 'err')
@@ -133,6 +149,61 @@ export function RegistrationsSection({ certs, manual }: { certs: Cert[]; manual:
         setBusyId(null)
       }
     })
+  }
+
+  const submitApproval = async () => {
+    if (!approvalCert) return
+    setUploading(true)
+    const supabase = createClient()
+
+    try {
+      let certFileUrl: string | null = null
+      let provFileUrl: string | null = null
+
+      // Upload cert file (.p12) if provided
+      if (certFile) {
+        const path = `${approvalCert.id}/${Date.now()}_${certFile.name}`
+        const { error: upErr } = await supabase.storage.from('cert-files').upload(path, certFile)
+        if (upErr) throw new Error(`Ошибка загрузки .p12: ${upErr.message}`)
+        const { data: urlData } = supabase.storage.from('cert-files').getPublicUrl(path)
+        certFileUrl = urlData?.publicUrl || path
+      }
+
+      // Upload provision file (.mobileprovision) if provided
+      if (provFile) {
+        const path = `${approvalCert.id}/${Date.now()}_${provFile.name}`
+        const { error: upErr } = await supabase.storage.from('cert-files').upload(path, provFile)
+        if (upErr) throw new Error(`Ошибка загрузки .mobileprovision: ${upErr.message}`)
+        const { data: urlData } = supabase.storage.from('cert-files').getPublicUrl(path)
+        provFileUrl = urlData?.publicUrl || path
+      }
+
+      // Update cert record with files + password
+      const updates: Record<string, string | null> = {}
+      if (certFileUrl) updates.cert_file_url = certFileUrl
+      if (provFileUrl) updates.provision_file_url = provFileUrl
+      if (certPassword.trim()) updates.cert_password = certPassword.trim()
+
+      if (Object.keys(updates).length > 0) {
+        const { error: updErr } = await supabase
+          .from('apple_certificates')
+          .update(updates)
+          .eq('id', approvalCert.id)
+        if (updErr) console.error('Failed to save cert files:', updErr)
+      }
+
+      // Approve
+      const res = await updateCertStatus(approvalCert.id, 'approved', approvalComment.trim() || undefined)
+      if (!res?.success) throw new Error(res?.error || 'Ошибка')
+
+      addToast('Сертификат согласован', certFileUrl ? 'Файлы прикреплены' : undefined, 'ok')
+      setApprovalCert(null)
+      router.refresh()
+    } catch (e: any) {
+      addToast('Ошибка', e.message || '', 'err')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const tabs: { id: Tab; label: string; count: number }[] = [
@@ -309,6 +380,99 @@ export function RegistrationsSection({ certs, manual }: { certs: Cert[]; manual:
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* ── Approval Modal ──────────────────────────────── */}
+      {approvalCert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setApprovalCert(null)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[16px] font-bold">Согласовать сертификат</h3>
+              <button onClick={() => setApprovalCert(null)} className="w-8 h-8 rounded-lg bg-black/[0.04] flex items-center justify-center text-mute hover:text-[#171821]">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="text-[13px] text-mute">
+              UDID: <code className="text-accent">{approvalCert.udid}</code>
+              <br />
+              Тариф: <strong>{approvalCert.plan_id}</strong> · {money(approvalCert.sale_price)}
+            </div>
+
+            {/* Cert file (.p12) */}
+            <div>
+              <label className="text-[12px] font-semibold text-mute block mb-1.5">
+                <FileUp size={14} className="inline mr-1" />Сертификат (.p12)
+              </label>
+              <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${certFile ? 'border-accent bg-accent/[0.04]' : 'border-line hover:border-accent/50'}`}>
+                <Upload size={16} className="text-mute" />
+                <span className="text-[13px] text-mute truncate">{certFile ? certFile.name : 'Выберите файл .p12'}</span>
+                <input type="file" accept=".p12,.pfx" hidden onChange={(e) => setCertFile(e.target.files?.[0] || null)} />
+              </label>
+            </div>
+
+            {/* Provision file (.mobileprovision) */}
+            <div>
+              <label className="text-[12px] font-semibold text-mute block mb-1.5">
+                <FileUp size={14} className="inline mr-1" />Provision Profile (.mobileprovision)
+              </label>
+              <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${provFile ? 'border-accent bg-accent/[0.04]' : 'border-line hover:border-accent/50'}`}>
+                <Upload size={16} className="text-mute" />
+                <span className="text-[13px] text-mute truncate">{provFile ? provFile.name : 'Выберите файл .mobileprovision'}</span>
+                <input type="file" accept=".mobileprovision" hidden onChange={(e) => setProvFile(e.target.files?.[0] || null)} />
+              </label>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="text-[12px] font-semibold text-mute block mb-1.5">
+                <Lock size={14} className="inline mr-1" />Пароль сертификата
+              </label>
+              <input
+                type="text"
+                value={certPassword}
+                onChange={(e) => setCertPassword(e.target.value)}
+                placeholder="Пароль от .p12 файла"
+                className="w-full h-10 px-3 bg-black/[0.02] border border-line rounded-xl text-[13px] outline-none focus:border-accent"
+              />
+            </div>
+
+            {/* Comment */}
+            <div>
+              <label className="text-[12px] font-semibold text-mute block mb-1.5">Комментарий (необязательно)</label>
+              <input
+                type="text"
+                value={approvalComment}
+                onChange={(e) => setApprovalComment(e.target.value)}
+                placeholder="Комментарий к согласованию"
+                className="w-full h-10 px-3 bg-black/[0.02] border border-line rounded-xl text-[13px] outline-none focus:border-accent"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                disabled={uploading}
+                onClick={submitApproval}
+                className="flex-1 inline-flex items-center justify-center gap-2 h-10 rounded-xl bg-accent text-white text-[13px] font-semibold disabled:opacity-50"
+              >
+                {uploading ? (
+                  <span className="animate-pulse">Загрузка...</span>
+                ) : (
+                  <><Check size={16} /> Согласовать</>
+                )}
+              </button>
+              <button
+                disabled={uploading}
+                onClick={() => setApprovalCert(null)}
+                className="px-4 h-10 rounded-xl bg-black/[0.05] text-[13px] font-semibold text-mute"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
