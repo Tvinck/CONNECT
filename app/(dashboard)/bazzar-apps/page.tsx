@@ -90,34 +90,56 @@ export default function BazzarAppsPage() {
       if (iconError) throw iconError
       setUploadProgress(15)
 
-      // 2. Upload IPA via R2 multipart upload (supports large files)
+      // 2. Upload IPA via R2 Worker.
+      // Большой PUT одним куском Cloudflare Worker обрывает (ERR_CONNECTION_RESET —
+      // лимит тела/памяти воркера). Поэтому прямой PUT — только для мелких файлов,
+      // всё крупнее грузим multipart'ом чанками по 10 МБ, с ретраями на обрывы.
       const ipaKey = `ipa/${crypto.randomUUID()}/${ipaFile.name.replace(/\s+/g, '_')}`
-      const CHUNK_SIZE = 20 * 1024 * 1024 // 20MB chunks
+      const CHUNK_SIZE = 10 * 1024 * 1024 // 10MB
+      const DIRECT_LIMIT = 8 * 1024 * 1024 // прямой PUT только до 8MB
 
-      if (ipaFile.size < 90 * 1024 * 1024) {
-        // Small IPA (<90MB) — direct PUT
-        const putRes = await fetch(`${R2_BASE}/${ipaKey}`, {
+      // fetch с ретраями: сетевой сброс (CONNECTION_RESET) и 5xx повторяем, 4xx — нет
+      const fetchRetry = async (url: string, init: RequestInit, attempts = 3): Promise<Response> => {
+        let lastErr: unknown
+        for (let a = 1; a <= attempts; a++) {
+          try {
+            const res = await fetch(url, init)
+            if (res.ok || res.status < 500) return res
+            lastErr = new Error(`HTTP ${res.status}`)
+          } catch (e) {
+            lastErr = e // обрыв соединения — повторяем
+          }
+          if (a < attempts) await new Promise(r => setTimeout(r, 1000 * a))
+        }
+        throw lastErr instanceof Error ? lastErr : new Error('Сеть недоступна')
+      }
+
+      const abortMultipart = (uploadId: string) =>
+        fetch(`${R2_BASE}/multipart/abort`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
+          body: JSON.stringify({ uploadId, key: ipaKey }),
+        }).catch(() => {})
+
+      if (ipaFile.size <= DIRECT_LIMIT) {
+        // Мелкий файл — прямой PUT
+        const putRes = await fetchRetry(`${R2_BASE}/${ipaKey}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/octet-stream',
-            'X-Upload-Token': R2_TOKEN,
-          },
+          headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Token': R2_TOKEN },
           body: ipaFile,
         })
-        if (!putRes.ok) throw new Error(`R2 upload failed: ${putRes.status}`)
+        if (!putRes.ok) throw new Error(`Загрузка не удалась (HTTP ${putRes.status})`)
         setUploadProgress(80)
       } else {
-        // Large IPA — multipart upload
-        // Step A: Create multipart upload
-        const createRes = await fetch(`${R2_BASE}/multipart/create`, {
+        // Крупный файл — multipart
+        const createRes = await fetchRetry(`${R2_BASE}/multipart/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
           body: JSON.stringify({ key: ipaKey }),
         })
-        if (!createRes.ok) throw new Error('Failed to create multipart upload')
+        if (!createRes.ok) throw new Error('Не удалось начать загрузку (multipart/create)')
         const { uploadId } = await createRes.json()
 
-        // Step B: Upload parts
         const totalParts = Math.ceil(ipaFile.size / CHUNK_SIZE)
         const parts: { partNumber: number; etag: string }[] = []
 
@@ -126,22 +148,19 @@ export default function BazzarAppsPage() {
           const end = Math.min(start + CHUNK_SIZE, ipaFile.size)
           const chunk = ipaFile.slice(start, end)
 
-          const partRes = await fetch(
-            `${R2_BASE}/multipart/part?uploadId=${uploadId}&partNumber=${i + 1}&key=${encodeURIComponent(ipaKey)}`,
-            {
-              method: 'PUT',
-              headers: { 'X-Upload-Token': R2_TOKEN },
-              body: chunk,
-            }
-          )
+          let partRes: Response
+          try {
+            partRes = await fetchRetry(
+              `${R2_BASE}/multipart/part?uploadId=${uploadId}&partNumber=${i + 1}&key=${encodeURIComponent(ipaKey)}`,
+              { method: 'PUT', headers: { 'X-Upload-Token': R2_TOKEN }, body: chunk }
+            )
+          } catch {
+            await abortMultipart(uploadId)
+            throw new Error(`Чанк ${i + 1}/${totalParts}: соединение оборвалось. Попробуйте ещё раз.`)
+          }
           if (!partRes.ok) {
-            // Abort on failure
-            await fetch(`${R2_BASE}/multipart/abort`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
-              body: JSON.stringify({ uploadId, key: ipaKey }),
-            })
-            throw new Error(`Part ${i + 1}/${totalParts} upload failed`)
+            await abortMultipart(uploadId)
+            throw new Error(`Чанк ${i + 1}/${totalParts} не загрузился (HTTP ${partRes.status})`)
           }
 
           const partData = await partRes.json()
@@ -149,13 +168,12 @@ export default function BazzarAppsPage() {
           setUploadProgress(15 + Math.round((i + 1) / totalParts * 65))
         }
 
-        // Step C: Complete multipart upload
-        const completeRes = await fetch(`${R2_BASE}/multipart/complete`, {
+        const completeRes = await fetchRetry(`${R2_BASE}/multipart/complete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
           body: JSON.stringify({ uploadId, key: ipaKey, parts }),
         })
-        if (!completeRes.ok) throw new Error('Failed to complete multipart upload')
+        if (!completeRes.ok) throw new Error('Не удалось завершить загрузку (multipart/complete)')
       }
 
       setUploadProgress(85)
