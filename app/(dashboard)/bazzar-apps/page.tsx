@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@supabase/supabase-js"
 import { Plus, Trash2, Eye, EyeOff, UploadCloud, RefreshCw } from "lucide-react"
 import { Header } from "@/components/layout/Header"
+import { uploadIpaToR2 } from "@/lib/r2Upload"
 
 // Supabase client initialization
 const supabase = createClient(
@@ -69,114 +70,6 @@ export default function BazzarAppsPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  // ── Robust Upload Handler for R2 ──
-  async function uploadIpaToR2(file: File, appId: string): Promise<string> {
-    const R2_BASE = 'https://bazzar-r2.artyomkoshelev-04.workers.dev'
-    const R2_TOKEN = process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || 'bazzar-r2-upload-2024-secret'
-
-    const cleanFileName = file.name.replace(/[^\w\.\-]/g, '_')
-    const ipaKey = `ipa/${appId}/${cleanFileName}`
-    const CHUNK_SIZE = 5 * 1024 * 1024 // 5MB chunks for maximum stability
-    const DIRECT_LIMIT = 5 * 1024 * 1024 // <= 5MB -> direct PUT
-
-    // Helper for retry fetch on network issues
-    const fetchWithRetry = async (url: string, init: RequestInit, maxAttempts = 5): Promise<Response> => {
-      let lastErr: unknown
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try {
-          const res = await fetch(url, init)
-          if (res.ok || res.status < 500) return res
-          lastErr = new Error(`HTTP ${res.status}`)
-        } catch (e) {
-          lastErr = e
-        }
-        if (attempt < maxAttempts) {
-          await new Promise(r => setTimeout(r, 1000 * attempt))
-        }
-      }
-      throw lastErr instanceof Error ? lastErr : new Error('Ошибка сети при загрузке')
-    }
-
-    if (file.size <= DIRECT_LIMIT) {
-      setUploadStatusText('Прямая загрузка IPA файла...')
-      const res = await fetchWithRetry(`${R2_BASE}/${ipaKey}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Token': R2_TOKEN },
-        body: file,
-      })
-      if (!res.ok) throw new Error(`Прямая загрузка завершилась с ошибкой ${res.status}`)
-      return `${R2_BASE}/${ipaKey}`
-    }
-
-    // Multipart upload for large files
-    setUploadStatusText('Инициализация многопоточной загрузки (Multipart)...')
-    const createRes = await fetchWithRetry(`${R2_BASE}/multipart/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
-      body: JSON.stringify({ key: ipaKey }),
-    })
-    if (!createRes.ok) throw new Error('Не удалось запустить Multipart сессию')
-    const { uploadId } = await createRes.json()
-
-    const totalParts = Math.ceil(file.size / CHUNK_SIZE)
-    const parts: { partNumber: number; etag: string }[] = []
-
-    const abortUpload = () =>
-      fetch(`${R2_BASE}/multipart/abort`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
-        body: JSON.stringify({ uploadId, key: ipaKey }),
-      }).catch(() => {})
-
-    try {
-      for (let i = 0; i < totalParts; i++) {
-        const partNumber = i + 1
-        const start = i * CHUNK_SIZE
-        const end = Math.min(start + CHUNK_SIZE, file.size)
-        const chunk = file.slice(start, end)
-
-        const uploadedMB = (end / (1024 * 1024)).toFixed(1)
-        const totalMB = (file.size / (1024 * 1024)).toFixed(1)
-        setUploadStatusText(`Загрузка IPA: ${uploadedMB} MB из ${totalMB} MB (чанк ${partNumber} из ${totalParts})...`)
-
-        const partRes = await fetchWithRetry(
-          `${R2_BASE}/multipart/part?uploadId=${encodeURIComponent(uploadId)}&partNumber=${partNumber}&key=${encodeURIComponent(ipaKey)}`,
-          {
-            method: 'PUT',
-            headers: { 'X-Upload-Token': R2_TOKEN, 'Content-Type': 'application/octet-stream' },
-            body: chunk,
-          }
-        )
-
-        if (!partRes.ok) {
-          throw new Error(`Ошибка загрузки части ${partNumber} (${partRes.status})`)
-        }
-
-        const partData = await partRes.json()
-        parts.push({ partNumber: partData.partNumber, etag: partData.etag })
-        
-        // Progress from 20% to 90%
-        setUploadProgress(20 + Math.round((partNumber / totalParts) * 70))
-      }
-
-      setUploadStatusText('Завершение сборки файла на сервере R2...')
-      const completeRes = await fetchWithRetry(`${R2_BASE}/multipart/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Upload-Token': R2_TOKEN },
-        body: JSON.stringify({ uploadId, key: ipaKey, parts }),
-      })
-
-      if (!completeRes.ok) {
-        throw new Error('Не удалось собрать файл после загрузки частей')
-      }
-
-      return `${R2_BASE}/${ipaKey}`
-    } catch (err) {
-      await abortUpload()
-      throw err
-    }
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!editingApp && (!name || !version || !iconFile || !ipaFile)) {
@@ -211,7 +104,10 @@ export default function BazzarAppsPage() {
       // 2. Upload IPA if changed
       if (ipaFile) {
         fileSize = ipaFile.size
-        ipaPublicUrl = await uploadIpaToR2(ipaFile, appId)
+        ipaPublicUrl = await uploadIpaToR2(ipaFile, appId, (pct, text) => {
+          setUploadProgress(pct)
+          setUploadStatusText(text)
+        })
       }
 
       setUploadProgress(95)

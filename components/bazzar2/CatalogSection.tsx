@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useUIStore } from '@/store/ui'
 import { BazzarProductsPanel } from '@/components/projects/ProjectDetail/BazzarProductsPanel'
 import { money } from './kit'
+import { uploadIpaToR2 } from '@/lib/r2Upload'
 
 interface App { id: string; name: string; version: string; description: string | null; icon_url: string | null; ipa_url: string | null; bundle_id: string | null; size_bytes: number | null; price: number | null; is_active: boolean }
 interface Product { id: string; title: string; price: number; active: boolean }
@@ -152,31 +153,20 @@ function AppRow({ app, pending, onToggle }: { app: App; pending: boolean; onTogg
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   }
 
-  const R2_WORKER = process.env.NEXT_PUBLIC_R2_WORKER_URL || ''
+  const R2_WORKER = process.env.NEXT_PUBLIC_R2_WORKER_URL || 'https://bazzar-r2.artyomkoshelev-04.workers.dev'
 
   const uploadIpa = async (file: File) => {
-    if (!R2_WORKER) { addToast('R2 Worker не настроен', 'Добавьте NEXT_PUBLIC_R2_WORKER_URL', 'err'); return }
     setUploading(true)
     setProgress(`Загрузка ${formatSize(file.size)}…`)
     try {
-      const safeName = file.name.replace(/[^\w.\-]/g, '_')
-      const key = `ipa/${app.id}/${safeName}`
-
-      const res = await fetch(`${R2_WORKER}/${key}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          'X-Upload-Token': process.env.NEXT_PUBLIC_R2_UPLOAD_TOKEN || '',
-        },
-        body: file,
+      const publicUrl = await uploadIpaToR2(file, app.id, (_pct, text) => {
+        setProgress(text)
       })
-      const result = await res.json()
-      if (!result.success) throw new Error(result.error || 'Upload failed')
 
       const supabase = createClient()
       const { error: dbErr } = await supabase
         .from('bazzar_apps')
-        .update({ ipa_url: `${R2_WORKER}/${key}`, size_bytes: file.size, updated_at: new Date().toISOString() })
+        .update({ ipa_url: publicUrl, size_bytes: file.size, updated_at: new Date().toISOString() })
         .eq('id', app.id)
       if (dbErr) throw dbErr
 
